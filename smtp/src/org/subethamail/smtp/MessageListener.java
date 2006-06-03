@@ -2,7 +2,7 @@
  * $Id$
  * $URL$
  */
-package org.subethamail.smtp.i;
+package org.subethamail.smtp;
 
 import java.io.IOException;
 import java.io.InputStream;

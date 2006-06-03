@@ -12,10 +12,8 @@
 <project name="smtp" default="" basedir=".">
 
        <property name="build.smtp.classes.dir" location="${build.dir}/smtp-classes" />
-       <property name="build.smtp.classes.i.dir" location="${build.dir}/smtp-i-classes" />
        <property name="build.smtp.classes.test.dir" location="${build.dir}/smtp-test-classes" />
-       <property name="build.smtp.api.file" location="${build.dir}/smtp-api.jar" />
-       <property name="build.smtp.jar.file" location="${build.dir}/smtp.jar" />
+       <property name="build.smtp.jar.file" location="${build.dir}/subetha-smtp.jar" />
 
        <dirname property="smtp.basedir" file="${ant.file.smtp}"/>
        <property name="smtp.javasrc.dir" location="${smtp.basedir}/src" />
@@ -24,46 +22,20 @@
        <property name="smtp.lib.dir" location="${smtp.basedir}/lib" />
 
        <!-- used to build the smtp interfaces -->
-       <path id="smtp.i.classpath">
-			<path refid="master.classpath" />
+       <path id="smtp.classpath">
+			<path refid="base.classpath" />
 			<fileset dir="${smtp.lib.dir}">
 				<include name="**/*.jar"/>
 			</fileset>
       </path>
 
-       <path id="smtp.classpath">
-               <pathelement location="${build.smtp.api.file}"/>
-               <path refid="smtp.i.classpath" />
-       </path>
-       
        <path id="smtp.test.classpath">
               <path refid="smtp.classpath" />
               <pathelement location="${build.smtp.classes.dir}" />
               <pathelement location="${junit.jar.file}" />
        </path>
        
-        <target name="smtp-classes-i">
-              <mkdir dir="${build.smtp.classes.i.dir}" />
-               
-              <javac srcdir="${smtp.javasrc.dir}"
-                            destdir="${build.smtp.classes.i.dir}"
-                            includeAntRuntime="false"
-                            debug="${build.debug}"
-                            deprecation="${build.deprecation}">
-                     
-                     <classpath refid="smtp.i.classpath" />
-
-                     <include name="**/i/**" />
-              </javac>
-       </target>
-
-       <target name="smtp-api-jar" depends="smtp-classes-i">
-              <jar jarfile="${build.smtp.api.file}">
-                     <fileset dir="${build.smtp.classes.i.dir}"/>
-              </jar>
-       </target>
-
-        <target name="smtp-classes" depends="smtp-api-jar">
+        <target name="smtp-classes" depends="">
               <mkdir dir="${build.smtp.classes.dir}" />
                
               <javac srcdir="${smtp.javasrc.dir}"
@@ -73,11 +45,15 @@
                             deprecation="${build.deprecation}">
                      
                      <classpath refid="smtp.classpath" />
-                     
-                     <exclude name="**/i/**"/>
               </javac>
        </target>
 
+       <target name="smtp-jar" depends="smtp-classes">
+              <jar jarfile="${build.smtp.jar.file}">
+                     <fileset dir="${build.smtp.classes.dir}"/>
+              </jar>
+       </target>
+	
         <target name="smtp-test-compile" depends="smtp-classes">
               <mkdir dir="${build.smtp.classes.test.dir}" />
                
@@ -107,12 +83,6 @@
                             </fileset>
                      </batchtest>
               </junit>
-       </target>
-
-       <target name="smtp-jar" depends="smtp-classes">
-              <jar jarfile="${build.smtp.jar.file}">
-                     <fileset dir="${build.smtp.classes.dir}"/>
-              </jar>
        </target>
 </project>
 

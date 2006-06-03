@@ -28,11 +28,8 @@
 		<pathelement path="${java.class.path}" />
 	</path>
 	
-	<path id="master.classpath">
-		<path refid="base.classpath" />
-	</path>
-	
 	<!-- Now the rest of the imports -->
+	<!-- There is only one right now -->
 	<import file="smtp/build.xml"/>
 	
 	<target name="usage"> 
@@ -42,8 +39,6 @@
 
 	<target name="help" depends="usage"/>
 	
-	<target name="build" depends="smtp-jar" />
-
 	<target name="clean">
 		<delete dir="${build.dir}" />
 	</target>
@@ -55,16 +50,11 @@
 		<javadoc
 			destdir="${build.javadoc.dir}"
 			packagenames="*"
-			classpathref="frontend.classpath"
+			classpathref="smtp.classpath"
 			author="true"
 			version="true"
 		>
-			<fileset dir="${common.javasrc.dir}"/>
-			<fileset dir="${entity.javasrc.dir}"/>
-			<fileset dir="${core.javasrc.dir}"/>
-			<fileset dir="${plugin.javasrc.dir}"/>
-			<fileset dir="${frontend.javasrc.dir}"/>
-			<fileset dir="${rtest.javasrc.dir}"/>
+			<fileset dir="${smtp.javasrc.dir}"/>
 		</javadoc>
 	</target>
 </project>

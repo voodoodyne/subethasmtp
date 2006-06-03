@@ -8,7 +8,7 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.subethamail.smtp.i.MessageListener;
+import org.subethamail.smtp.MessageListener;
 
 /**
  * Main SMTPServer class. This class starts opens a ServerSocket and
