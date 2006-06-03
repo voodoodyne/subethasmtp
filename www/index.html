@@ -9,98 +9,122 @@
   <link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
 <script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
 </script>
- <title>Project Overview</title>
+ <title>SubEtha SMTP</title>
 </head>
 <body>
+	<p>
+		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a> SMTP is
+		a Java library which provides a receptive SMTP server component.
+		By plugging this component into your Java application, you can
+		easily receive SMTP mail using a simple abstract Java interface.
+	</p>
+	
+	<p>
+		This component can be used in almost any kind of email 
+		processing application.  Hypothetical (and not-so hypothetical)
+		uses include:
+	</p>
+	
+	<ul>
+		<li>A mailing list manager (ie, <a href="http://subetha.tigris.org/">SubEtha</a>)</li>
+		<li>A mail server that delivers mail to user inboxes</li>
+		<li>A mail archiver like <a href="http://www.mail-archive.com/">Mail Archive</a></li>
+		<li>An email test harness like <a href="http://quintanasoft.com/dumbster/">Dumbster</a></li>
+	</ul>
+	
+	
+	<h2>A Little History</h2>
+	
+	<p>
+		SubEthaSMTP was split out of the
+		<a href="http://subetha.tigris.org/">SubEtha Mail</a> mailing
+		list manager because it is a useful standalone component.  When
+		we wrote SubEtha, the last thing we wanted to do was write our
+		own SMTP server.  In our search for a modular Java SMTP component,
+		we examined:
+	</p>
+	
+	<ul>
+		<li><a href="http://james.apache.org/">Apache JAMES</a></li>
+		<li><a href="http://labs.jboss.com/portal/jbossmail/index.html">JBoss Mail Server</a></li>
+		<li><a href="http://quintanasoft.com/dumbster/">Dumbster</a></li>
+		<li><a href="http://www.jsmtpd.org/site/">Jsmtpd</a></li>
+		<li><a href="http://www.ericdaugherty.com/java/mailserver/">JES</a></li>
+		<li><a href="http://jmailsrv.sourceforge.net/">Java Mail Server</a></li>
+	</ul>
+	
+	<p>
+		Since you're reading this page you probably already know what we found:
+		Six different SMTP implementations without the slightest thought
+		given to reusability. Even Jstmpd, which purports to be a "A Modular
+		Java SMTP Daemon", isn't.  Furthermore, even though JBoss Mail is in
+		active development, the team was unintersted in componentization.
+	</p>
+	
+	<p>
+		We hate reinventing wheels.  This should be the LAST $#@%*! JAVA
+		SMTP IMPLEMENTATION.
+	</p>
+	
+	<h2>How To Use It</h2>
+	
+	<p>
+		Using SubEthaSMTP is trivial:
+	</p>
+	
+<pre>List&lt;MessageListener&gt; listeners = new ArrayList&lt;MessageListener&gt;();
+listeners.add(myListener);
+SMTPServer smtpServer = new SMTPServer(hostName, bindAddress, port, listeners);
+smtpServer.start();</pre>
+	
+	<p>
+		The MessageListener is easy to implement:
+	</p>
+	
+<pre>public interface MessageListener
+{
+	/**
+	 * Called once for every RCPT TO during a SMTP exchange.
+	 */
+	public boolean accept(String from, String recipient);
 
-<p>This is the initial web content for your project.  Please customize
-this to fit your project.  You don't need to answer all these questions
-or follow this exact format, but we do like to see this kind of
-information before we approve projects for public viewing.
-</p>
-
-<p>Until your project is approved, only you can view it and work on
-it.
-</p>
-
-<ul>
-<li>This index.html will be used if and only if you have the "Use
-Project Home Page" option checked on the "Administer Project" page
-(click the "Admin" tab).</li>
-
-<li>To edit this file, check out your project via CVS and edit www/index.html.
-
-<li>You can 'cvs add' and commit other files under the project's "www"
-directory and they will published to your project web site.</li>
-
-<li>Also, consider starting a thread in the "dev" mailing list to get
-these discussion started.  A good one is an "introduction" thread where
-people post messages about themselves and their interest in the
-project.</li>
-
-<li>You can add a "Highlights:" line to the top of all web pages by adding a file www/project_highlights.html </li>
-</ul>
-
-
-<h3>Mission</h3>
-
-<p>What is the goal of this project?
-</p>
-
-<p>What is the scope of this project?
-</p>
-
-<p>For example:</p>
-
-<ul>
-<li>Develop just enough functionality to scratch a particular itch</li>
-<li>Build a tool just like XYZ, but less broken</li>
-<li>Build the best XYZ-tool ever!</li>
-</ul>
-
-
-<p>What are high-level features you are sure to build?
-</p>
-<ul>
-
-<li>What would you write on a billboard about your project? Users
-might only look for a few seconds.</li>
-
-<li>Use the issue tracker to track features and enhancement
-requests. It is not just for bugs, pre-populate it with feature
-descriptions so that potential contributors know what you would like them
-to work on.</li>
-</ul>
-
-<p>What are the high-level assumptions or ground rules for the project?
-</p>
-
-<p>For example:
-</p>
-
-<ul>
-<li> we will use programming language X on operating system Y for now.
-
-<li>We will, or will not, consider certain functional areas like
-internationalization, high security, concurrency, etc.  The list of
-functional areas will depend on what you are trying to do.
-
-<li>Try to keep this part short.
-</ul>
-
-
-<h3>Related resources</h3>
-
-<ul>
-<li>Link to other stuff that you know about.  It will help you
-research requirements and provide a useful resource to potential
-contributors.</li>
-
-<li>Why reinvent the wheel? What is better about this wheel?  Is there
-any existing project that you can partner with or reuse?</li>
-
-<li>Where would you go to try to find potential contibutors?</li>
-</ul>
-
+	/**
+	 * When a message arrives, this method will be called for every recipient
+	 * this listener accepted.
+	 */
+	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException;
+}</pre>
+	
+	<p>
+		Your listener simply accept()s any recipients it cares about, and
+		the SMTP server will deliver() an input stream of the message data.
+		Any recipients which are not accepted by a listener will be rejected.
+	</p>
+	
+	<h2>Performance</h2>
+	
+	<p>
+		SubEthaSMTP is multithreaded.  One thread waits for socket accepts
+		and then spawns a new handler thread for each connection.
+	</p>
+	
+	<p>
+		SubEthaSMTP handles streams efficiently.
+	</p>
+	<ul>
+		<li>
+			If only one listener accept()s a message, the network
+			InputStream (filtered to remove SMTP protocol bits) is
+			handed to the listener.
+		</li>
+		<li>
+			If more than one listener accept()s a message, the
+			message data is first buffered.  The buffer will be
+			kept in RAM until the data reaches a certain size,
+			then the buffer is moved to a temporary disk file.
+			Each listener will be delivered a complete copy of
+			the buffered message.
+		</li>
+	</ul>
 </body>
 </html>
