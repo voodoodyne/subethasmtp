@@ -1,0 +1,71 @@
+<?xml version="1.0"?>
+
+<!--
+	$Id$
+	$URL$
+
+	Top-level build file for SubEthaSMTP.  Imports build files for the
+	various modules, so this is the only entry point.
+	
+	To run the junit tests, you must copy junit.jar into ANT_HOME/lib.
+-->
+
+<project name="subethasmtp" default="smtp-jar" basedir=".">
+
+	<property name="name" value="${ant.project.name}" />
+	
+	<property file="user.properties" />
+	<property file="build.properties" />
+
+	<property name="build.dir" location="build" />
+	<property name="build.javadoc.dir" location="${build.dir}/api" />
+	
+	<property name="build.debug" value="on" />
+	<property name="build.deprecation" value="on" />
+	
+	<!-- Set up a basic path for everyone -->
+	<path id="base.classpath">
+		<pathelement path="${java.class.path}" />
+	</path>
+	
+	<path id="master.classpath">
+		<path refid="base.classpath" />
+	</path>
+	
+	<!-- Now the rest of the imports -->
+	<import file="smtp/build.xml"/>
+	
+	<target name="usage"> 
+		<echo message="  Execute 'ant -projecthelp' for build file help."/> 
+		<echo message="  Execute 'ant -help' for Ant help."/> 
+	</target> 
+
+	<target name="help" depends="usage"/>
+	
+	<target name="build" depends="smtp-jar" />
+
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="javadoc">
+		<mkdir dir="${build.javadoc.dir}"/>
+		
+		<!-- this classpath isn't right -->
+		<javadoc
+			destdir="${build.javadoc.dir}"
+			packagenames="*"
+			classpathref="frontend.classpath"
+			author="true"
+			version="true"
+		>
+			<fileset dir="${common.javasrc.dir}"/>
+			<fileset dir="${entity.javasrc.dir}"/>
+			<fileset dir="${core.javasrc.dir}"/>
+			<fileset dir="${plugin.javasrc.dir}"/>
+			<fileset dir="${frontend.javasrc.dir}"/>
+			<fileset dir="${rtest.javasrc.dir}"/>
+		</javadoc>
+	</target>
+</project>
+
