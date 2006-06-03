@@ -13,7 +13,7 @@
 </head>
 <body>
 	<p>
-		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a> SMTP is
+		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a>SMTP is
 		a Java library which provides a receptive SMTP server component.
 		By plugging this component into your Java application, you can
 		easily receive SMTP mail using a simple abstract Java interface.
@@ -92,7 +92,8 @@ smtpServer.start();</pre>
 	 * When a message arrives, this method will be called for every recipient
 	 * this listener accepted.
 	 */
-	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException;
+	public void deliver(String from, String recipient, InputStream data)
+			throws TooMuchDataException, IOException;
 }</pre>
 	
 	<p>
