@@ -2,7 +2,7 @@
  * $Id$
  * $Source: /cvsroot/Similarity4/src/java/com/similarity/mbean/BindStatisticsManagerMBean.java,v $
  */
-package org.subethamail.smtp.i;
+package org.subethamail.smtp;
 
 import java.io.IOException;
 

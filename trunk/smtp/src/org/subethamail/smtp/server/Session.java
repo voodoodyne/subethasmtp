@@ -3,7 +3,7 @@ package org.subethamail.smtp.server;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.subethamail.smtp.i.MessageListener;
+import org.subethamail.smtp.MessageListener;
 
 /**
  * A sesssion describes events which happen during a
