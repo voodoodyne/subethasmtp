@@ -43,9 +43,9 @@
 		<delete dir="${build.dir}" />
 	</target>
 
-	<target name="formalbuild">
+	<target name="formal-build">
 		<antcall target="clean"/>
-		<input addproperty="VERSION" message="Version number?" />
+		<input addproperty="build.version" message="Version number?" />
 		<antcall target="smtp-jar"/>
 	</target>
 	
