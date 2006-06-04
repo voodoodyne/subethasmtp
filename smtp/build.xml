@@ -51,10 +51,8 @@
 			<fileset dir="${build.smtp.classes.dir}"/>
 			
 			<manifest>
-				<section name="org/subethamail/smtp/">
-					<attribute name="Specification-Version" value="${build.version}" />
-					<attribute name="Implementation-Version" value="${TODAY}" />
-				</section>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
 			</manifest>
 		</jar>
 	</target>

@@ -73,8 +73,7 @@
 		<copy file="${build.smtp.jar.file}" todir="../Subetha/core/lib" />
 	</target>
 	
-	<target name="formal-deploy" depends="formal-build">
-		<copy file="${build.smtp.jar.file}" todir="../Subetha/core/lib" />
+	<target name="formal-deploy" depends="formal-build, deploy">
 	</target>
 </project>
 
