@@ -9,14 +9,17 @@
   <link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
 <script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
 </script>
- <title>SubEtha SMTP</title>
+ <title>SubEthaSMTP</title>
 </head>
 <body>
+	<h2>SubEthaSMTP</h2>
+	
 	<p>
 		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a>SMTP is
-		a Java library which provides a receptive SMTP server component.
-		By plugging this component into your Java application, you can
-		easily receive SMTP mail using a simple abstract Java interface.
+		a easy to understand Java library which provides a receptive 
+		SMTP server component. By plugging this component into your 
+		Java application, you can easily receive SMTP mail using a simple 
+		abstract Java interface.
 	</p>
 	
 	<p>
@@ -26,12 +29,16 @@
 	</p>
 	
 	<ul>
-		<li>A mailing list manager (ie, <a href="http://subetha.tigris.org/">SubEtha</a>)</li>
+		<li>A mailing list manager (ie, <a href="http://subetha.tigris.org/">SubEtha Mail</a>)</li>
 		<li>A mail server that delivers mail to user inboxes</li>
 		<li>A mail archiver like <a href="http://www.mail-archive.com/">Mail Archive</a></li>
 		<li>An email test harness like <a href="http://quintanasoft.com/dumbster/">Dumbster</a></li>
 	</ul>
 	
+	<p>
+		We will not make SubEthaSMTP into the above products. Instead, you
+		should use SubEthaSMTP as a core library to implement the above products.
+	</p>
 	
 	<h2>A Little History</h2>
 	
@@ -58,7 +65,8 @@
 		Six different SMTP implementations without the slightest thought
 		given to reusability. Even Jstmpd, which purports to be a "A Modular
 		Java SMTP Daemon", isn't.  Furthermore, even though JBoss Mail is in
-		active development, the team was unintersted in componentization.
+		active development, the team was unintersted in componentization of the
+		SMTP processing portion of their server.
 	</p>
 	
 	<p>
@@ -127,5 +135,23 @@ smtpServer.start();</pre>
 			the buffered message.
 		</li>
 	</ul>
+	
+	<h2>Security</h2>
+
+	<p>
+		SubEthaSMTP has been designed from the ground up to be secure. We have
+		done everything we can to make sure that the server is not susceptible
+		to DoS style attacks and thanks to Java, there is a very very small chance
+		of a buffer overflow style of attack.
+	</p>
+	
+	<h2>Spec compliance</h2>
+
+	<p>
+		For now, we have just focused on implementing just the minimal 
+		required aspects of <a href="http://rfc.net/rfc2821.html#s4.5.1" target="_new">RFC 2821</a>.
+		However we do not directly support the 'postmaster' requirement since we 
+		do not deliver mail locally. That's your job as the user of this library. =)
+	</p>
 </body>
 </html>
