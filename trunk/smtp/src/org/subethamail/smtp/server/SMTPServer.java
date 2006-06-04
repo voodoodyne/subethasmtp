@@ -9,15 +9,18 @@ import java.util.Collection;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.subethamail.smtp.MessageListener;
+import org.subethamail.smtp.Version;
 
 /**
- * Main SMTPServer class. This class starts opens a ServerSocket and
- * when a new connection comes in, it attaches that to a new
- * instance of the ConnectionHandler class.
+ * Main SMTPServer class.  Construct this object, set the
+ * hostName, port, and bind address if you wish to override the 
+ * defaults, and call start(). 
  * 
- * The ConnectionHandler then parses the incoming SMTP stream and
- * hands off the processing to the CommandHandler which will execute
- * the appropriate SMTP command class.
+ * This class starts opens a ServerSocket and creates a new
+ * instance of the ConnectionHandler class when a new connection
+ * comes in.  The ConnectionHandler then parses the incoming SMTP
+ * stream and hands off the processing to the CommandHandler which
+ * will execute the appropriate SMTP command class.
  *  
  * This class also manages a watchdog thread which will timeout 
  * stale connections.
@@ -32,15 +35,17 @@ import org.subethamail.smtp.MessageListener;
  * 
  * @author Jon Stevens
  * @author Ian McFarland &lt;ian@neo.com&gt;
+ * @author Jeff Schnitzer
  */
 @SuppressWarnings("serial")
 public class SMTPServer implements Runnable
 {
 	private static Log log = LogFactory.getLog(SMTPServer.class);
 
-	private String hostName;
-	private InetAddress bindAddress;
-	private int port;
+	private InetAddress bindAddress = null;	// default to all interfaces
+	private int port = 25;	// default to 25
+	private String hostName;	// defaults to a lookup of the local address
+	
 	private Collection<MessageListener> listeners;
 
 	private CommandHandler commandHandler;
@@ -72,24 +77,58 @@ public class SMTPServer implements Runnable
 	
 	/**
 	 * The main SMTPServer constructor.
-	 * 
-	 * @param hostname
-	 * @param bindAddress
-	 * @param port
-	 * @param listeners
-	 * @throws UnknownHostException
 	 */
-	public SMTPServer(String hostname, InetAddress bindAddress, int port, Collection<MessageListener> listeners) 
-		throws UnknownHostException
+	public SMTPServer(Collection<MessageListener> listeners) 
 	{
-		this.hostName = hostname;
-		this.bindAddress = bindAddress;
-		this.port = port;
 		this.listeners = listeners;
+
+		try
+		{
+			this.hostName = InetAddress.getLocalHost().getCanonicalHostName();
+		}
+		catch (UnknownHostException e)
+		{
+			this.hostName = "localhost";
+		}
 
 		this.commandHandler = new CommandHandler();		
 
 		this.connectionHanderGroup = new ThreadGroup(SMTPServer.class.getName() + " ConnectionHandler Group");
+	}
+
+	/** @return the host name that will be reported to SMTP clients */
+	public String getHostName()
+	{
+		return this.hostName;
+	}
+
+	/** The host name that will be reported to SMTP clients */
+	public void setHostName(String hostName)
+	{
+		this.hostName = hostName;
+	}
+
+	/** null means all interfaces */
+	public InetAddress getBindAddress()
+	{
+		return this.bindAddress;
+	}
+
+	/** null means all interfaces */
+	public void setBindAddress(InetAddress bindAddress)
+	{
+		this.bindAddress = bindAddress;
+	}
+
+	/** */
+	public int getPort()
+	{
+		return this.port;
+	}
+
+	public void setPort(int port)
+	{
+		this.port = port;
 	}
 
 	/**
@@ -182,24 +221,14 @@ public class SMTPServer implements Runnable
 		}
 	}
 
-	public String getHostName()
-	{
-		return this.hostName;
-	}
-
-	public String getVersion()
-	{
-		return "1.0";
-	}
-	
 	public String getName()
 	{
-		return "SubEthaMail Server";
+		return "SubEthaSMTP";
 	}
 
 	public String getNameVersion()
 	{
-		return getName() + " v" + getVersion();
+		return getName() + " " + Version.getSpecification();
 	}
 
 	/**

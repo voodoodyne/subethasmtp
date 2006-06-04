@@ -68,5 +68,13 @@
 			<fileset dir="${smtp.javasrc.dir}"/>
 		</javadoc>
 	</target>
+	
+	<target name="deploy" depends="smtp-jar">
+		<copy file="${build.smtp.jar.file}" todir="../Subetha/core/lib" />
+	</target>
+	
+	<target name="formal-deploy" depends="formal-build">
+		<copy file="${build.smtp.jar.file}" todir="../Subetha/core/lib" />
+	</target>
 </project>
 
