@@ -82,7 +82,7 @@
 	
 <pre>List&lt;MessageListener&gt; listeners = new ArrayList&lt;MessageListener&gt;();
 listeners.add(myListener);
-SMTPServer smtpServer = new SMTPServer(hostName, bindAddress, port, listeners);
+SMTPServer smtpServer = new SMTPServer(listeners);
 smtpServer.start();</pre>
 	
 	<p>
@@ -110,7 +110,7 @@ smtpServer.start();</pre>
 		Any recipients which are not accepted by a listener will be rejected.
 	</p>
 	
-	<h2>Performance</h2>
+	<h2>Performance and Security</h2>
 	
 	<p>
 		SubEthaSMTP is multithreaded.  One thread waits for socket accepts
@@ -136,16 +136,15 @@ smtpServer.start();</pre>
 		</li>
 	</ul>
 	
-	<h2>Security</h2>
-
 	<p>
-		SubEthaSMTP has been designed from the ground up to be secure. We have
-		done everything we can to make sure that the server is not susceptible
-		to DoS style attacks and thanks to Java, there is a very very small chance
-		of a buffer overflow style of attack.
+		SubEthaSMTP will time out idle connections.
 	</p>
 	
-	<h2>Spec compliance</h2>
+	<p>
+		Java by it's nature should be immune to buffer-overflow attacks.
+	</p>
+	
+	<h2>Spec Compliance</h2>
 
 	<p>
 		For now, we have just focused on implementing just the minimal 

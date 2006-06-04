@@ -42,9 +42,9 @@ public class HelpCommand extends BaseCommand
 
 	private String getCommandMessage(SMTPServer server)
 	{
-		return "214-This is the SubEthaMail SMTP Server version "
-				+ server.getVersion()
-				+ " running on "
+		return "214-This is the "
+				+ server.getNameVersion()
+				+ " server running on "
 				+ server.getHostName()
 				+ "\r\n"
 				+ "214-Topics:\r\n"
