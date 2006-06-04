@@ -43,6 +43,17 @@
 		<delete dir="${build.dir}" />
 	</target>
 
+	<target name="formalbuild">
+		<antcall target="clean"/>
+		<input addproperty="VERSION" message="Version number?" />
+		<antcall target="smtp-jar"/>
+	</target>
+	
+	<target name="init">
+		<tstamp/>
+		<property name="build.version" value="UNVERSIONED"/>
+	</target>
+
 	<target name="javadoc">
 		<mkdir dir="${build.javadoc.dir}"/>
 		
