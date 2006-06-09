@@ -29,9 +29,9 @@
 	</path>
 	
 	<!-- Now the rest of the imports -->
-	<!-- There is only one right now -->
 	<import file="smtp/build.xml"/>
-	
+	<import file="wiser/build.xml"/>
+
 	<target name="usage"> 
 		<echo message="  Execute 'ant -projecthelp' for build file help."/> 
 		<echo message="  Execute 'ant -help' for Ant help."/> 

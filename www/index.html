@@ -32,7 +32,7 @@
 		<li>A mailing list manager (ie, <a href="http://subetha.tigris.org/">SubEtha Mail</a>)</li>
 		<li>A mail server that delivers mail to user inboxes</li>
 		<li>A mail archiver like <a href="http://www.mail-archive.com/">Mail Archive</a></li>
-		<li>An email test harness like <a href="http://quintanasoft.com/dumbster/">Dumbster</a></li>
+		<li>An email test harness (Implemented in this project. It's called <a href="wiser.html">Wiser</a>.)</li>
 	</ul>
 	
 	<p>
@@ -67,6 +67,15 @@
 		Java SMTP Daemon", isn't.  Furthermore, even though JBoss Mail is in
 		active development, the team was unintersted in componentization of the
 		SMTP processing portion of their server.
+	</p>
+
+	<p>
+		During the development of SubEtha's testing harness, we tried out
+		the <a href="http://quintanasoft.com/dumbster/">Dumbster</a> software 
+		and found that not only was the API difficult to use, it did it not work 
+		properly, the developer has not done any development on it in about a 
+		year and it does not work reliably on Mac OS X. With two simple classes
+		we re-implemented it as an included project called <a href="wiser.html">Wiser</a>.
 	</p>
 	
 	<p>
