@@ -20,7 +20,10 @@
 	<property name="smtp.javatest.dir" location="${smtp.basedir}/test"/>
 	<property name="smtp.meta.dir" location="${smtp.basedir}/meta"/>
 	<property name="smtp.lib.dir" location="${smtp.basedir}/lib"/>
-	
+
+	<!-- Hack to make Eclipse stop complaining -->	
+	<import file="../build.xml" />
+
 	<!-- used to build the smtp interfaces -->
 	<path id="smtp.classpath">
 		<path refid="base.classpath"/>
