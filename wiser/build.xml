@@ -17,12 +17,15 @@
 	<dirname property="wiser.basedir" file="${ant.file.wiser}"/>
 	<property name="wiser.javasrc.dir" location="${wiser.basedir}/src"/>
 	
+	<!-- Hack to make Eclipse stop complaining -->	
+	<import file="../build.xml" />
+
 	<path id="wiser.classpath">
 		<pathelement location="${build.smtp.jar.file}"/>
 		<path refid="smtp.classpath"/>
 	</path>
 	
-	<target name="wiser-classes" depends="smtp-jar">
+	<target name="wiser-classes" depends="init">
 		<mkdir dir="${build.wiser.classes.dir}"/>
 		
 		<javac srcdir="${wiser.javasrc.dir}" destdir="${build.wiser.classes.dir}"
@@ -44,4 +47,3 @@
 		</jar>
 	</target>
 </project>
-
