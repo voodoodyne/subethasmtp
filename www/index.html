@@ -1,18 +1,31 @@
-<html>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
 <head>
- <style type="text/css">
-/* <![CDATA[ */ 
-@import "http://www.tigris.org/branding/css/tigris.css"; 
-@import "http://www.tigris.org/branding/css/inst.css"; 
-/*  ]]> */
- </style>
-  <link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
-<script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
-</script>
- <title>SubEthaSMTP</title>
+<style type="text/css"> /* <![CDATA[ */
+  @import "tigris-branding/css/tigris.css";
+  @import "tigris-branding/css/inst.css";
+  /* ]]> */</style>
+<link rel="stylesheet" type="text/css" media="print" href="tigris-branding/css/print.css"/>
+<script type="text/javascript" src="tigris-branding/scripts/tigris.js"></script>
+<title>SubEthaSMTP Mail Server</title>
+<!-- Custom stylations to hide the obnoxious project info -->
+<style type="text/css">
+#apphead h1 { display: none; }
+#customcontent h2 { display: block; }
+</style>
+<!-- End custom stylations -->
 </head>
+
 <body>
-	<h2>SubEthaSMTP</h2>
+<!-- The class h2 is included on the main div, because the HTML which the
+     server will wrap around the page includes a <div class="h2">.
+     Thus, we include one here so that the page looks right when previewed
+     locally, *but* we override the border which the CSS assigns to that
+     style, so that we do not get two borders on the live page. -->
+<div class="h2 app" style="border-left: 0px" id="customcontent">
+
+	<h2>SubEthaSMTP Mail Server</h2>
 	
 	<p>
 		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a>SMTP is
@@ -83,7 +96,28 @@
 		SMTP IMPLEMENTATION.
 	</p>
 	
+	<h2>Project Status</h2>
+	
+	<p>
+		This mail server is as feature complete as we need it right now. 
+		There are zero known issues. It can be used in production environments today.
+		Enjoy. =)
+	</p>
+
+	<h2>How To Get It</h2>
+	
+	<p>
+		Head on down to the <a href="">Downloads section</a> or get the source code from 
+		our <a href="/source/browse/subethasmtp/">Subversion repository</a>.
+	</p>
+	
 	<h2>How To Use It</h2>
+	
+	<p>
+		SubEthaSMTP only depends on commons-logging.jar. If you use <a href="wiser.html">Wiser</a>, 
+		it additionally depends on mail.jar/activation.jar (JavaMail). For your convenience, 
+		these jar files are included in the distribution.
+	</p>
 	
 	<p>
 		Using SubEthaSMTP is trivial:
@@ -161,5 +195,7 @@ smtpServer.start();</pre>
 		However we do not directly support the 'postmaster' requirement since we 
 		do not deliver mail locally. That's your job as the user of this library. =)
 	</p>
+
+</div>
 </body>
 </html>
