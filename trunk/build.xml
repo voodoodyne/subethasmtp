@@ -94,6 +94,10 @@
 				<include name="LICENSE.txt" />
 				<include name="www/**" />
 			</fileset>
+
+			<fileset dir="smtp">
+				<include name="lib/*.jar" />
+			</fileset>			
 		</copy>
 		
 		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
