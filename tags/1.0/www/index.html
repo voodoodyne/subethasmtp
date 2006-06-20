@@ -1,0 +1,201 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN"
+"http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml">
+<head>
+<style type="text/css"> /* <![CDATA[ */
+  @import "tigris-branding/css/tigris.css";
+  @import "tigris-branding/css/inst.css";
+  /* ]]> */</style>
+<link rel="stylesheet" type="text/css" media="print" href="tigris-branding/css/print.css"/>
+<script type="text/javascript" src="tigris-branding/scripts/tigris.js"></script>
+<title>SubEthaSMTP Mail Server</title>
+<!-- Custom stylations to hide the obnoxious project info -->
+<style type="text/css">
+#apphead h1 { display: none; }
+#customcontent h2 { display: block; }
+</style>
+<!-- End custom stylations -->
+</head>
+
+<body>
+<!-- The class h2 is included on the main div, because the HTML which the
+     server will wrap around the page includes a <div class="h2">.
+     Thus, we include one here so that the page looks right when previewed
+     locally, *but* we override the border which the CSS assigns to that
+     style, so that we do not get two borders on the live page. -->
+<div class="h2 app" style="border-left: 0px" id="customcontent">
+
+	<h2>SubEthaSMTP Mail Server</h2>
+	
+	<p>
+		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a>SMTP is
+		a easy to understand Java library which provides a receptive 
+		SMTP server component. By plugging this component into your 
+		Java application, you can easily receive SMTP mail using a simple 
+		abstract Java interface.
+	</p>
+	
+	<p>
+		This component can be used in almost any kind of email 
+		processing application.  Hypothetical (and not-so hypothetical)
+		uses include:
+	</p>
+	
+	<ul>
+		<li>A mailing list manager (ie, <a href="http://subetha.tigris.org/">SubEtha Mail</a>)</li>
+		<li>A mail server that delivers mail to user inboxes</li>
+		<li>A mail archiver like <a href="http://www.mail-archive.com/">Mail Archive</a></li>
+		<li>An email test harness (Implemented in this project. It's called <a href="wiser.html">Wiser</a>.)</li>
+	</ul>
+	
+	<p>
+		SubEthaSMTP's simple, low-level API is suitable for writing almost
+		any kind of mail-receiving application.
+	</p>
+	
+	<h2>A Little History</h2>
+	
+	<p>
+		SubEthaSMTP was split out of the
+		<a href="http://subetha.tigris.org/">SubEtha Mail</a> mailing
+		list manager because it is a useful standalone component.  When
+		we wrote SubEtha, the last thing we wanted to do was write our
+		own SMTP server.  In our search for a modular Java SMTP component,
+		we examined:
+	</p>
+	
+	<ul>
+		<li><a href="http://james.apache.org/">Apache JAMES</a></li>
+		<li><a href="http://labs.jboss.com/portal/jbossmail/index.html">JBoss Mail Server</a></li>
+		<li><a href="http://quintanasoft.com/dumbster/">Dumbster</a></li>
+		<li><a href="http://www.jsmtpd.org/site/">Jsmtpd</a></li>
+		<li><a href="http://www.ericdaugherty.com/java/mailserver/">JES</a></li>
+		<li><a href="http://jmailsrv.sourceforge.net/">Java Mail Server</a></li>
+	</ul>
+	
+	<p>
+		Since you're reading this page you probably already know what we found:
+		Six different SMTP implementations without the slightest thought
+		given to reusability. Even Jstmpd, which purports to be a "A Modular
+		Java SMTP Daemon", isn't.  Furthermore, even though JBoss Mail is in
+		active development, the team was unintersted in componentization of the
+		SMTP processing portion of their server.
+	</p>
+
+	<p>
+		During the development of SubEtha's testing harness, we tried out
+		the <a href="http://quintanasoft.com/dumbster/">Dumbster</a> software 
+		and found that not only was the API difficult to use, it did it not work 
+		properly, the developer has not done any development on it in about a 
+		year and it does not work reliably on Mac OS X. With two simple classes
+		we re-implemented it as an included project called <a href="wiser.html">Wiser</a>.
+	</p>
+	
+	<p>
+		We hate reinventing wheels.  This should be the LAST FREAKING JAVA
+		SMTP IMPLEMENTATION.
+	</p>
+	
+	<h2>Project Status</h2>
+	
+	<p>
+		This mail server is as feature complete as we need it right now. 
+		There are zero known issues. It can be used in production environments today.
+		Enjoy. =)
+	</p>
+
+	<h2>How To Get It</h2>
+	
+	<p>
+		Head on down to the <a href="">Downloads section</a> or get the source code from 
+		our <a href="/source/browse/subethasmtp/">Subversion repository</a>.
+	</p>
+	
+	<h2>How To Use It</h2>
+	
+	<p>
+		SubEthaSMTP only depends on commons-logging.jar. If you use <a href="wiser.html">Wiser</a>, 
+		it additionally depends on mail.jar/activation.jar (JavaMail). For your convenience, 
+		these jar files are included in the distribution.
+	</p>
+	
+	<p>
+		Using SubEthaSMTP is trivial:
+	</p>
+	
+<pre>List&lt;MessageListener&gt; listeners = new ArrayList&lt;MessageListener&gt;();
+listeners.add(myListener);
+SMTPServer smtpServer = new SMTPServer(listeners);
+smtpServer.start();</pre>
+	
+	<p>
+		The MessageListener is easy to implement:
+	</p>
+	
+<pre>public interface MessageListener
+{
+	/**
+	 * Called once for every RCPT TO during a SMTP exchange.
+	 */
+	public boolean accept(String from, String recipient);
+
+	/**
+	 * When message data arrives, this method will be called for every recipient
+	 * this listener accepted.
+	 */
+	public void deliver(String from, String recipient, InputStream data)
+			throws TooMuchDataException, IOException;
+}</pre>
+	
+	<p>
+		Your listener simply accept()s any recipients it cares about, and
+		the SMTP server will deliver() an input stream of the message data.
+		Any recipients which are not accepted by a listener will be rejected.
+	</p>
+	
+	<h2>Performance and Security</h2>
+	
+	<p>
+		SubEthaSMTP is multithreaded.  One thread waits for socket accepts
+		and then spawns a new handler thread for each connection.
+	</p>
+	
+	<p>
+		SubEthaSMTP handles streams efficiently.
+	</p>
+	<ul>
+		<li>
+			If only one listener accept()s a message, the network
+			InputStream (filtered to remove SMTP protocol bits) is
+			handed to the listener.
+		</li>
+		<li>
+			If more than one listener accept()s a message, the
+			message data is first buffered.  The buffer will be
+			kept in RAM until the data reaches a certain size,
+			then the buffer is moved to a temporary disk file.
+			Each listener will be delivered a complete copy of
+			the buffered message.
+		</li>
+	</ul>
+	
+	<p>
+		SubEthaSMTP will time out idle connections.
+	</p>
+	
+	<p>
+		Java by it's nature should be immune to buffer-overflow attacks.
+	</p>
+	
+	<h2>Spec Compliance</h2>
+
+	<p>
+		For now, we have just focused on implementing just the minimal 
+		required aspects of <a href="http://rfc.net/rfc2821.html#s4.5.1" target="_new">RFC 2821</a>.
+		However we do not directly support the 'postmaster' requirement since we 
+		do not deliver mail locally. That's your job as the user of this library. =)
+	</p>
+
+</div>
+</body>
+</html>
