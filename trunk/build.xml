@@ -43,10 +43,14 @@
 		<delete dir="${build.dir}" />
 	</target>
 
-	<target name="formal-build">
-		<antcall target="clean"/>
+	<target name="input-version">
 		<input addproperty="build.version" message="Version number?" />
-		<antcall target="smtp-jar"/>
+	</target>
+	
+	<target name="formal-build" depends="clean, input-version, smtp-jar">
+	</target>
+	
+	<target name="formal-deploy" depends="formal-build, deploy">
 	</target>
 	
 	<target name="init">
@@ -73,7 +77,32 @@
 		<copy file="${build.smtp.jar.file}" todir="../Subetha/core/lib" />
 	</target>
 	
-	<target name="formal-deploy" depends="formal-build, deploy">
+	<target name="dist" depends="formal-build, javadoc">
+		<property name="build.dist.dir" location="${build.dir}/${ant.project.name}-${build.version}"/>
+		<property name="build.dist.zip" location="${build.dir}/${ant.project.name}-${build.version}.zip"/>
+
+		<basename property="build.javadoc.dir.basename" file="${build.javadoc.dir}" />
+		
+		<copy todir="${build.dist.dir}">
+			<fileset dir="${build.dir}">
+				<include name="${build.javadoc.dir.basename}/**" />
+			</fileset>
+			
+			<fileset file="${build.smtp.jar.file}"/>
+			
+			<fileset dir=".">
+				<include name="LICENSE.txt" />
+				<include name="www/**" />
+			</fileset>
+		</copy>
+		
+		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
+		<basename property="build.dist.dir.basename" file="${build.dist.dir}" />
+		
+		<zip zipfile="${build.dist.zip}" basedir="${build.dist.dir.dirname}">
+			<include name="${build.dist.dir.basename}/**" />
+		</zip>
 	</target>
+
 </project>
 
