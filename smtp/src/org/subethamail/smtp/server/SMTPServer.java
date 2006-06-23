@@ -54,7 +54,7 @@ public class SMTPServer implements Runnable
 	private boolean go = false;
 	
 	private Thread serverThread;
-	private Thread watchdogThread;
+	private Watchdog watchdog;
 
 	private ThreadGroup connectionHanderGroup;
 	
@@ -141,10 +141,12 @@ public class SMTPServer implements Runnable
 			throw new IllegalStateException("SMTPServer already started");
 		
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
+		//this.serverThread.setDaemon(true);	// Should this be set?
 		this.serverThread.start();
 
-		this.watchdogThread = new Watchdog(this);
-		this.watchdogThread.start();
+		this.watchdog = new Watchdog(this);
+		this.watchdog.setDaemon(true);
+		this.watchdog.start();
 	}
 
 	/**
@@ -154,7 +156,12 @@ public class SMTPServer implements Runnable
 	{
 		this.go = false;
 		this.serverThread = null;
-		this.watchdogThread = null;
+		
+		if (this.watchdog != null)
+		{
+			this.watchdog.quit();
+			this.watchdog = null;
+		}
 
 		// force a socket close for good measure
 		try
