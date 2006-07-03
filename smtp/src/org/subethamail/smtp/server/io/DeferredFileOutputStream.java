@@ -42,6 +42,9 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 	
 	/** If we switch to file output, this is the stream. */
 	FileOutputStream outFileStream;
+	
+	/** When the output stream is closed, this becomes true */
+	boolean closed;
 		
 	/**
 	 * @param transitionSize is the number of bytes at which to convert
@@ -84,8 +87,12 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 		}
 		else
 		{
-			this.output.flush();
-			this.output.close();
+			if (!this.closed)
+			{
+				this.output.flush();
+				this.output.close();
+				this.closed = true;
+			}
 			
 			return new BufferedInputStream(new FileInputStream(this.outFile));
 		}
@@ -97,10 +104,15 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 	@Override
 	public void close() throws IOException
 	{
-		this.output.flush();
-		this.output.close();
+		if (!this.closed)
+		{
+			this.output.flush();
+			this.output.close();
+			this.closed = true;
+		}
 		
-		this.outFile.delete();
+		if (this.outFile != null)
+			this.outFile.delete();
 	}
 
 }
