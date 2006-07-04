@@ -59,7 +59,7 @@ abstract public class BaseCommand implements Command
 
 	protected String getArgPredicate(String commandString)
 	{
-		if (commandString == null)
+		if (commandString == null || commandString.length() < 4)
 			return "";
 		
 		return commandString.substring(4).trim();
