@@ -1,43 +1,66 @@
 package org.subethamail.smtp.command;
 
-
 /**
+ * @author Jon Stevens
  * @author Ian McFarland &lt;ian@neo.com&gt;
  */
-public class MailCommandTest extends CommandTestCase {
-  private MailCommand mailCommand;
+public class MailCommandTest extends CommandTestCase
+{
+	public void testMailCommand() throws Exception
+	{
+		doHelo();
 
-  public void testMailCommand() throws Exception {
-    assertNull(session.getSender());
-    assertEquals("250 <test@example.com> Sender ok.", commandDispatcher.executeCommand("MAIL FROM: test@example.com", session));
-    assertEquals("test@example.com", session.getSender());
-    assertEquals("503 Sender already specified.", commandDispatcher.executeCommand("MAIL FROM: another@example.com", session));
-    assertEquals("test@example.com", session.getSender());
-  }
+		assertNull(getSession().getSender());
 
-  public void testInvalidSenders() throws Exception {
-    assertEquals("553 <test> Domain name required.", commandDispatcher.executeCommand("MAIL FROM: test", session));
-  }
+		commandHandler.handleCommand(getContext(), "MAIL FROM: test@example.com");
+		assertEquals("250 Ok", getContext().getResponse());
 
-  public void testMalformedMailCommand() throws Exception {
-    assertEquals("501 Syntax: MAIL FROM: <address>  Error in parameters: \"\"", commandDispatcher.executeCommand("MAIL", session));
-  }
+		assertEquals("test@example.com", getSession().getSender());
 
-  public void testMailWithoutWhitespace() throws Exception {
-    assertEquals("250 <validuser@subethamail.org> Sender ok.",
-        commandDispatcher.executeCommand("MAIL FROM:<validuser@subethamail.org>", session));
-    assertEquals("validuser@subethamail.org", session.getSender());
-  }
+		commandHandler.handleCommand(getContext(), "MAIL FROM: another@example.com");
+		assertEquals("503 Sender already specified.", getContext().getResponse());
 
-  public void testMailCommandHelp() throws Exception {
-    assertEquals("214-MAIL FROM: <sender> [ <parameters> ]\n" +
-        "214-    Specifies the sender. Parameters are ESMTP extensions.\n" +
-        "214-    See \"HELP DSN\" for details.\n" +
-        "214 End of MAIL info", commandDispatcher.getHelpMessage("MAIL").toOutputString());
-  }
+		assertEquals("test@example.com", session.getSender());
+		
+		session.reset();
+	}
 
-  protected void setUp() throws Exception {
-    super.setUp();
-    mailCommand = new MailCommand(commandDispatcher);
-  }
+	public void testInvalidSenders() throws Exception
+	{
+		doHelo();
+
+		commandHandler.handleCommand(getContext(), "MAIL FROM: test@lkjsd lkjk");
+		assertEquals("553 <test@lkjsd lkjk> Invalid email address.", getContext().getResponse());
+		
+		session.reset();
+	}
+
+	public void testMalformedMailCommand() throws Exception
+	{
+		doHelo();
+		
+		commandHandler.handleCommand(getContext(), "MAIL");
+		assertTrue(getContext().getResponse()
+				.startsWith("501 Syntax: MAIL FROM: <address>  Error in parameters:"));
+
+		session.reset();
+	}
+
+	public void testMailWithoutWhitespace() throws Exception
+	{
+		doHelo();
+		
+		commandHandler.handleCommand(getContext(), "MAIL FROM:<validuser@subethamail.org>");
+		assertEquals("250 Ok", getContext().getResponse());
+		assertEquals("validuser@subethamail.org", session.getSender());
+
+		session.reset();
+	}
+
+	@Override
+	protected void tearDown() throws Exception
+	{
+		super.tearDown();
+		session.reset();
+	}
 }

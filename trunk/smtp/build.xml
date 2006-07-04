@@ -35,7 +35,7 @@
 	<path id="smtp.test.classpath">
 		<path refid="smtp.classpath"/>
 		<pathelement location="${build.smtp.classes.dir}"/>
-		<pathelement location="${junit.jar.file}"/>
+		<pathelement location="${build.smtp.classes.test.dir}"/>
 	</path>
 	
 	<target name="smtp-classes" depends="init">
@@ -71,13 +71,11 @@
 		</javac>
 	</target>
 	
-	<target name="smtp-test" depends="smtp-test-compile">
-		<junit printsummary="yes">
+	<target name="junit" depends="smtp-test-compile">
+		<junit printsummary="yes" showoutput="yes" fork="yes">
+			<jvmarg value="-Dlog4j.configuration=file:${smtp.javatest.dir}/log4j.properties"/>
+
 			<classpath refid="smtp.test.classpath"/>
-			
-			<!--syspropertyset>
-			<propertyref prefix="java.naming" />
-			</syspropertyset-->
 			
 			<formatter type="plain"/>
 			
