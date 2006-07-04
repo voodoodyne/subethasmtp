@@ -22,8 +22,12 @@ public class MailCommand extends BaseCommand
 	@Override
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
-		Session session = context.getSession();		
-		if (session.getSender() != null)
+		Session session = context.getSession();
+		if (!session.hasSeenHelo())
+		{
+			context.sendResponse("503 Error: send HELO/EHLO first");
+		}
+		else if (session.getSender() != null)
 		{
 			context.sendResponse("503 Sender already specified.");
 		}
@@ -35,6 +39,7 @@ public class MailCommand extends BaseCommand
 				context.sendResponse(
 						"501 Syntax: MAIL FROM: <address>  Error in parameters: \"" +
 						getArgPredicate(commandString) + "\"");
+				return;
 			}
 			String emailAddress = extractEmailAddress(args, 5);
 			if (isValidEmailAddress(emailAddress))
