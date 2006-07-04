@@ -27,7 +27,7 @@ public class ReceiptCommand extends BaseCommand
 		Session session = context.getSession();
 		if (session.getSender() == null)
 		{
-			context.sendResponse("503 Need MAIL before RCPT.");
+			context.sendResponse("503 Error: need MAIL command");
 			return;
 		}
 		else if (session.getDeliveries().size() >= context.getServer().getMaxRecipients())
