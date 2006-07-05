@@ -31,6 +31,7 @@
 	<!-- Now the rest of the imports -->
 	<import file="smtp/build.xml"/>
 	<import file="wiser/build.xml"/>
+	<import file="rtest/build.xml"/>
 
 	<target name="usage"> 
 		<echo message="  Execute 'ant -projecthelp' for build file help."/> 
@@ -107,6 +108,5 @@
 			<include name="${build.dist.dir.basename}/**" />
 		</zip>
 	</target>
-
 </project>
 

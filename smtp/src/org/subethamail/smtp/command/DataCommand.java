@@ -58,8 +58,8 @@ public class DataCommand extends BaseCommand
 		}
 		else
 		{
-			// 5 megs
-			DeferredFileOutputStream dfos = new DeferredFileOutputStream(1024*1024*5);
+			DeferredFileOutputStream dfos = new DeferredFileOutputStream(
+					context.getServer().getDataDeferredSize());
 
 			try
 			{

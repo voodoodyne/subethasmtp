@@ -25,7 +25,7 @@ public abstract class CommandTestCase extends TestCase
 		server = new DummyServer();
 		server.setPort(1999);
 		server.setHostname("127.0.0.1");
-		// No need to start it yet!
+		// No need to start it!
 		//server.start();
 
 		commandHandler = server.getServer().getCommandHandler();

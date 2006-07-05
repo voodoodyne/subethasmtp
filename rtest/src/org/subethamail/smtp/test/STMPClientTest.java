@@ -20,11 +20,11 @@ import org.subethamail.wiser.Wiser;
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
-public class STMPClientTestCase extends TestCase
+public class STMPClientTest extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(STMPClientTestCase.class);
+	private static Log log = LogFactory.getLog(STMPClientTest.class);
 	
 	/** */
 	public static final int PORT = 2566;
@@ -34,7 +34,7 @@ public class STMPClientTestCase extends TestCase
 	protected Session session;
 	
 	/** */
-	public STMPClientTestCase(String name) { super(name); }
+	public STMPClientTest(String name) { super(name); }
 	
 	/** */
 	protected void setUp() throws Exception
@@ -48,6 +48,7 @@ public class STMPClientTestCase extends TestCase
 		
 		this.wiser = new Wiser();
 		this.wiser.setPort(PORT);
+		this.wiser.getServer().setDataDeferredSize(10);
 		this.wiser.start();
 	}
 	
@@ -76,10 +77,29 @@ public class STMPClientTestCase extends TestCase
 		
 		assertEquals(2, this.wiser.getMessages().size());
 	}
+
+	/** */
+	public void testLargeMessage() throws Exception
+	{
+		MimeMessage message = new MimeMessage(this.session);
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress("anyone@anywhere.com"));
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress("anyone2@anywhere.com"));
+		message.setFrom(new InternetAddress("someone@somewhereelse.com"));
+		message.setSubject("barf");
+		message.setText("bodyalksdjflkasldfkasjldfkjalskdfjlaskjdflaksdjflkjasdlfkjl");
+
+		Transport.send(message);
+		
+		assertEquals(2, this.wiser.getMessages().size());
+		
+		assertEquals("barf", this.wiser.getMessages().get(0).getMimeMessage().getSubject());
+		assertEquals("barf", this.wiser.getMessages().get(1).getMimeMessage().getSubject());
+	}
+	
 	
 	/** */
 	public static Test suite()
 	{
-		return new TestSuite(STMPClientTestCase.class);
+		return new TestSuite(STMPClientTest.class);
 	}
 }

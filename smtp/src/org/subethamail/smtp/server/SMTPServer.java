@@ -76,6 +76,12 @@ public class SMTPServer implements Runnable
 	private int maxRecipients = 1000;
 	
 	/**
+	 * 5 megs by default. The server will buffer incoming messages to disk
+	 * when they hit this limit in the DATA received.
+	 */
+	private int dataDeferredSize = 1024*1024*5;
+
+	/**
 	 * The main SMTPServer constructor.
 	 */
 	public SMTPServer(Collection<MessageListener> listeners) 
@@ -303,11 +309,27 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * A watchdog thread that makes sure that
-	 * connections don't go stale. It prevents
-	 * someone from opening up MAX_CONNECTIONS to 
-	 * the server and holding onto them for more than
-	 * 1 minute.
+	 * 5 megs by default. The server will buffer incoming messages to disk
+	 * when they hit this limit in the DATA received.
+	 */
+	public int getDataDeferredSize()
+	{
+		return this.dataDeferredSize;
+	}
+
+	/**
+	 * 5 megs by default. The server will buffer incoming messages to disk
+	 * when they hit this limit in the DATA received.
+	 */
+	public void setDataDeferredSize(int dataDeferredSize)
+	{
+		this.dataDeferredSize = dataDeferredSize;
+	}
+
+	/**
+	 * A watchdog thread that makes sure that connections don't go stale. It
+	 * prevents someone from opening up MAX_CONNECTIONS to the server and
+	 * holding onto them for more than 1 minute.
 	 */
 	private class Watchdog extends Thread
 	{

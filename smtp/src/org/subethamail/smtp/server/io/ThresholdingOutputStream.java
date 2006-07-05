@@ -25,6 +25,8 @@ abstract public class ThresholdingOutputStream extends OutputStream
 	/** Number of bytes written so far */
 	int written = 0;
 	
+	boolean thresholdReached = false;
+	
 	/**
 	 */
 	public ThresholdingOutputStream(OutputStream base, int thresholdBytes)
@@ -100,8 +102,11 @@ abstract public class ThresholdingOutputStream extends OutputStream
 	protected void checkThreshold(int count) throws IOException
 	{
 		int predicted = this.written + count; 
-		if (predicted > this.threshold)
+		if (!this.thresholdReached && predicted > this.threshold)
+		{
 			this.thresholdReached(this.written, predicted);
+			this.thresholdReached = true;
+		}
 	}
 	
 	/**
@@ -115,7 +120,7 @@ abstract public class ThresholdingOutputStream extends OutputStream
 	/**
 	 * Called when the threshold is about to be exceeded.  This isn't
 	 * exact; it's called whenever a write would occur that would
-	 * cross the amount.
+	 * cross the amount. Once it is called, it isn't called again.
 	 * 
 	 * @param current is the current number of bytes that have been written
 	 * @param predicted is the total number after the write completes
