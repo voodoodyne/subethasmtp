@@ -17,6 +17,11 @@ import org.apache.commons.logging.LogFactory;
 import org.subethamail.wiser.Wiser;
 
 /**
+ * This class serves as a test case for both Wiser (since it is used
+ * internally here) as well as harder to reach code within the SMTP
+ * server that tests a roundtrip message through the DATA portion
+ * of the SMTP spec.
+ * 
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
@@ -48,6 +53,9 @@ public class STMPClientTest extends TestCase
 		
 		this.wiser = new Wiser();
 		this.wiser.setPort(PORT);
+		
+		// make this really small so that we can promise
+		// to have to hit the disk.
 		this.wiser.getServer().setDataDeferredSize(10);
 		this.wiser.start();
 	}
