@@ -1,6 +1,6 @@
 /*
- * $Id$
- * $URL$
+ * $Id: DummyServer.java 29 2006-07-05 19:08:23Z lhoriman $
+ * $URL: http://subethasmtp.tigris.org/svn/subethasmtp/trunk/smtp/test/org/subethamail/smtp/test/DummyServer.java $
  */
 
 package org.subethamail.smtp.test;

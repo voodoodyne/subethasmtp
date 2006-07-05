@@ -45,6 +45,8 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 	
 	/** When the output stream is closed, this becomes true */
 	boolean closed;
+	
+	boolean thresholdReached = false;
 		
 	/**
 	 * @param transitionSize is the number of bytes at which to convert
@@ -69,14 +71,13 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 		this.outFileStream = new FileOutputStream(this.outFile);
 
 		((ByteArrayOutputStream)this.output).writeTo(this.outFileStream);
-		
 		this.output = new BufferedOutputStream(this.outFileStream);
 	}
 	
 	/**
 	 * Closes the output stream and creates an InputStream on the same data.
 	 * 
-	 * @return either a ByteArrayInputStream or buffered FileInputStream,
+	 * @return either a BetterByteArrayOutputStream or buffered FileInputStream,
 	 *  depending on what state we are in.  
 	 */
 	public InputStream getInputStream() throws IOException

@@ -12,12 +12,10 @@
 <project name="smtp" default="" basedir=".">
 	
 	<property name="build.smtp.classes.dir" location="${build.dir}/smtp-classes"/>
-	<property name="build.smtp.classes.test.dir" location="${build.dir}/smtp-test-classes"/>
 	<property name="build.smtp.jar.file" location="${build.dir}/subetha-smtp.jar"/>
 	
 	<dirname property="smtp.basedir" file="${ant.file.smtp}"/>
 	<property name="smtp.javasrc.dir" location="${smtp.basedir}/src"/>
-	<property name="smtp.javatest.dir" location="${smtp.basedir}/test"/>
 	<property name="smtp.meta.dir" location="${smtp.basedir}/meta"/>
 	<property name="smtp.lib.dir" location="${smtp.basedir}/lib"/>
 
@@ -30,12 +28,6 @@
 		<fileset dir="${smtp.lib.dir}">
 			<include name="**/*.jar"/>
 		</fileset>
-	</path>
-	
-	<path id="smtp.test.classpath">
-		<path refid="smtp.classpath"/>
-		<pathelement location="${build.smtp.classes.dir}"/>
-		<pathelement location="${build.smtp.classes.test.dir}"/>
 	</path>
 	
 	<target name="smtp-classes" depends="init">
@@ -58,33 +50,6 @@
 				<attribute name="Implementation-Version" value="${TODAY}" />
 			</manifest>
 		</jar>
-	</target>
-	
-	<target name="smtp-test-compile" depends="smtp-classes">
-		<mkdir dir="${build.smtp.classes.test.dir}"/>
-		
-		<javac srcdir="${smtp.javatest.dir}"
-			destdir="${build.smtp.classes.test.dir}" includeAntRuntime="false"
-			debug="${build.debug}" deprecation="${build.deprecation}">
-			
-			<classpath refid="smtp.test.classpath"/>
-		</javac>
-	</target>
-	
-	<target name="junit" depends="smtp-test-compile">
-		<junit printsummary="yes" showoutput="yes" fork="yes">
-			<jvmarg value="-Dlog4j.configuration=file:${smtp.javatest.dir}/log4j.properties"/>
-
-			<classpath refid="smtp.test.classpath"/>
-			
-			<formatter type="plain"/>
-			
-			<batchtest todir="${build.dir}">
-				<fileset dir="${build.smtp.classes.test.dir}">
-					<include name="**/*Test.class"/>
-				</fileset>
-			</batchtest>
-		</junit>
 	</target>
 </project>
 

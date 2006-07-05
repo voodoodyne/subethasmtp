@@ -36,8 +36,10 @@ public class Wiser implements MessageListener
 	
 	/** */
 	SMTPServer server;
-	List<WiserMessage> messages = Collections.synchronizedList(new ArrayList<WiserMessage>());
 	
+	/** */
+	List<WiserMessage> messages = Collections.synchronizedList(new ArrayList<WiserMessage>());
+
 	/**
 	 * Create a new SMTP server with this class as the listener.
 	 * The default port is set to 25. Call setPort()/setHostname() before
@@ -126,5 +128,10 @@ public class Wiser implements MessageListener
 	public List<WiserMessage> getMessages()
 	{
 		return this.messages;
+	}
+
+	public SMTPServer getServer()
+	{
+		return this.server;
 	}
 }
