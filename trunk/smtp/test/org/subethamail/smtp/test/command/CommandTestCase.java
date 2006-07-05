@@ -1,11 +1,11 @@
-package org.subethamail.smtp.command;
+package org.subethamail.smtp.test.command;
 
 import junit.framework.TestCase;
 
 import org.subethamail.smtp.server.CommandHandler;
-import org.subethamail.smtp.server.DummyContext;
-import org.subethamail.smtp.server.DummyServer;
 import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.test.DummyContext;
+import org.subethamail.smtp.test.DummyServer;
 
 /**
  * @author Jon Stevens
