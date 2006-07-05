@@ -1,4 +1,4 @@
-package org.subethamail.smtp.command;
+package org.subethamail.smtp.test.command;
 
 /**
  * @author Jon Stevens

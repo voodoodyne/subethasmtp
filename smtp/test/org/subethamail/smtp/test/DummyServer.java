@@ -3,7 +3,7 @@
  * $URL$
  */
 
-package org.subethamail.smtp.server;
+package org.subethamail.smtp.test;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -19,6 +19,7 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.TooMuchDataException;
+import org.subethamail.smtp.server.SMTPServer;
 
 /**
  * DummyServer is a smart mail testing application.

@@ -1,7 +1,12 @@
-package org.subethamail.smtp.server;
+package org.subethamail.smtp.test;
 
 import java.io.IOException;
 import java.net.Socket;
+
+import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.ConnectionHandler;
+import org.subethamail.smtp.server.SMTPServer;
+import org.subethamail.smtp.server.Session;
 
 public class DummyContext implements ConnectionContext
 {
