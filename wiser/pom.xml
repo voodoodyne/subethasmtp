@@ -1,0 +1,39 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.subethamail</groupId>
+    <artifactId>top</artifactId>
+    <version>1.0.1</version>
+  </parent>
+
+  <groupId>org.subethamail</groupId>
+  <artifactId>wiser</artifactId>
+
+  <name>subethasmtp-wiser</name>
+  <description>Wiser is a smart mail testing application.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.subethamail</groupId>
+      <artifactId>smtpd</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${name}-${version}</finalName>
+  	<sourceDirectory>src</sourceDirectory>
+
+	<plugins>
+	  <!-- there are no direct tests for wiser as 
+  	     they live in the smtp src tree -->
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-surefire-plugin</artifactId>
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
+</project>
