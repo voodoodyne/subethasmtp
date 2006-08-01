@@ -49,4 +49,18 @@
       </plugin>
     </plugins>
   </build>
+
+  <developers>
+    <developer>
+      <id>jon</id>
+      <name>Jon Scott Stevens</name>
+      <email>jon@tigris.org</email>
+    </developer>
+    <developer>
+      <id>lhoriman</id>
+      <name>Jeff Schnitzer</name>
+      <email>lhoriman@tigris.org</email>
+    </developer>
+  </developers>
+
 </project>
