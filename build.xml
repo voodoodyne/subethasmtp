@@ -48,7 +48,7 @@
 		<input addproperty="build.version" message="Version number?" />
 	</target>
 	
-	<target name="formal-build" depends="clean, input-version, smtp-jar">
+	<target name="formal-build" depends="clean, input-version, smtp-jar, wiser-jar">
 	</target>
 	
 	<target name="formal-deploy" depends="formal-build, deploy">
@@ -71,6 +71,7 @@
 			version="true"
 		>
 			<fileset dir="${smtp.javasrc.dir}"/>
+			<fileset dir="${wiser.javasrc.dir}"/>
 		</javadoc>
 	</target>
 	
@@ -90,6 +91,7 @@
 			</fileset>
 			
 			<fileset file="${build.smtp.jar.file}"/>
+			<fileset file="${build.wiser.jar.file}"/>
 			
 			<fileset dir=".">
 				<include name="LICENSE.txt" />
