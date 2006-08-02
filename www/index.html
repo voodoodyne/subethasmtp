@@ -180,7 +180,9 @@ smtpServer.start();</pre>
 		<li>
 			If more than one listener accept()s a message, the
 			message data is first buffered.  The buffer will be
-			kept in RAM until the data reaches a certain size,
+			kept in RAM until the data reaches a certain size
+			(the default is 5 megs and is configurable via 
+			SMTPServer.setDataDeferredSize()),
 			then the buffer is moved to a temporary disk file.
 			Each listener will be delivered a complete copy of
 			the buffered message.
@@ -200,8 +202,11 @@ smtpServer.start();</pre>
 	<p>
 		For now, we have just focused on implementing just the minimal 
 		required aspects of <a href="http://rfc.net/rfc2821.html#s4.5.1" target="_new">RFC 2821</a>.
-		However we do not directly support the 'postmaster' requirement since we 
-		do not deliver mail locally. That's your job as the user of this library. =)
+		We also return SMTP status responses that mimic what Postfix returns.
+		However we do not directly support the 'postmaster' requirement of the 
+		RFC since we do not actually deliver mail locally. That's your job as 
+		the user of this library by implementing the MessageListener 
+		interface. =)
 	</p>
 
 </div>
