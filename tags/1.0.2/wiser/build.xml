@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+       $Id$
+       $URL$
+
+       Build file for the Wiser server.
+
+       Not an entry point; imported by the top-level buildfile.
+-->
+
+<project name="wiser" default="" basedir=".">
+	
+	<property name="build.wiser.classes.dir" location="${build.dir}/wiser-classes"/>
+	<property name="build.wiser.jar.file" location="${build.dir}/subetha-wiser.jar"/>
+	
+	<dirname property="wiser.basedir" file="${ant.file.wiser}"/>
+	<property name="wiser.javasrc.dir" location="${wiser.basedir}/src"/>
+	
+	<!-- Hack to make Eclipse stop complaining -->	
+	<import file="../build.xml" />
+
+	<path id="wiser.classpath">
+		<path refid="smtp.classpath"/>
+		<pathelement location="${build.smtp.jar.file}"/>
+	</path>
+
+	<target name="wiser-classes" depends="init, smtp-jar">
+		<mkdir dir="${build.wiser.classes.dir}"/>
+		
+		<javac srcdir="${wiser.javasrc.dir}" destdir="${build.wiser.classes.dir}"
+			includeAntRuntime="false" debug="${build.debug}"
+			deprecation="${build.deprecation}">
+			
+			<classpath refid="wiser.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="wiser-jar" depends="wiser-classes">
+		<jar jarfile="${build.wiser.jar.file}">
+			<fileset dir="${build.wiser.classes.dir}"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+			</manifest>
+		</jar>
+	</target>
+</project>

@@ -1,0 +1,38 @@
+<project>
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.subethamail</groupId>
+    <artifactId>parent</artifactId>
+    <version>1.0.1</version>
+  </parent>
+
+  <groupId>org.subethamail</groupId>
+  <artifactId>rtest</artifactId>
+
+  <name>subethasmtp-rtest</name>
+  <description>Testing framework for the smtpd.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.subethamail</groupId>
+      <artifactId>smtpd</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.subethamail</groupId>
+      <artifactId>wiser</artifactId>
+      <version>1.0.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+    <finalName>${name}-${version}</finalName>
+  	<sourceDirectory>src</sourceDirectory>
+  	<testSourceDirectory>src</testSourceDirectory>
+  </build>
+</project>

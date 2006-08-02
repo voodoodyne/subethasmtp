@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="smtp/src"/>
+	<classpathentry kind="src" path="wiser/src"/>
+	<classpathentry kind="src" path="rtest/src"/>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry exported="true" kind="lib" path="smtp/lib/activation.jar"/>
+	<classpathentry exported="true" kind="lib" path="smtp/lib/mail.jar"/>
+	<classpathentry exported="true" kind="lib" path="smtp/lib/commons-logging.jar"/>
+	<classpathentry kind="lib" path="rtest/lib/junit.jar"/>
+	<classpathentry kind="output" path="_eclipse"/>
+</classpath>
