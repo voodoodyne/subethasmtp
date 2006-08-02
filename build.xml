@@ -94,6 +94,7 @@
 			<fileset file="${build.wiser.jar.file}"/>
 			
 			<fileset dir=".">
+				<include name="README.html" />
 				<include name="LICENSE.txt" />
 				<include name="www/**" />
 			</fileset>
