@@ -25,11 +25,11 @@ import org.subethamail.wiser.Wiser;
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
-public class STMPClientTest extends TestCase
+public class SMTPClientTest extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(STMPClientTest.class);
+	private static Log log = LogFactory.getLog(SMTPClientTest.class);
 	
 	/** */
 	public static final int PORT = 2566;
@@ -39,7 +39,7 @@ public class STMPClientTest extends TestCase
 	protected Session session;
 	
 	/** */
-	public STMPClientTest(String name) { super(name); }
+	public SMTPClientTest(String name) { super(name); }
 	
 	/** */
 	protected void setUp() throws Exception
@@ -108,6 +108,6 @@ public class STMPClientTest extends TestCase
 	/** */
 	public static Test suite()
 	{
-		return new TestSuite(STMPClientTest.class);
+		return new TestSuite(SMTPClientTest.class);
 	}
 }
