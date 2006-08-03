@@ -3,28 +3,94 @@
   <parent>
     <groupId>org.subethamail</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
   </parent>
 
   <groupId>org.subethamail</groupId>
   <artifactId>smtpd</artifactId>
 
-  <name>subethasmtp-smtpd</name>
+  <name>SubEtha SMTP</name>
   <description>A multithreaded standalone SMTP mail server implementation.</description>
 
-  <build>
-    <finalName>${name}-${version}</finalName>
-  	<sourceDirectory>src</sourceDirectory>
+	<dependencies>
+		<dependency>
+			<groupId>commons-logging</groupId>
+			<artifactId>commons-logging</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+		</dependency>
+		<dependency>
+			<groupId>junit</groupId>
+			<artifactId>junit</artifactId>
+			<scope>test</scope>
+		</dependency>
+	</dependencies>
 
-	<plugins>
-	  <!-- the rtest has it's own pom execution -->
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <configuration>
-          <skip>true</skip>
-        </configuration>
-      </plugin>
-    </plugins>
-  </build>
+	<build>
+		<finalName>subethasmtp-smtpd</finalName>
+		<sourceDirectory>src</sourceDirectory>
+		
+		<plugins>
+			<!-- the rtest has it's own pom execution -->
+			<plugin>
+				<groupId>org.apache.maven.plugins</groupId>
+				<artifactId>maven-surefire-plugin</artifactId>
+				<configuration>
+					<skip>true</skip>
+				</configuration>
+			</plugin>
+
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>retrotranslator-maven-plugin</artifactId>
+				<executions>
+					<execution>
+						<phase>package</phase>
+						<goals>
+							<goal>translate</goal>
+						</goals>
+						<configuration>
+							<verify>false</verify>
+							<failonwarning>true</failonwarning>
+							<lazy>true</lazy>
+							<verbose>false</verbose>
+							<destjar>${pom.basedir}/target/${pom.artifactId}-${pom.version}-java14.jar</destjar>
+							<includes>
+								<include>
+									<directory>${pom.basedir}/target</directory>
+									<pattern>${pom.artifactId}-${pom.version}.jar</pattern>
+								</include>
+							</includes>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+			<plugin>
+				<groupId>org.codehaus.mojo</groupId>
+				<artifactId>build-helper-maven-plugin</artifactId>
+				<version>1.0</version>
+				<executions>
+					<execution>
+						<id>attach-artifacts</id>
+						<phase>package</phase>
+						<goals>
+							<goal>attach-artifact</goal>
+						</goals>
+						<configuration>
+							<artifacts>
+								<artifact>
+									<file>${pom.basedir}/target/${pom.artifactId}-${pom.version}-java14.jar</file>
+									<type>jar</type>
+									<classifier>java14</classifier>
+								</artifact>
+							</artifacts>
+						</configuration>
+					</execution>
+				</executions>
+			</plugin>
+
+		</plugins>
+	</build>
 </project>

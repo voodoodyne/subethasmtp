@@ -3,7 +3,7 @@
   <parent>
     <groupId>org.subethamail</groupId>
     <artifactId>parent</artifactId>
-    <version>1.0.1</version>
+    <version>1.0.2</version>
   </parent>
 
   <groupId>org.subethamail</groupId>
@@ -16,12 +16,12 @@
     <dependency>
       <groupId>org.subethamail</groupId>
       <artifactId>smtpd</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>org.subethamail</groupId>
       <artifactId>wiser</artifactId>
-      <version>1.0.1</version>
+      <version>1.0.2</version>
     </dependency>
     <dependency>
       <groupId>junit</groupId>
