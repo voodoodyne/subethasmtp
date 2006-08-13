@@ -2,6 +2,7 @@ package org.subethamail.smtp.server;
 
 import java.io.IOException;
 import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 import java.util.Collection;
@@ -45,7 +46,8 @@ public class SMTPServer implements Runnable
 	private InetAddress bindAddress = null;	// default to all interfaces
 	private int port = 25;	// default to 25
 	private String hostName;	// defaults to a lookup of the local address
-	
+	private int backlog = 50;
+
 	private Collection<MessageListener> listeners;
 
 	private CommandHandler commandHandler;
@@ -138,20 +140,52 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * Call this method to get things rolling after instantiating
-	 * the SMTPServer.
+	 * The backlog is the Socket backlog.
+	 * 
+	 * The backlog argument must be a positive value greater than 0. 
+	 * If the value passed if equal or less than 0, then the default value will be assumed.
+	 * 
+	 * @return the backlog
+	 */
+	public int getBacklog()
+	{
+		return this.backlog;
+	}
+
+	/**
+	 * The backlog is the Socket backlog.
+	 * 
+	 * The backlog argument must be a positive value greater than 0. 
+	 * If the value passed if equal or less than 0, then the default value will be assumed. 
+	 */
+	public void setBacklog(int backlog)
+	{
+		this.backlog = backlog;
+	}
+
+	/**
+	 * Call this method to get things rolling after instantiating the
+	 * SMTPServer.
 	 */
 	public void start()
 	{
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
 		
+		this.go = true;
+		
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
-		//this.serverThread.setDaemon(true);	// Should this be set?
+		// daemon threads do not keep the program from quitting; 
+		// user threads keep the program from quitting.
+		// We want the serverThread to keep the program from quitting
+		// this.serverThread.setDaemon(true);
+		
 		this.serverThread.start();
 
 		this.watchdog = new Watchdog(this);
+		// We do not want the watchdog to keep the program from quitting
 		this.watchdog.setDaemon(true);
+
 		this.watchdog.start();
 	}
 
@@ -160,24 +194,57 @@ public class SMTPServer implements Runnable
 	 */
 	public void stop()
 	{
+		// don't accept any more connections
 		this.go = false;
-		this.serverThread = null;
 		
+		// kill the listening thread
+		this.serverThread = null;
+
+		// stop the watchdog
 		if (this.watchdog != null)
 		{
 			this.watchdog.quit();
 			this.watchdog = null;
 		}
 
-		// force a socket close for good measure
+		// if the serverSocket is not null, force a socket close for good measure
 		try
 		{
-			if (this.serverSocket != null && this.serverSocket.isBound() && !this.serverSocket.isClosed())
+			if (this.serverSocket != null && !this.serverSocket.isClosed())
 				this.serverSocket.close();
 		}
 		catch (IOException e)
 		{
 		}
+		this.serverSocket = null;
+	}
+
+	/**
+	 * Override this method if you want to create your own server sockets.
+	 * You must return a bound ServerSocket instance
+	 * 
+	 * @throws IOException
+	 */
+	protected ServerSocket createServerSocket()
+		throws IOException
+	{
+		InetSocketAddress isa;
+
+		if (this.bindAddress == null)
+		{
+			isa = new InetSocketAddress(this.port);
+		}
+		else
+		{
+			isa = new InetSocketAddress(this.bindAddress, this.port);
+		}
+
+		ServerSocket serverSocket = new ServerSocket();			
+		// http://java.sun.com/j2se/1.5.0/docs/api/java/net/ServerSocket.html#setReuseAddress(boolean)
+		serverSocket.setReuseAddress(true);
+		serverSocket.bind(isa, this.backlog);
+
+		return serverSocket;
 	}
 
 	/**
@@ -187,22 +254,20 @@ public class SMTPServer implements Runnable
 	{
 		try
 		{
-			if (this.bindAddress == null)
-				this.serverSocket = new ServerSocket(this.port, 50);
-			else
-				this.serverSocket = new ServerSocket(this.port, 50, this.bindAddress);
+			this.serverSocket = createServerSocket();
+			if (this.serverSocket == null)
+				throw new Exception("ServerSocket cannot be null!");			
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
 
-		this.go = true;
 		while (this.go)
 		{
 			try
 			{
-				ConnectionHandler connectionHandler = new ConnectionHandler(this, serverSocket.accept());
+				ConnectionHandler connectionHandler = new ConnectionHandler(this, this.serverSocket.accept());
 				connectionHandler.start();
 			}
 			catch (IOException ioe)
@@ -224,7 +289,7 @@ public class SMTPServer implements Runnable
 
 		try
 		{
-			if (this.serverSocket != null && this.serverSocket.isBound() && !this.serverSocket.isClosed())
+			if (this.serverSocket != null && !this.serverSocket.isClosed())
 				this.serverSocket.close();
 			log.info("SMTP Server socket shut down.");
 		}
@@ -232,6 +297,7 @@ public class SMTPServer implements Runnable
 		{
 			log.error("Failed to close server socket.", e);
 		}
+		this.serverSocket = null;
 	}
 
 	public String getName()
