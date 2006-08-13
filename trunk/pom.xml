@@ -2,10 +2,17 @@
 	<modelVersion>4.0.0</modelVersion>
 	<groupId>org.subethamail</groupId>
 	<artifactId>parent</artifactId>
-	<version>1.0.2</version>
+	<version>1.0.3-SNAPSHOT</version>
 	<packaging>pom</packaging>
 
 	<name>SubEtha SMTP Parent</name>
+
+	<licenses>
+		<license>
+			<name>LGPL</name>
+			<url>http://subethasmtp.tigris.org/source/browse/*checkout*/subethasmtp/trunk/LICENSE.txt</url>
+		</license>
+	</licenses>
 
 	<modules>
 		<module>smtp</module>
@@ -90,5 +97,11 @@
 			</releases>
 		</pluginRepository>
 	</pluginRepositories>
+
+	<scm>
+		<connection>scm:svn:http://subethasmtp.tigris.org/svn/subethasmtp/trunk</connection>
+		<developerConnection>scm:svn:http://subethasmtp.tigris.org/svn/subethasmtp/trunk</developerConnection>
+		<url>http://subethasmtp.tigris.org/source/browse/subethasmtp/trunk/</url>
+	</scm>
 
 </project>
