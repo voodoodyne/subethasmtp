@@ -80,6 +80,7 @@ public class DataCommand extends BaseCommand
 			}
 		}
 
+		session.reset(true); // reset session, but don't require new HELO/EHLO
 		context.sendResponse("250 Ok");
 	}
 }
