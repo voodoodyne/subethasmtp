@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
@@ -17,6 +18,7 @@ import org.subethamail.smtp.command.QuitCommand;
 import org.subethamail.smtp.command.ReceiptCommand;
 import org.subethamail.smtp.command.ResetCommand;
 import org.subethamail.smtp.command.VerifyCommand;
+import org.subethamail.smtp.command.StartTLSCommand;
 
 /**
  * This class manages execution of a SMTP command.
@@ -39,6 +41,7 @@ public class CommandHandler
 		addCommand(new QuitCommand());
 		addCommand(new ReceiptCommand());
 		addCommand(new ResetCommand());
+		addCommand(new StartTLSCommand());
 		addCommand(new VerifyCommand());
 	}
 
@@ -47,6 +50,11 @@ public class CommandHandler
 		if (log.isDebugEnabled())
 			log.debug("Added command: " + command.getName());
 		this.commandMap.put(command.getName(), command);
+	}
+
+	public boolean containsCommand(String command)
+	{
+		return this.commandMap.containsKey(command);
 	}
 
 	public void handleCommand(ConnectionContext context, String commandString)
@@ -74,6 +82,15 @@ public class CommandHandler
 		}
 		if (command == null)
 		{
+			// some commands have a verb longer than 4 letters
+			String verb = toVerb(commandString);
+			if (verb != null)
+			{
+				command = this.commandMap.get(verb);
+			}
+		}
+		if (command == null)
+		{
 			throw new UnknownCommandException("Error: command not implemented");
 		}
 		return command;
@@ -85,5 +102,14 @@ public class CommandHandler
 			throw new InvalidCommandNameException("Error: bad syntax");
 
 		return string.substring(0, 4).toUpperCase();
+	}
+
+	private String toVerb(String string) throws InvalidCommandNameException
+	{
+		StringTokenizer stringTokenizer = new StringTokenizer(string);
+		if (!stringTokenizer.hasMoreTokens())
+			throw new InvalidCommandNameException("Error: bad syntax");
+
+		return stringTokenizer.nextToken().toUpperCase();
 	}
 }

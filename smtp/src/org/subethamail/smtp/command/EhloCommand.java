@@ -38,8 +38,13 @@ public class EhloCommand extends BaseCommand
 		if (!session.hasSeenHelo())
 		{
 			session.setHasSeenHelo(true);
-			context.sendResponse("250-" + context.getServer().getHostName() + 
-					"\r\n" + "250 8BITMIME");
+			String response = "250-" + context.getServer().getHostName() + "\r\n" + 
+								"250-8BITMIME";
+			if (context.getServer().getCommandHandler().containsCommand("STARTTLS"))
+			{
+				response = response + "\r\n" + "250 STARTTLS";
+			}
+			context.sendResponse(response);
 		}
 		else
 		{

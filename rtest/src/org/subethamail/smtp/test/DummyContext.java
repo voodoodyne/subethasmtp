@@ -22,7 +22,6 @@ public class DummyContext implements ConnectionContext
 
 	public ConnectionHandler getConnection()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -38,7 +37,6 @@ public class DummyContext implements ConnectionContext
 
 	public Socket getSocket()
 	{
-		// TODO Auto-generated method stub
 		return null;
 	}
 
@@ -46,7 +44,7 @@ public class DummyContext implements ConnectionContext
 	{
 		this.response = response;
 	}
-	
+
 	public String getResponse()
 	{
 		String tmp = new String(this.response);
