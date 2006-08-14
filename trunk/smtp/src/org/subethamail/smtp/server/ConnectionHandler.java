@@ -41,16 +41,12 @@ public class ConnectionHandler extends Thread implements ConnectionContext
 	{
 		super(server.getConnectionGroup(), ConnectionHandler.class.getName());
 		this.server = server;
-		this.socket = socket;
+
+		setSocket(socket);
 
 		this.startTime = System.currentTimeMillis();
 		this.lastActiveTime = this.startTime;
 		
-		this.input = new LastActiveInputStream(socket.getInputStream(), this);
-		this.output = socket.getOutputStream();
-		
-		this.reader = new CRLFTerminatedReader(this.input);
-		this.writer = new PrintWriter(this.output);
 	}
 	
 	public Session getSession()
@@ -102,7 +98,13 @@ public class ConnectionHandler extends Thread implements ConnectionContext
 			{
 				try
 				{
-					this.server.getCommandHandler().handleCommand(this, this.reader.readLine());
+					String line = this.reader.readLine();
+					if (line == null)
+					{
+						log.debug("no more lines from client");
+						break;
+					}
+					this.server.getCommandHandler().handleCommand(this, line);
 					lastActiveTime = System.currentTimeMillis();
 				}
 				catch (CRLFTerminatedReader.TerminationException te)
@@ -168,6 +170,15 @@ public class ConnectionHandler extends Thread implements ConnectionContext
 		{
 			log.debug(e);
 		}
+	}
+
+	public void setSocket(Socket socket) throws IOException
+	{
+		this.socket = socket;
+		this.input = new LastActiveInputStream(this.socket.getInputStream(), this);
+		this.output = this.socket.getOutputStream();
+		this.reader = new CRLFTerminatedReader(this.input);
+		this.writer = new PrintWriter(this.output);
 	}
 
 	public Socket getSocket()
