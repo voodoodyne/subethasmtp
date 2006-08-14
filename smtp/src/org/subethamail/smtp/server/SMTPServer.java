@@ -217,6 +217,20 @@ public class SMTPServer implements Runnable
 		{
 		}
 		this.serverSocket = null;
+		
+		// Sleep for a bit due to what seems like a JVM bug
+		// on my OSX box. This prevents a useless NPE exception
+		// in the StartStopTest when the ConnectionHandler 
+		// below is created in the run() method. Sleeping seems
+		// to give things a proper chance of cleaning up.
+		try
+		{
+			Thread.sleep(600);
+		}
+		catch (InterruptedException e)
+		{
+			// Ignore
+		}
 	}
 
 	/**
