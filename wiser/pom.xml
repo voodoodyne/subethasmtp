@@ -1,13 +1,14 @@
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
 	<modelVersion>4.0.0</modelVersion>
 	<parent>
 		<groupId>org.subethamail</groupId>
-		<artifactId>parent</artifactId>
+		<artifactId>subethasmtp-parent</artifactId>
 		<version>1.0.3-SNAPSHOT</version>
 	</parent>
 	
 	<groupId>org.subethamail</groupId>
-	<artifactId>wiser</artifactId>
+	<artifactId>subethasmtp-wiser</artifactId>
 	
 	<name>SubEtha SMTP Wiser</name>
 	<description>Wiser is a smart mail testing application.</description>
@@ -15,7 +16,8 @@
 	<dependencies>
 		<dependency>
 			<groupId>org.subethamail</groupId>
-			<artifactId>subetha-smtp</artifactId>
+			<artifactId>subethasmtp-smtp</artifactId>
+			<version>1.0.3-SNAPSHOT</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
@@ -33,7 +35,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>subethasmtp-wiser</finalName>
 		<sourceDirectory>src</sourceDirectory>
 	
 		<plugins>
