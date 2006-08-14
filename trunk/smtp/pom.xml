@@ -1,13 +1,15 @@
-<project>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
   <modelVersion>4.0.0</modelVersion>
   <parent>
     <groupId>org.subethamail</groupId>
-    <artifactId>parent</artifactId>
+    <artifactId>subethasmtp-parent</artifactId>
     <version>1.0.3-SNAPSHOT</version>
   </parent>
 
   <groupId>org.subethamail</groupId>
-  <artifactId>smtpd</artifactId>
+  <artifactId>subethasmtp-smtp</artifactId>
+  <version>1.0.3-SNAPSHOT</version>
 
   <name>SubEtha SMTP</name>
   <description>A multithreaded standalone SMTP mail server implementation.</description>
@@ -29,7 +31,6 @@
 	</dependencies>
 
 	<build>
-		<finalName>subethasmtp-smtpd</finalName>
 		<sourceDirectory>src</sourceDirectory>
 		
 		<plugins>
