@@ -101,10 +101,15 @@ public class Session
 
 	public void reset()
 	{
+		reset(false);
+	}
+
+	public void reset(boolean hasSeenHelo)
+	{
 		this.sender = null;
 		this.dataMode = false;
 		this.active = true;
-		this.hasSeenHelo = false;
+		this.hasSeenHelo = hasSeenHelo;
 		this.deliveries.clear();
 	}
 }

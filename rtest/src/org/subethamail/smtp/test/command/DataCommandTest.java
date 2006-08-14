@@ -31,4 +31,28 @@ public class DataCommandTest extends CommandTestCase
 			assertEquals("354 End data with <CR><LF>.<CR><LF>", getContext().getResponse());
 		}
 	}
+	
+	public void testResetAfterData() throws Exception
+	{
+		doHelo();
+		doMail();
+		doRcpt();
+
+		// Need to put this in a try/catch cause the DataCommand
+		// will NPE when it tries to get an incomming connection
+		// that doesn't exist right now with this test harness.
+		try
+		{
+			commandHandler.handleCommand(getContext(), "DATA");
+		}
+		catch(Exception e)
+		{
+			assertEquals("354 End data with <CR><LF>.<CR><LF>", getContext().getResponse());
+		}
+		
+		commandHandler.handleCommand(getContext(), "RSET");
+
+		doHelo();
+		assertEquals("250 127.0.0.1", getContext().getResponse());
+	}
 }
