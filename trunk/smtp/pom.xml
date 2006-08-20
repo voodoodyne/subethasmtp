@@ -4,12 +4,12 @@
   <parent>
     <groupId>org.subethamail</groupId>
     <artifactId>subethasmtp-parent</artifactId>
-    <version>1.0.3-SNAPSHOT</version>
+    <version>1.0.3</version>
   </parent>
 
   <groupId>org.subethamail</groupId>
   <artifactId>subethasmtp-smtp</artifactId>
-  <version>1.0.3-SNAPSHOT</version>
+  <version>1.0.3</version>
 
   <name>SubEtha SMTP</name>
   <description>A multithreaded standalone SMTP mail server implementation.</description>
