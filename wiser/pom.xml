@@ -4,7 +4,7 @@
 	<parent>
 		<groupId>org.subethamail</groupId>
 		<artifactId>subethasmtp-parent</artifactId>
-		<version>1.0.3-SNAPSHOT</version>
+		<version>1.0.3</version>
 	</parent>
 	
 	<groupId>org.subethamail</groupId>
@@ -17,7 +17,7 @@
 		<dependency>
 			<groupId>org.subethamail</groupId>
 			<artifactId>subethasmtp-smtp</artifactId>
-			<version>1.0.3-SNAPSHOT</version>
+			<version>1.0.3</version>
 		</dependency>
 		<dependency>
 			<groupId>commons-logging</groupId>
