@@ -12,6 +12,18 @@
 		
 		<h2>Changes</h2>
 		<dl>
+			<dt>1.0.3 </dt>
+			<dd>
+				<ul>
+					<li>Fixed issue with sockets not properly being closed.</li>
+					<li>Made it possible to override the way that sockets
+						are created.</li>
+					<li>Fixed a bug when MAIL FROM is executed after RSET is 
+						called after DATA.</li>
+					<li>Added support for TLS. Might have bugs.</li>
+					<li>More maven POM cleanup.</li>
+				</ul>
+			</dd>
 			<dt>1.0.2 - Aug 2, 2006</dt>
 			<dd>
 				<ul>
