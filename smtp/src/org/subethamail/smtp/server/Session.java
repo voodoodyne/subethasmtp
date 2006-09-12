@@ -99,6 +99,10 @@ public class Session
 		this.dataMode = dataMode;
 	}
 
+	/**
+	 * Executes a full reset() of the session
+	 * which requires a new HELO command to be sent
+	 */
 	public void reset()
 	{
 		reset(false);

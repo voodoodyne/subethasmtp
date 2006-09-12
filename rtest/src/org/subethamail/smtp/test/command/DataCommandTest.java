@@ -51,6 +51,7 @@ public class DataCommandTest extends CommandTestCase
 		}
 		
 		commandHandler.handleCommand(getContext(), "RSET");
+		assertEquals("250 Ok", getContext().getResponse());
 
 		doHelo();
 		assertEquals("250 127.0.0.1", getContext().getResponse());
