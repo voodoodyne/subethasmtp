@@ -17,11 +17,27 @@ public class HelloCommandTest extends CommandTestCase
 		commandHandler.handleCommand(getContext(), "HELO foo.com");
 		assertEquals("250 127.0.0.1", getContext().getResponse());
 
-		// Duplicate helo
+		// Correct!
 		commandHandler.handleCommand(getContext(), "HELO foo.com");
-		assertEquals("503 foo.com Duplicate HELO", getContext().getResponse());
+		assertEquals("250 127.0.0.1", getContext().getResponse());
 	}
 
+	public void testHelloReset() throws Exception
+	{
+		commandHandler.handleCommand(getContext(), "HELO foo.com");
+		assertEquals("250 127.0.0.1", getContext().getResponse());
+
+		commandHandler.handleCommand(getContext(), "MAIL FROM: test@foo.com");
+		assertEquals("250 Ok", getContext().getResponse());
+
+		commandHandler.handleCommand(getContext(), "RSET");
+		assertEquals("250 Ok", getContext().getResponse());
+
+		commandHandler.handleCommand(getContext(), "MAIL FROM: test@foo.com");
+		assertEquals("250 Ok", getContext().getResponse());
+	}
+	
+	
 	@Override
 	protected void tearDown() throws Exception
 	{

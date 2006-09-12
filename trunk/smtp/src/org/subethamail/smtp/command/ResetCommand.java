@@ -21,7 +21,8 @@ public class ResetCommand extends BaseCommand
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
 		Session session = context.getSession();
-		session.reset();
+		session.reset(session.hasSeenHelo());
+
 		context.sendResponse("250 Ok");
 	}
 }

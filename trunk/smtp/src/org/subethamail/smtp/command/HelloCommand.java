@@ -28,15 +28,7 @@ public class HelloCommand extends BaseCommand
 		}
 		
 		Session session = context.getSession();
-		if (!session.hasSeenHelo())
-		{
-			session.setHasSeenHelo(true);
-			context.sendResponse("250 " + context.getServer().getHostName());
-		}
-		else
-		{
-			String remoteHost = args[1];
-			context.sendResponse("503 " + remoteHost + " Duplicate HELO");
-		}
+		session.setHasSeenHelo(true);
+		context.sendResponse("250 " + context.getServer().getHostName());
 	}
 }
