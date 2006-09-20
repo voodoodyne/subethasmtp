@@ -5,9 +5,11 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
+import java.net.SocketAddress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 import org.subethamail.smtp.server.io.LastActiveInputStream;
 
@@ -18,7 +20,7 @@ import org.subethamail.smtp.server.io.LastActiveInputStream;
  * 
  * @author Jon Stevens
  */
-public class ConnectionHandler extends Thread implements ConnectionContext
+public class ConnectionHandler extends Thread implements ConnectionContext, MessageContext
 {
 	private static Log log = LogFactory.getLog(ConnectionHandler.class);
 
@@ -81,7 +83,7 @@ public class ConnectionHandler extends Thread implements ConnectionContext
 		if (log.isDebugEnabled())
 			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
 
-		this.session = new Session();
+		this.session = new Session(this.server.getMessageHandlerFactory().create(this));
 		try
 		{
 			if (this.server.hasTooManyConnections())
@@ -221,5 +223,21 @@ public class ConnectionHandler extends Thread implements ConnectionContext
 	public void refreshLastActiveTime()
 	{
 		this.lastActiveTime = System.currentTimeMillis();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
+	 */
+	public SocketAddress getRemoteAddress()
+	{
+		return this.socket.getRemoteSocketAddress();
+	}
+
+	/* (non-Javadoc)
+	 * @see org.subethamail.smtp.MessageContext#getSMTPServer()
+	 */
+	public SMTPServer getSMTPServer()
+	{
+		return this.server;
 	}
 }
