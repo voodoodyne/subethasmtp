@@ -9,6 +9,7 @@ import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.Version;
 
@@ -26,13 +27,15 @@ import org.subethamail.smtp.Version;
  * This class also manages a watchdog thread which will timeout 
  * stale connections.
  *
- * In order to instantiate a new server, one must pass in a Set of
- * MessageListeners. These listener classes are executed during the
- * RCPT TO: (MessageListener.accept()) phase and after the CRLF.CRLF
- * data phase (MessageListener.deliver()). This way, the server itself
- * is not responsible for dealing with the actual SMTP data and that
- * aspect is essentially handed off to other tools to deal with.
- * This is unlike every other Java SMTP server on the net.
+ * There are two ways of using this server.  The first is to
+ * construct with a MessageHandlerFactory.  This provides the
+ * lowest-level and most flexible access.  The second way is
+ * to construct with a collection of MessageListeners.  This
+ * is a higher, and sometimes more convenient level of abstraction.
+ * 
+ * In neither case is the SMTP server (this library) responsible
+ * for deciding what recipients to accept or what to do with the
+ * incoming data.  That is left to you.
  * 
  * @author Jon Stevens
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -48,7 +51,7 @@ public class SMTPServer implements Runnable
 	private String hostName;	// defaults to a lookup of the local address
 	private int backlog = 50;
 
-	private Collection<MessageListener> listeners;
+	private MessageHandlerFactory messageHandlerFactory;
 
 	private CommandHandler commandHandler;
 	
@@ -82,14 +85,14 @@ public class SMTPServer implements Runnable
 	 * when they hit this limit in the DATA received.
 	 */
 	private int dataDeferredSize = 1024*1024*5;
-
+	
 	/**
-	 * The main SMTPServer constructor.
+	 * The primary constructor.
 	 */
-	public SMTPServer(Collection<MessageListener> listeners) 
+	public SMTPServer(MessageHandlerFactory handlerFactory)
 	{
-		this.listeners = listeners;
-
+		this.messageHandlerFactory = handlerFactory;
+		
 		try
 		{
 			this.hostName = InetAddress.getLocalHost().getCanonicalHostName();
@@ -102,6 +105,16 @@ public class SMTPServer implements Runnable
 		this.commandHandler = new CommandHandler();		
 
 		this.connectionHanderGroup = new ThreadGroup(SMTPServer.class.getName() + " ConnectionHandler Group");
+	}
+
+	/**
+	 * A convenience constructor that splits the smtp data among multiple listeners
+	 * (and multiple recipients).
+	 */
+	public SMTPServer(Collection<MessageListener> listeners) 
+	{
+		this(new MessageListenerAdapter(listeners));
+		
 	}
 
 	/** @return the host name that will be reported to SMTP clients */
@@ -325,11 +338,11 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * The Listeners are what the SMTPServer delivers to.
+	 * All smtp data is eventually routed through the handlers.
 	 */
-	public Collection<MessageListener> getListeners()
+	public MessageHandlerFactory getMessageHandlerFactory()
 	{
-		return this.listeners;
+		return this.messageHandlerFactory;
 	}
 
 	/**

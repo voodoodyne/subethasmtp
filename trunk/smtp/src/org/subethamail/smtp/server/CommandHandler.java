@@ -17,8 +17,8 @@ import org.subethamail.smtp.command.NoopCommand;
 import org.subethamail.smtp.command.QuitCommand;
 import org.subethamail.smtp.command.ReceiptCommand;
 import org.subethamail.smtp.command.ResetCommand;
-import org.subethamail.smtp.command.VerifyCommand;
 import org.subethamail.smtp.command.StartTLSCommand;
+import org.subethamail.smtp.command.VerifyCommand;
 
 /**
  * This class manages execution of a SMTP command.

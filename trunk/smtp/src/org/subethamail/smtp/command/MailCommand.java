@@ -23,11 +23,11 @@ public class MailCommand extends BaseCommand
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
 		Session session = context.getSession();
-		if (!session.hasSeenHelo())
+		if (!session.getHasSeenHelo())
 		{
 			context.sendResponse("503 Error: send HELO/EHLO first");
 		}
-		else if (session.getSender() != null)
+		else if (session.getHasSender())
 		{
 			context.sendResponse("503 Sender already specified.");
 		}
@@ -41,11 +41,19 @@ public class MailCommand extends BaseCommand
 						getArgPredicate(commandString) + "\"");
 				return;
 			}
+			
 			String emailAddress = extractEmailAddress(args, 5);
 			if (isValidEmailAddress(emailAddress))
 			{
-				session.setSender(emailAddress);
-				context.sendResponse("250 Ok");
+				if (session.getMessageHandler().from(emailAddress))
+				{
+					session.setHasSender(true);
+					context.sendResponse("250 Ok");
+				}
+				else
+				{
+					context.sendResponse("553 <" + emailAddress + "> Email address rejected.");
+				}
 			}
 			else
 			{

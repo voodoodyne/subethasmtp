@@ -4,17 +4,16 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
-import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
-import org.subethamail.smtp.server.Session.Delivery;
 import org.subethamail.smtp.server.io.CharTerminatedInputStream;
 import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 public class DataCommand extends BaseCommand
 {
@@ -32,12 +31,12 @@ public class DataCommand extends BaseCommand
 	{
 		Session session = context.getSession();
 
-		if (session.getSender() == null)
+		if (!session.getHasSender())
 		{
 			context.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (session.getDeliveries().size() == 0)
+		else if (session.getRecipientCount() == 0)
 		{
 			context.sendResponse("503 Error: need RCPT command");
 			return;
@@ -51,34 +50,7 @@ public class DataCommand extends BaseCommand
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
 
-		if (session.getDeliveries().size() == 1)
-		{
-			Delivery delivery = session.getDeliveries().get(0);
-			delivery.getListener().deliver(session.getSender(), delivery.getRecipient(), stream);
-		}
-		else
-		{
-			DeferredFileOutputStream dfos = new DeferredFileOutputStream(
-					context.getServer().getDataDeferredSize());
-
-			try
-			{
-				int value;
-				while ((value = stream.read()) >= 0)
-				{
-					dfos.write(value);
-				}
-	
-				for (Delivery delivery : session.getDeliveries())
-				{
-					delivery.getListener().deliver(session.getSender(), delivery.getRecipient(), dfos.getInputStream());
-				}
-			}
-			finally
-			{
-				dfos.close();
-			}
-		}
+		session.getMessageHandler().data(stream);
 
 		session.reset(true); // reset session, but don't require new HELO/EHLO
 		context.sendResponse("250 Ok");

@@ -8,8 +8,8 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * Objects which want access to messages received with SMTP should implement
- * this interface.
+ * This is an interface for processing the end-result messages that is
+ * higher-level than the MessageHandler and related factory.
  * 
  * While the SMTP message is being received, all listeners are asked if they
  * want to accept each recipient. After the message has arrived, the message is
