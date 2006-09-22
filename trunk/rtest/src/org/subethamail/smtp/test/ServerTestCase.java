@@ -4,6 +4,7 @@ import junit.framework.TestCase;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.test.util.Client;
 import org.subethamail.wiser.Wiser;
 
 /**
@@ -27,19 +28,20 @@ public class ServerTestCase extends TestCase
 	
 	/** */
 	public ServerTestCase(String name) { super(name); }
-	
+
+	protected Client c;
+
 	/** */
 	protected void setUp() throws Exception
 	{
 		super.setUp();
 		
 		this.wiser = new Wiser();
+		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
 		
-		// make this really small so that we can promise
-		// to have to hit the disk.
-		this.wiser.getServer().setDataDeferredSize(10);
 		this.wiser.start();
+		c = new Client("localhost", PORT);
 	}
 	
 	/** */
@@ -48,6 +50,18 @@ public class ServerTestCase extends TestCase
 		this.wiser.stop();
 		this.wiser = null;
 
+		c.close();
+
 		super.tearDown();
+	}
+	
+	public void send(String msg) throws Exception
+	{
+		c.send(msg);
+	}
+
+	public void expect(String msg, boolean startsWith) throws Exception
+	{
+		c.expect(msg, startsWith);
 	}
 }

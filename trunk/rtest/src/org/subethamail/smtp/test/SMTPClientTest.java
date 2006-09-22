@@ -54,9 +54,6 @@ public class SMTPClientTest extends TestCase
 		this.wiser = new Wiser();
 		this.wiser.setPort(PORT);
 		
-		// make this really small so that we can promise
-		// to have to hit the disk.
-		this.wiser.getServer().setDataDeferredSize(10);
 		this.wiser.start();
 	}
 	

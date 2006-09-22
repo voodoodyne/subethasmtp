@@ -26,16 +26,37 @@ import org.subethamail.smtp.server.io.DeferredFileOutputStream;
  */
 public class MessageListenerAdapter implements MessageHandlerFactory
 {
-	private Collection<MessageListener> listeners;
+	/**
+	 * 5 megs by default. The server will buffer incoming messages to disk
+	 * when they hit this limit in the DATA received.
+	 */
+	private static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*5;
 	
+	private Collection<MessageListener> listeners;
+	private int dataDeferredSize;
+
 	/**
 	 * Initializes this factory with the listeners.
+	 * 
+	 * Default data deferred size is 5 megs.
 	 */
 	public MessageListenerAdapter(Collection<MessageListener> listeners)
 	{
-		this.listeners = listeners;
+		this(listeners, DEFAULT_DATA_DEFERRED_SIZE);
 	}
-	
+
+	/**
+	 * Initializes this factory with the listeners.
+	 * @param dataDeferredSize The server will buffer 
+	 *        incoming messages to disk when they hit this limit in the 
+	 *        DATA received.
+	 */
+	public MessageListenerAdapter(Collection<MessageListener> listeners, int dataDeferredSize)
+	{
+		this.listeners = listeners;
+		this.dataDeferredSize = dataDeferredSize;
+	}
+
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.MessageHandlerFactory#create(org.subethamail.smtp.MessageContext)
 	 */
@@ -45,7 +66,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	}
 	
 	/**
-	 * Needed by the ConversationAdapter to track which listeners need delivery. 
+	 * Needed by this class to track which listeners need delivery. 
 	 */
 	static class Delivery
 	{
@@ -113,8 +134,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 			}
 			else
 			{
-				DeferredFileOutputStream dfos = new DeferredFileOutputStream(
-						this.ctx.getSMTPServer().getDataDeferredSize());
+				DeferredFileOutputStream dfos = new DeferredFileOutputStream(dataDeferredSize);
 
 				try
 				{
