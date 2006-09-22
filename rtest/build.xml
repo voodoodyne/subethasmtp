@@ -58,7 +58,7 @@
 
 			<classpath refid="rtest.classpath"/>
 			<classpath location="${build.rtest.jar.file}"/>
-			
+
 			<formatter type="plain"/>
 			
 			<batchtest todir="${build.dir}">
@@ -68,6 +68,23 @@
 			</batchtest>
 		</junit>
 	</target>
-	
+
+	<target name="junit-special" depends="smtp-classes, wiser-classes, rtest-jar">
+		<junit printsummary="true" showoutput="true" fork="true">
+			<jvmarg value="-Dlog4j.configuration=file:${rtest.basedir}/log4j.properties"/>
+			
+			<classpath refid="rtest.classpath"/>
+			<classpath location="${build.rtest.jar.file}"/>
+			
+			<formatter type="plain" />
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.rtest.classes.dir}">
+					<include name="${junit.special.tests}" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
 </project>
 

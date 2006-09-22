@@ -29,7 +29,7 @@ public abstract class CommandTestCase extends TestCase
 		//server.start();
 
 		commandHandler = server.getServer().getCommandHandler();
-		session = new Session();
+//		session = new Session();
 		context = new DummyContext(session, server.getServer());
 	}
 	
