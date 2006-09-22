@@ -21,9 +21,6 @@ public class Client
 	BufferedReader reader;
 	PrintWriter writer;
 
-	String expect;
-	boolean startsWith;
-	
 	/**
 	 * Establishes a connection to host and port.
 	 * @throws IOException 
@@ -34,10 +31,6 @@ public class Client
 		socket = new Socket(host, port);
 		writer = new PrintWriter(socket.getOutputStream(), true);
 		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
-
-		// initiate reading from server...
-//		Thread t = new Thread(this);
-//		t.start(); // will call run method of this class
 	}
 	
     /**
@@ -51,59 +44,37 @@ public class Client
 		writer.write(msg);
 	}
 
-//	public void run()
-//	{
-//		try
-//		{
-//			while (true)
-//			{
-//				String read = reader.readLine();
-//				System.out.println("Read: " + read);
-//				if (read.equals("221 Bye"))
-//					break;
-//				doExpect(read);
-//			}
-//		}
-//		catch (IOException ioe)
-//		{
-//		}
-//		catch (Exception e)
-//		{
-//			throw new RuntimeException(e);
-//		}
-//	}
-
-	public void expect(String expect, boolean startsWith)
-		throws Exception
+	/**
+	 * Throws an exception if the response does not start with
+	 * the specified string.
+	 */
+	public void expect(String expect) throws Exception
 	{
-		System.out.println("Setting Expect: " + expect + " startsWith: " + startsWith);
-		this.expect = expect;
-		this.startsWith = startsWith;
-		doExpect(reader.readLine());
-//		boolean done = false;
-//		while(!done)
-//		{
-//			done = true;
-//		}
+		assert(this.readResponse().startsWith(expect));
+	}
+	
+	/**
+	 * Get the complete response, including a multiline response.
+	 * Newlines are included.
+	 */
+	protected String readResponse() throws Exception
+	{
+		StringBuilder builder = new StringBuilder();
+		boolean done = false;
+		while (!done)
+		{
+			String line = this.reader.readLine();
+			if (line.charAt(3) != '-')
+				done = true;
+				
+			builder.append(line);
+			builder.append('\n');
+		}
+		
+		return builder.toString();
 	}
 
-	void doExpect(String got) throws Exception
-	{
-		System.out.println("doExpect: " + got);
-		if (startsWith)
-		{
-			if (!got.startsWith(expect))
-				throw new Exception("Starts with: " + expect + " Got: " + got);
-		}
-		else
-		{
-			if (!got.equals(expect))
-				throw new Exception("Expected: " + expect + " Got: " + got);
-		}
-		expect = null;
-		startsWith = false;
-	}
-
+	/** */
 	public void close() throws Exception
 	{
 		if (!socket.isClosed())

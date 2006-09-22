@@ -60,8 +60,8 @@ public class ServerTestCase extends TestCase
 		c.send(msg);
 	}
 
-	public void expect(String msg, boolean startsWith) throws Exception
+	public void expect(String msg) throws Exception
 	{
-		c.expect(msg, startsWith);
+		c.expect(msg);
 	}
 }

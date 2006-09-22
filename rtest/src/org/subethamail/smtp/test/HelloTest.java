@@ -14,10 +14,10 @@ public class HelloTest extends ServerTestCase
 	
 	public void testHelloCommand() throws Exception
 	{
-		expect("220", true);
+		expect("220");
 
 		send("HELO");
-		expect("501 Syntax: HELO <hostname>", false);
+		expect("501 Syntax: HELO <hostname>");
 
 		send("QUIT");
 
