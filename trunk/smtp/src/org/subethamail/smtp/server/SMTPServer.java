@@ -197,7 +197,7 @@ public class SMTPServer implements Runnable
 
 		// This tells the serverThread.run() method
 		// to accept() connections
-		this.go = true;				
+		this.go = true;
 
 		// Now call the serverThread.run() method
 		this.serverThread.start();
@@ -281,18 +281,8 @@ public class SMTPServer implements Runnable
 			}
 			catch (IOException ioe)
 			{
-				
-//				Avoid this exception when shutting down.
-//				20:34:50,624 ERROR [STDERR]     at java.net.PlainSocketImpl.socketAccept(Native Method)
-//				20:34:50,624 ERROR [STDERR]     at java.net.PlainSocketImpl.accept(PlainSocketImpl.java:384)
-//				20:34:50,624 ERROR [STDERR]     at java.net.ServerSocket.implAccept(ServerSocket.java:450)
-//				20:34:50,624 ERROR [STDERR]     at java.net.ServerSocket.accept(ServerSocket.java:421)
-//				20:34:50,624 ERROR [STDERR]     at org.subethamail.smtp2.SMTPServer.run(SMTPServer.java:92)
-//				20:34:50,624 ERROR [STDERR]     at java.lang.Thread.run(Thread.java:613)
 				if (this.go)
-				{
-					log.error(ioe.toString());
-				}
+					log.error(ioe);
 			}
 		}
 
