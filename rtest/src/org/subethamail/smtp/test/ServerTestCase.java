@@ -39,8 +39,8 @@ public class ServerTestCase extends TestCase
 		this.wiser = new Wiser();
 		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
-		
 		this.wiser.start();
+		
 		c = new Client("localhost", PORT);
 	}
 	
