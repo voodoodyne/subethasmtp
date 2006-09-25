@@ -179,21 +179,34 @@ public class SMTPServer implements Runnable
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
 		
-		this.go = true;
-		
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
 		// daemon threads do not keep the program from quitting; 
 		// user threads keep the program from quitting.
 		// We want the serverThread to keep the program from quitting
 		// this.serverThread.setDaemon(true);
-		
+
+		// Create our server socket here.
+		try
+		{
+			this.serverSocket = createServerSocket();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		// This tells the serverThread.run() method
+		// to accept() connections
+		this.go = true;				
+
+		// Now call the serverThread.run() method
 		this.serverThread.start();
 
 		this.watchdog = new Watchdog(this);
 		// We do not want the watchdog to keep the program from quitting
 		this.watchdog.setDaemon(true);
 
-		this.watchdog.start();
+		this.watchdog.start();	
 	}
 
 	/**
@@ -223,21 +236,7 @@ public class SMTPServer implements Runnable
 		catch (IOException e)
 		{
 		}
-		this.serverSocket = null;
-		
-		// Sleep for a bit due to what seems like a JVM bug
-		// on my OSX box. This prevents a useless NPE exception
-		// in the StartStopTest when the ConnectionHandler 
-		// below is created in the run() method. Sleeping seems
-		// to give things a proper chance of cleaning up.
-		try
-		{
-			Thread.sleep(600);
-		}
-		catch (InterruptedException e)
-		{
-			// Ignore
-		}
+		this.serverSocket = null;		
 	}
 
 	/**
@@ -273,17 +272,6 @@ public class SMTPServer implements Runnable
 	 */
 	public void run()
 	{
-		try
-		{
-			this.serverSocket = createServerSocket();
-			if (this.serverSocket == null)
-				throw new Exception("ServerSocket cannot be null!");			
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-
 		while (this.go)
 		{
 			try
