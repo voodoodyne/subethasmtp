@@ -41,7 +41,9 @@ public class Client
 	 */
 	public void send(String msg) throws Exception
 	{
-		writer.write(msg);
+		// Force \r\n since println() behaves differently on different platforms
+		writer.print(msg + "\r\n");
+		writer.flush();
 	}
 
 	/**
@@ -50,7 +52,9 @@ public class Client
 	 */
 	public void expect(String expect) throws Exception
 	{
-		assert(this.readResponse().startsWith(expect));
+		String response = this.readResponse();
+		if (!response.startsWith(expect))
+			throw new Exception("Got: " + response + " Expected: " + expect);
 	}
 	
 	/**

@@ -1,4 +1,6 @@
-package org.subethamail.smtp.test;
+package org.subethamail.smtp.test.command;
+
+import org.subethamail.smtp.test.ServerTestCase;
 
 
 
@@ -14,10 +16,10 @@ public class HelloTest extends ServerTestCase
 	
 	public void testHelloCommand() throws Exception
 	{
-		expect("220");
+		c.expect("220");
 
-		send("HELO");
-		expect("501 Syntax: HELO <hostname>");
+		c.send("HELO");
+		c.expect("501 Syntax: HELO <hostname>");
 
 		c.send("HELO");
 		c.expect("501 Syntax: HELO <hostname>");
