@@ -23,20 +23,44 @@ public class ServerTestCase extends TestCase
 	/** */
 	public static final int PORT = 2566;
 
-	/** */
-	protected Wiser wiser;
+	/**
+	 * Override the accept method in Wiser so we can test
+	 * the accept method().
+	 */
+	public class TestWiser extends Wiser
+	{
+		public boolean accept(String from, String recipient)
+		{
+			if (recipient.equals("failure@subethamail.org"))
+			{
+				return false;
+			}
+			else if (recipient.equals("success@subethamail.org"))
+			{
+				return true;
+			}
+			return true;
+		}
+	}
 	
 	/** */
-	public ServerTestCase(String name) { super(name); }
-
+	protected TestWiser wiser;
+	
+	/** */
 	protected Client c;
+
+	/** */
+	public ServerTestCase(String name)
+	{
+		super(name);
+	}
 
 	/** */
 	protected void setUp() throws Exception
 	{
 		super.setUp();
 		
-		this.wiser = new Wiser();
+		this.wiser = new TestWiser();
 		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
 		this.wiser.start();

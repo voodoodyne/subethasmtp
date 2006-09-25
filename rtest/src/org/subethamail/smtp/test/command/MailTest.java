@@ -4,7 +4,6 @@ import org.subethamail.smtp.test.ServerTestCase;
 
 /**
  * @author Jon Stevens
- * @author Ian McFarland &lt;ian@neo.com&gt;
  */
 public class MailTest extends ServerTestCase
 {

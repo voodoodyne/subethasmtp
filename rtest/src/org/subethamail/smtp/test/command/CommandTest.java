@@ -1,16 +1,22 @@
 package org.subethamail.smtp.test.command;
 
-import junit.framework.Assert;
+import org.subethamail.smtp.test.ServerTestCase;
 
 /**
  * @author Jon Stevens
- * @author Ian McFarland &lt;ian@neo.com&gt;
  */
-public class CommandTest extends CommandTestCase
+public class CommandTest extends ServerTestCase
 {
+	public CommandTest(String name)
+	{
+		super(name);
+	}
+
 	public void testCommandHandling() throws Exception
 	{
-		commandHandler.handleCommand(getContext(), "blah blah blah");
-		Assert.assertEquals("500 Error: command not implemented", getContext().getResponse());
+		expect("220");
+
+		send("blah blah blah");
+		expect("500 Error: command not implemented");
 	}
 }

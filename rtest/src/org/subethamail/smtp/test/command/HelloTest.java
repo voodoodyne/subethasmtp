@@ -16,35 +16,37 @@ public class HelloTest extends ServerTestCase
 	
 	public void testHelloCommand() throws Exception
 	{
-		c.expect("220");
+		expect("220");
 
-		c.send("HELO");
-		c.expect("501 Syntax: HELO <hostname>");
+		send("HELO");
+		expect("501 Syntax: HELO <hostname>");
 
-		c.send("HELO");
-		c.expect("501 Syntax: HELO <hostname>");
+		send("HELO");
+		expect("501 Syntax: HELO <hostname>");
 		
 		// Correct!
-		c.send("HELO foo.com");
-		c.expect("250 127.0.0.1");
+		send("HELO foo.com");
+		expect("250");
 
 		// Correct!
-		c.send("HELO foo.com");
-		c.expect("250 127.0.0.1");
+		send("HELO foo.com");
+		expect("250");
 	}
 
 	public void testHelloReset() throws Exception
 	{
-		c.send("HELO foo.com");
-		c.expect("250 127.0.0.1");
+		expect("220");
 
-		c.send("MAIL FROM: test@foo.com");
-		c.expect("250 Ok");
+		send("HELO foo.com");
+		expect("250");
 
-		c.send("RSET");
-		c.expect("250 Ok");
+		send("MAIL FROM: test@foo.com");
+		expect("250 Ok");
 
-		c.send("MAIL FROM: test@foo.com");
-		c.expect("250 Ok");
+		send("RSET");
+		expect("250 Ok");
+
+		send("MAIL FROM: test@foo.com");
+		expect("250 Ok");
 	}
 }
