@@ -56,7 +56,7 @@ public class SMTPServer implements Runnable
 	private CommandHandler commandHandler;
 	
 	private ServerSocket serverSocket;
-	private boolean go = false;
+	private boolean go = true;
 	
 	private Thread serverThread;
 	private Watchdog watchdog;
