@@ -174,17 +174,11 @@ public class SMTPServer implements Runnable
 	 * Call this method to get things rolling after instantiating the
 	 * SMTPServer.
 	 */
-	public void start()
+	public synchronized void start()
 	{
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
 		
-		this.serverThread = new Thread(this, SMTPServer.class.getName());
-		// daemon threads do not keep the program from quitting; 
-		// user threads keep the program from quitting.
-		// We want the serverThread to keep the program from quitting
-		// this.serverThread.setDaemon(true);
-
 		// Create our server socket here.
 		try
 		{
@@ -195,9 +189,11 @@ public class SMTPServer implements Runnable
 			throw new RuntimeException(e);
 		}
 
-		// This tells the serverThread.run() method
-		// to accept() connections
-		this.go = true;
+		this.serverThread = new Thread(this, SMTPServer.class.getName());
+		// daemon threads do not keep the program from quitting; 
+		// user threads keep the program from quitting.
+		// We want the serverThread to keep the program from quitting
+		// this.serverThread.setDaemon(true);
 
 		// Now call the serverThread.run() method
 		this.serverThread.start();
@@ -206,13 +202,13 @@ public class SMTPServer implements Runnable
 		// We do not want the watchdog to keep the program from quitting
 		this.watchdog.setDaemon(true);
 
-		this.watchdog.start();	
+		this.watchdog.start();
 	}
 
 	/**
 	 * Shut things down gracefully.
 	 */
-	public void stop()
+	public synchronized void stop()
 	{
 		// don't accept any more connections
 		this.go = false;
@@ -236,7 +232,6 @@ public class SMTPServer implements Runnable
 		catch (IOException e)
 		{
 		}
-		this.serverSocket = null;		
 	}
 
 	/**
@@ -282,7 +277,7 @@ public class SMTPServer implements Runnable
 			catch (IOException ioe)
 			{
 				if (this.go)
-					log.error(ioe);
+					log.error("Error accepting connections", ioe);
 			}
 		}
 
@@ -290,6 +285,7 @@ public class SMTPServer implements Runnable
 		{
 			if (this.serverSocket != null && !this.serverSocket.isClosed())
 				this.serverSocket.close();
+			
 			log.info("SMTP Server socket shut down.");
 		}
 		catch (IOException e)
