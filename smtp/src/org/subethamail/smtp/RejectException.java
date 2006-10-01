@@ -4,15 +4,13 @@
  */
 package org.subethamail.smtp;
 
-import java.io.IOException;
-
 /**
  * Thrown to reject an SMTP command with a specific code.
  * 
  * @author Jeff Schnitzer
  */
 @SuppressWarnings("serial")
-public class RejectException extends IOException
+public class RejectException extends Exception
 {
 	int code;
 	

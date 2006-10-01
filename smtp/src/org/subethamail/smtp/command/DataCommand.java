@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
@@ -50,9 +51,16 @@ public class DataCommand extends BaseCommand
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
 
-		session.getMessageHandler().data(stream);
+		try
+		{
+			session.getMessageHandler().data(stream);
+			context.sendResponse("250 Ok");
+		}
+		catch (RejectException ex)
+		{
+			context.sendResponse(ex.getMessage());
+		}
 
 		session.reset(true); // reset session, but don't require new HELO/EHLO
-		context.sendResponse("250 Ok");
 	}
 }
