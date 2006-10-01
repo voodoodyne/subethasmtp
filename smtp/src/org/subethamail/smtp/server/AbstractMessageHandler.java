@@ -5,6 +5,7 @@
 package org.subethamail.smtp.server;
 
 import org.subethamail.smtp.MessageHandler;
+import org.subethamail.smtp.RejectException;
 
 /**
  * A simple base class to make implementing message handlers easier.  It
@@ -14,13 +15,11 @@ import org.subethamail.smtp.MessageHandler;
  */
 abstract public class AbstractMessageHandler implements MessageHandler
 {
-	public boolean from(String from)
+	public void from(String from) throws RejectException
 	{
-		return true;
 	}
 
-	public boolean recipient(String recipient)
+	public void recipient(String recipient) throws RejectException
 	{
-		return true;
 	}
 }

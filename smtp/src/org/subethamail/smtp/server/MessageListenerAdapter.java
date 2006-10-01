@@ -14,6 +14,7 @@ import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.MessageListener;
+import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 
@@ -100,15 +101,14 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		
 		/** */
 		@Override
-		public boolean from(String from)
+		public void from(String from) throws RejectException
 		{
 			this.from = from;
-			return true;
 		}
 		
 		/** */
 		@Override
-		public boolean recipient(String recipient)
+		public void recipient(String recipient) throws RejectException
 		{
 			boolean addedListener = false;
 
@@ -121,7 +121,8 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 				}
 			}
 
-			return addedListener;
+			if (!addedListener)
+				throw new RejectException(553, "<" + recipient + "> address unknown.");
 		}
 
 		/** */
