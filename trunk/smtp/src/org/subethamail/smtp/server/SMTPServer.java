@@ -56,7 +56,7 @@ public class SMTPServer implements Runnable
 	private CommandHandler commandHandler;
 	
 	private ServerSocket serverSocket;
-	private boolean go = true;
+	private boolean go = false;
 	
 	private Thread serverThread;
 	private Watchdog watchdog;
@@ -147,6 +147,14 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
+	 * Is the server running after start() has been called?
+	 */
+	public boolean isRunning()
+	{
+		return this.go;
+	}
+
+	/**
 	 * The backlog is the Socket backlog.
 	 * 
 	 * The backlog argument must be a positive value greater than 0. 
@@ -188,6 +196,8 @@ public class SMTPServer implements Runnable
 		{
 			throw new RuntimeException(e);
 		}
+
+		this.go = true;
 
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
 		// daemon threads do not keep the program from quitting; 
