@@ -21,10 +21,9 @@ public interface MessageHandler
 	 * @param from is the sender as specified by the client.  It will
 	 *  be a rfc822-compliant email address, already validated by
 	 *  the server.
-	 * @return true to accept, false to reject.  If rejected,
-	 *  this method might be called again.
+	 * @throws RejectException if the sender should be denied.
 	 */
-	public boolean from(String from);
+	public void from(String from) throws RejectException;
 	
 	/**
 	 * Called once for every RCPT TO during a SMTP exchange.
@@ -32,21 +31,20 @@ public interface MessageHandler
 	 * 
 	 * @param recipient is a rfc822-compliant email address,
 	 *  validated by the server.
-	 * 
-	 * @return true if the recipient should be accepted, false
-	 *  if the recipient should be rejected.
+	 * @throws RejectException if the recipient should be denied.
 	 */
-	public boolean recipient(String recipient);
+	public void recipient(String recipient) throws RejectException;
 	
 	/**
 	 * Called when the DATA part of the SMTP exchange begins.  Will
 	 * only be called if at least one recipient was accepted.
 	 * 
 	 * @param data will be the smtp data stream, stripped of any extra '.' chars
-	 * 
+	 *
+	 * @throws RejectException if at any point the data should be rejected.
 	 * @throws TooMuchDataException if the listener can't handle that much data.
 	 *         An error will be reported to the client.
 	 * @throws IOException if there is an IO error reading the input data.
 	 */
-	public void data(InputStream data) throws TooMuchDataException, IOException;
+	public void data(InputStream data) throws RejectException, TooMuchDataException, IOException;
 }

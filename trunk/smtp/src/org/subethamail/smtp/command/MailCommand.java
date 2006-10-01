@@ -2,6 +2,7 @@ package org.subethamail.smtp.command;
 
 import java.io.IOException;
 
+import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
@@ -45,14 +46,15 @@ public class MailCommand extends BaseCommand
 			String emailAddress = extractEmailAddress(args, 5);
 			if (isValidEmailAddress(emailAddress))
 			{
-				if (session.getMessageHandler().from(emailAddress))
+				try
 				{
+					session.getMessageHandler().from(emailAddress);
 					session.setHasSender(true);
 					context.sendResponse("250 Ok");
 				}
-				else
+				catch (RejectException ex)
 				{
-					context.sendResponse("553 <" + emailAddress + "> Email address rejected.");
+					context.sendResponse(ex.getMessage());
 				}
 			}
 			else
