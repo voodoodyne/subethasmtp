@@ -43,6 +43,7 @@
 			<manifest>
 				<attribute name="Specification-Version" value="${build.version}" />
 				<attribute name="Implementation-Version" value="${TODAY}" />
+				<attribute name="Main-Class" value="org.subethamail.wiser.Version" />
 			</manifest>
 		</jar>
 	</target>
