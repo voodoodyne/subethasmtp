@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.Collection;
 
@@ -233,6 +234,9 @@ public class SMTPServer implements Runnable
 			this.watchdog = null;
 		}
 
+		// Shut down any open connections.
+		shutDownOpenConnections();
+		
 		// if the serverSocket is not null, force a socket close for good measure
 		try
 		{
@@ -241,6 +245,36 @@ public class SMTPServer implements Runnable
 		}
 		catch (IOException e)
 		{
+		}
+	}
+
+	/**
+	 * Grabs all ThreadGroup instances of ConnectionHander's and attempts to close the 
+	 * socket if it is still open.
+	 */
+	protected void shutDownOpenConnections()
+	{
+		Thread[] groupThreads = new Thread[maxConnections];
+		ThreadGroup connectionGroup = getConnectionGroup();
+
+		connectionGroup.enumerate(groupThreads);
+		for (int i=0; i<connectionGroup.activeCount(); i++)
+		{
+			ConnectionHandler handler = ((ConnectionHandler)groupThreads[i]);
+			if (handler != null)
+			{
+				Socket socket = handler.getSocket();
+				if (socket != null && !socket.isClosed())
+				{
+					try
+					{
+						socket.close();
+					}
+					catch (IOException e)
+					{
+					}
+				}
+			}
 		}
 	}
 
@@ -354,6 +388,12 @@ public class SMTPServer implements Runnable
 		return this.maxConnections;
 	}
 
+	/**
+	 * Set's the maximum number of connections this server instance will
+	 * accept. 
+	 * 
+	 * @param maxConnections
+	 */
 	public void setMaxConnections(int maxConnections)
 	{
 		this.maxConnections = maxConnections;
@@ -388,7 +428,6 @@ public class SMTPServer implements Runnable
 	private class Watchdog extends Thread
 	{
 		private SMTPServer server;
-		private Thread[] groupThreads = new Thread[maxConnections];
 		private boolean run = true;
 
 		public Watchdog(SMTPServer server)
@@ -407,12 +446,13 @@ public class SMTPServer implements Runnable
 		{
 			while (this.run)
 			{
+				Thread[] groupThreads = new Thread[maxConnections];
 				ThreadGroup connectionGroup = this.server.getConnectionGroup();
-				connectionGroup.enumerate(this.groupThreads);
+				connectionGroup.enumerate(groupThreads);
 
 				for (int i=0; i<connectionGroup.activeCount(); i++)
 				{
-					ConnectionHandler aThread = ((ConnectionHandler)this.groupThreads[i]);
+					ConnectionHandler aThread = ((ConnectionHandler)groupThreads[i]);
 					if (aThread != null)
 					{
 						// one minute timeout
