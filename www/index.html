@@ -184,6 +184,17 @@ smtpServer.start();</pre>
 		to receive and process email.
 	</p>
 	
+	<h2>Additional Server Control</h2>
+	
+	<p>
+		As an alternative to the simple MessageListener interface, we have a slightly more 
+		complicated way of creating a SMTPServer that involves the creation of a class that
+		implements MessageHandler and another class that implements MessageHandlerFactory.
+		Take a look at the MessageListenerAdapter for an example of how to use these interfaces.
+		When using the SMTPServer with the MessageListener interface, it actually creates a
+		MessageListenerAdapter under the covers.
+	</p>
+	
 	<h2>Performance and Security</h2>
 	
 	<p>
@@ -204,11 +215,11 @@ smtpServer.start();</pre>
 			If more than one listener accept()s a message, the
 			message data is first buffered.  The buffer will be
 			kept in RAM until the data reaches a certain size
-			(the default is 5 megs and is configurable via 
-			SMTPServer.setDataDeferredSize()),
-			then the buffer is moved to a temporary disk file.
-			Each listener will be delivered a complete copy of
-			the buffered message.
+			(the default is 5 megs and is configurable by instantiating
+			your own MessageListenerAdapter or implemeting your own 
+			MessageHandlerFactory, then the buffer is moved to a 
+			temporary disk file. Each listener will be delivered 
+			a complete copy of the buffered message.
 		</li>
 	</ul>
 	
