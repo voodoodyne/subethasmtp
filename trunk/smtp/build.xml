@@ -32,10 +32,15 @@
 	
 	<target name="smtp-classes" depends="init">
 		<mkdir dir="${build.smtp.classes.dir}"/>
+
+		<echo>
+		Building SMTP for JDK ${javac.target}
+		</echo>
 		
 		<javac srcdir="${smtp.javasrc.dir}" destdir="${build.smtp.classes.dir}"
 			includeAntRuntime="false" debug="${build.debug}"
-			deprecation="${build.deprecation}">
+			deprecation="${build.deprecation}"
+			target="${javac.target}">
 			
 			<classpath refid="smtp.classpath"/>
 		</javac>
