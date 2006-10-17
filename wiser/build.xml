@@ -28,9 +28,14 @@
 	<target name="wiser-classes" depends="init, smtp-jar">
 		<mkdir dir="${build.wiser.classes.dir}"/>
 		
+		<echo>
+		Building Wiser for JDK ${javac.target}
+		</echo>
+
 		<javac srcdir="${wiser.javasrc.dir}" destdir="${build.wiser.classes.dir}"
 			includeAntRuntime="false" debug="${build.debug}"
-			deprecation="${build.deprecation}">
+			deprecation="${build.deprecation}"
+			target="${javac.target}">
 			
 			<classpath refid="wiser.classpath"/>
 		</javac>

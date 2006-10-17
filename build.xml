@@ -23,6 +23,8 @@
 	<property name="build.debug" value="on" />
 	<property name="build.deprecation" value="on" />
 	
+	<property name="javac.target" value="1.4" />
+	
 	<!-- Set up a basic path for everyone -->
 	<path id="base.classpath">
 		<pathelement path="${java.class.path}" />
