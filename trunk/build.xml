@@ -23,7 +23,8 @@
 	<property name="build.debug" value="on" />
 	<property name="build.deprecation" value="on" />
 	
-	<property name="javac.target" value="1.5" />
+	<property name="retroweaver.version" value="2.0Beta2" />
+	<property name="retroweaver.home" value="/Users/jon/Desktop/retroweaver-${retroweaver.version}" />
 	
 	<!-- Set up a basic path for everyone -->
 	<path id="base.classpath">
@@ -82,19 +83,20 @@
 		<copy file="${build.wiser.jar.file}" todir="../Subetha/rtest/lib" />
 	</target>
 	
-	<target name="dist" depends="formal-build, javadoc">
+	<target name="dist" depends="clean, formal-build, javadoc">
 		<property name="build.dist.dir" location="${build.dir}/${ant.project.name}-${build.version}"/>
 		<property name="build.dist.zip" location="${build.dir}/${ant.project.name}-${build.version}.zip"/>
 
 		<basename property="build.javadoc.dir.basename" file="${build.javadoc.dir}" />
 		
+		<antcall target="smtp-jdk1.4-jar" />
+		<antcall target="wiser-jdk1.4-jar" />
+	
 		<copy todir="${build.dist.dir}">
 			<fileset dir="${build.dir}">
 				<include name="${build.javadoc.dir.basename}/**" />
+				<include name="*.jar" />
 			</fileset>
-			
-			<fileset file="${build.smtp.jar.file}"/>
-			<fileset file="${build.wiser.jar.file}"/>
 			
 			<fileset dir=".">
 				<include name="README.html" />
@@ -125,5 +127,15 @@
 			<include name="${build.dist.dir.basename}/**" />
 		</zip>
 	</target>
+
+	<target name="rt-task">
+		<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+		  <classpath>
+		    <fileset dir="${retroweaver.home}/lib" includes="**/*"/>
+		    <pathelement location="${retroweaver.home}/release/retroweaver-all-${retroweaver.version}.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+
 </project>
 

@@ -12,7 +12,8 @@
 <project name="wiser" default="" basedir=".">
 	
 	<property name="build.wiser.classes.dir" location="${build.dir}/wiser-classes"/>
-	<property name="build.wiser.jar.file" location="${build.dir}/subetha-wiser.jar"/>
+	<property name="build.wiser.name" value="subetha-wiser"/>
+	<property name="build.wiser.jar.file" location="${build.dir}/${build.wiser.name}.jar"/>
 	
 	<dirname property="wiser.basedir" file="${ant.file.wiser}"/>
 	<property name="wiser.javasrc.dir" location="${wiser.basedir}/src"/>
@@ -28,14 +29,11 @@
 	<target name="wiser-classes" depends="init, smtp-jar">
 		<mkdir dir="${build.wiser.classes.dir}"/>
 		
-		<echo>
-		Building Wiser for JDK ${javac.target}
-		</echo>
-
 		<javac srcdir="${wiser.javasrc.dir}" destdir="${build.wiser.classes.dir}"
 			includeAntRuntime="false" debug="${build.debug}"
 			deprecation="${build.deprecation}"
-			target="${javac.target}">
+			source="1.5"
+			target="1.5">
 			
 			<classpath refid="wiser.classpath"/>
 		</javac>
@@ -51,5 +49,9 @@
 				<attribute name="Main-Class" value="org.subethamail.wiser.Version" />
 			</manifest>
 		</jar>
+	</target>
+
+	<target name="wiser-jdk1.4-jar" depends="wiser-jar, rt-task">
+		<retroweaver inputjar="${build.wiser.jar.file}" outputjar="${build.dir}/${build.wiser.name}-jdk14.jar" />
 	</target>
 </project>
