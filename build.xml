@@ -24,7 +24,7 @@
 	<property name="build.deprecation" value="on" />
 	
 	<property name="retroweaver.version" value="2.0Beta2" />
-	<property name="retroweaver.home" value="/Users/jon/Desktop/retroweaver-${retroweaver.version}" />
+	<property name="retroweaver.home" value="/Users/jon/checkout/retroweaver-${retroweaver.version}" />
 	
 	<!-- Set up a basic path for everyone -->
 	<path id="base.classpath">
