@@ -10,14 +10,14 @@ import java.io.InputStream;
 /**
  * The interface that defines the conversational exchange of a single message
  * on an SMTP connection.
- * 
+ *
  * @author Jeff Schnitzer
  */
-public interface MessageHandler
+public interface MessageHandler extends AuthenticationHandler
 {
 	/**
 	 * Called first, after the MAIL FROM during a SMTP exchange.
-	 * 
+	 *
 	 * @param from is the sender as specified by the client.  It will
 	 *  be a rfc822-compliant email address, already validated by
 	 *  the server.
@@ -28,7 +28,7 @@ public interface MessageHandler
 	/**
 	 * Called once for every RCPT TO during a SMTP exchange.
 	 * This will occur after a from() call.
-	 * 
+	 *
 	 * @param recipient is a rfc822-compliant email address,
 	 *  validated by the server.
 	 * @throws RejectException if the recipient should be denied.
@@ -38,7 +38,7 @@ public interface MessageHandler
 	/**
 	 * Called when the DATA part of the SMTP exchange begins.  Will
 	 * only be called if at least one recipient was accepted.
-	 * 
+	 *
 	 * @param data will be the smtp data stream, stripped of any extra '.' chars
 	 *
 	 * @throws RejectException if at any point the data should be rejected.

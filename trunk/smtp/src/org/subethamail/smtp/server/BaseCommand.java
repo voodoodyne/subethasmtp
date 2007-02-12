@@ -2,7 +2,9 @@ package org.subethamail.smtp.server;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.StringTokenizer;
@@ -23,13 +25,13 @@ abstract public class BaseCommand implements Command
 	private static Map<String, HelpMessage> helpMessageMap = new HashMap<String, HelpMessage>();
 	@SuppressWarnings("unused")
 	private static Log log = LogFactory.getLog(BaseCommand.class);
-
+	
 	public BaseCommand(String name, String help)
 	{
 		this.name = name;
 		setHelp(new HelpMessage(name, help));
 	}
-
+	
 	public BaseCommand(String name, String help, String argumentDescription)
 	{
 		this.name = name;
@@ -37,26 +39,26 @@ abstract public class BaseCommand implements Command
 	}
 	
 	abstract public void execute(String commandString, ConnectionContext context) throws IOException;
-
+	
 	public void setHelp(HelpMessage helpMessage)
 	{
 		helpMessageMap.put(helpMessage.getName().toUpperCase(), helpMessage);
 	}
-
+	
 	public HelpMessage getHelp(String commandName)
-		throws CommandException
+	throws CommandException
 	{
 		HelpMessage msg = helpMessageMap.get(commandName.toUpperCase());
 		if (msg == null)
 			throw new CommandException();
 		return msg;
 	}
-
+	
 	public Map<String, HelpMessage> getHelp()
 	{
 		return helpMessageMap;
 	}
-
+	
 	protected String getArgPredicate(String commandString)
 	{
 		if (commandString == null || commandString.length() < 4)
@@ -64,12 +66,12 @@ abstract public class BaseCommand implements Command
 		
 		return commandString.substring(4).trim();
 	}
-
+	
 	public String getName()
 	{
 		return name;
 	}
-
+	
 	protected boolean isValidEmailAddress(String address)
 	{
 		boolean result = false;
@@ -87,7 +89,21 @@ abstract public class BaseCommand implements Command
 		}
 		return result;
 	}
-
+	
+	protected static String getTokenizedString(Collection<String> items, String delim)
+	{
+		StringBuffer ret = new StringBuffer();
+		for( Iterator<String> it=items.iterator(); it.hasNext(); )
+		{
+			ret.append(it.next());
+			if( it.hasNext() )
+			{
+				ret.append(delim);
+			}
+		}
+		return ret.toString();
+	}
+	
 	protected String[] getArgs(String commandString)
 	{
 		List<String> strings = new ArrayList<String>();
@@ -96,16 +112,16 @@ abstract public class BaseCommand implements Command
 		{
 			strings.add(stringTokenizer.nextToken());
 		}
-
+		
 		return strings.toArray(new String[strings.size()]);
 	}
-
+	
 	protected String extractEmailAddress(String args, int subcommandOffset)
 	{
 		String address = args.substring(subcommandOffset).trim();
 		if (address.indexOf('<') == 0)
 			address = address.substring(1, address.indexOf('>'));
-
+		
 		return address;
 	}
 }
