@@ -44,6 +44,13 @@ public class EhloCommand extends BaseCommand
 			{
 				response = response + "\r\n" + "250 STARTTLS";
 			}
+
+			if (context.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
+			{
+				response = response
+						+ AuthCommand.getEhloString(context.getSession()
+								.getMessageHandler());
+			}
 			context.sendResponse(response);
 		}
 		else

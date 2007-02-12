@@ -19,8 +19,16 @@ import javax.mail.Session;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.TooMuchDataException;
+import org.subethamail.smtp.auth.LoginAuthenticationHandler;
+import org.subethamail.smtp.auth.LoginFailedException;
+import org.subethamail.smtp.auth.PlainAuthenticationHandler;
+import org.subethamail.smtp.auth.PluginAuthenticationHandler;
+import org.subethamail.smtp.auth.UsernamePasswordValidator;
+import org.subethamail.smtp.server.MessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
@@ -52,6 +60,8 @@ public class Wiser implements MessageListener
 		
 		this.server = new SMTPServer(listeners);
 		this.server.setPort(25);
+		((MessageListenerAdapter)server.getMessageHandlerFactory())
+			.setAuthenticationHandlerFactory(new AuthHandlerFactory());
 	}
 
 	/**
@@ -133,5 +143,25 @@ public class Wiser implements MessageListener
 	public SMTPServer getServer()
 	{
 		return this.server;
+	}
+
+	public class AuthHandlerFactory implements AuthenticationHandlerFactory
+	{
+		public AuthenticationHandler create()
+		{
+			PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
+			UsernamePasswordValidator validator = new UsernamePasswordValidator()
+			{
+				public void login(String username, String password)
+						throws LoginFailedException
+				{
+					log.info("Username=" + username);
+					log.info("Password=" + password);
+				}
+			};
+			ret.addPlugin(new PlainAuthenticationHandler(validator));
+			ret.addPlugin(new LoginAuthenticationHandler(validator));
+			return ret;
+		}
 	}
 }
