@@ -55,7 +55,7 @@ public class PlainAuthenticationHandler implements AuthenticationHandler
 			else
 			{
 				// the client did not submit an initial response
-				response.append("334");
+				response.append("334 Ok");
 				return false;
 			}
 		}

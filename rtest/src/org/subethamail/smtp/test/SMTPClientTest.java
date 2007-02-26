@@ -79,7 +79,7 @@ public class SMTPClientTest extends TestCase
 		message.setText("body");
 
 		Transport.send(message);
-		
+
 		assertEquals(2, this.wiser.getMessages().size());
 	}
 

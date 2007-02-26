@@ -27,7 +27,7 @@ public class AuthCommand extends BaseCommand
 		}
 		else
 		{
-			return "\r\n" + "250 " + VERB + " "
+			return "\r\n" + "250-" + VERB + " "
 					+ getTokenizedString(supportedMechanisms, " ");
 		}
 	}
@@ -79,7 +79,11 @@ public class AuthCommand extends BaseCommand
 			// challenge-responses
 			CRLFTerminatedReader reader = instantiateReader(context);
 			boolean finished = msgHandler.auth(commandString, response);
-			context.sendResponse(response.toString());
+			if (!finished)
+			{
+				// challenge-response iteration
+				context.sendResponse(response.toString());
+			}
 			while (!finished)
 			{
 				response = new StringBuffer();
@@ -87,14 +91,17 @@ public class AuthCommand extends BaseCommand
 				if (clientInput.trim().equals(AUTH_CANCEL_COMMAND))
 				{
 					// RFC 2554 explicitly states this:
-					context
-							.sendResponse("501 Authentication canceled by client.");
+					context.sendResponse("501 Authentication canceled by client.");
 					return;
 				}
 				else
 				{
 					finished = msgHandler.auth(clientInput, response);
-					context.sendResponse(response.toString());
+					if (!finished)
+					{
+						// challenge-response iteration
+						context.sendResponse(response.toString());
+					}
 				}
 			}
 			context.sendResponse("235 Authentication successful.");

@@ -28,6 +28,7 @@ public class CommandHandler
 			addCommand(registry.getCommand());
 		}
 	}
+
 	public CommandHandler(Collection<Command> availableCommands)
 	{
 		for(Command command :availableCommands )
@@ -49,7 +50,7 @@ public class CommandHandler
 	}
 	
 	public void handleCommand(ConnectionContext context, String commandString)
-	throws SocketTimeoutException, IOException
+		throws SocketTimeoutException, IOException
 	{
 		try
 		{
@@ -63,7 +64,7 @@ public class CommandHandler
 	}
 	
 	private Command getCommandFromString(String commandString)
-	throws UnknownCommandException, InvalidCommandNameException
+		throws UnknownCommandException, InvalidCommandNameException
 	{
 		Command command = null;
 		String key = toKey(commandString);
