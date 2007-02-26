@@ -106,6 +106,10 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 						log.debug("no more lines from client");
 						break;
 					}
+
+					if (log.isDebugEnabled())
+						log.debug("Client: " + line);
+
 					this.server.getCommandHandler().handleCommand(this, line);
 					lastActiveTime = System.currentTimeMillis();
 				}
@@ -206,6 +210,9 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 
 	public void sendResponse(String response) throws IOException
 	{
+		if (log.isDebugEnabled())
+			log.debug("Server: " + response);
+
 		this.writer.print(response + "\r\n");
 		this.writer.flush();
 	}

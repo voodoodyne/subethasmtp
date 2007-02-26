@@ -40,9 +40,10 @@ public class EhloCommand extends BaseCommand
 			session.setHasSeenHelo(true);
 			String response = "250-" + context.getServer().getHostName() + "\r\n" + 
 								"250-8BITMIME";
+
 			if (context.getServer().getCommandHandler().containsCommand("STARTTLS"))
 			{
-				response = response + "\r\n" + "250 STARTTLS";
+				response = response + "\r\n" + "250-STARTTLS";
 			}
 
 			if (context.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
@@ -51,6 +52,7 @@ public class EhloCommand extends BaseCommand
 						+ AuthCommand.getEhloString(context.getSession()
 								.getMessageHandler());
 			}
+			response = response + "\r\n" + "250 Ok";
 			context.sendResponse(response);
 		}
 		else
