@@ -1,0 +1,140 @@
+<html>
+<head>
+	<title>SubEtha SMTP Mailing lists</title>
+	<style type="text/css">
+		/* <![CDATA[ */ 
+		@import "http://www.tigris.org/branding/css/tigris.css"; 
+		@import "http://www.tigris.org/branding/css/inst.css"; 
+		/*  ]]> */
+	</style>
+	<link rel="stylesheet" type="text/css" href="http://www.tigris.org/branding/css/print.css" media="print" />
+	<script src="http://www.tigris.org/branding/scripts/tigris.js" type="text/javascript">
+	</script>
+</head>
+<body>
+<div class="app">
+
+	<div id="apphead">
+	<h1><small>SubEtha SMTP</small><br /> Mailing lists</h1>
+	</div>
+
+	<p>We are self hosting using SubEtha SMTP using SubEtha Mail 
+		to manage our own mailing lists. 
+		Thus our mailing lists reside on another server.</p>
+	
+	<div id="projectmailinglistlist" class="application">
+	
+	 <div class="h2">
+		<h2>smtp@subethamail.org</h2>  
+	 
+		 <p>
+			<a href="http://www.subethamail.org/se/archive.jsp?listId=13">View mailing list archive</a>
+		 </p>
+		 
+		 <dl>
+		  <dt>Description</dt>
+		  <dd>Low traffic list: This list is for the discussion of the development
+				of SubEtha Mail.</dd>
+		 
+			  <dt>Join</dt>
+			  <dd><a href="http://www.subethamail.org/se/list/smtp">Subscribe</a></dd>
+		 </dl>
+	 </div>
+
+<div class="h2">
+    <h2>issues&#064;subethasmtp.tigris.org</h2>  
+ 
+ <p>
+    <a href="http://subethasmtp.tigris.org/servlets/SummarizeList?listName=issues">View mailing list archive</a> | <a href="http://subethasmtp.tigris.org/servlets/SearchList?listName=issues">Search mailing list archive</a>
+     | <a href="http://subethasmtp.tigris.org/servlets/MailingListEdit?list=issues">Edit mailing list</a>
+
+   </p>
+ 
+ <dl>
+  <dt>Description</dt>
+  <dd>A mailing list for issue or artifact creation and changes. When new issues or updates to issues are committed, an e-mail is sent to this list. If this list is deleted, the system will generate mail failures for every issue created or updated in the project.</dd>
+ 
+ 
+      <dt>Subscribe</dt>
+   <dd>send email to:  <a href="mailto:issues-subscribe@subethasmtp.tigris.org">issues-subscribe@subethasmtp.tigris.org</a></dd>
+
+      <dt>Unsubscribe</dt>
+   <dd>send email to:  <a href="mailto:issues-unsubscribe@subethasmtp.tigris.org">issues-unsubscribe@subethasmtp.tigris.org</a></dd>  
+  </dl>
+
+
+ <form action="ProjectMailingListList" method="post">
+
+ <p>
+  <input type="radio" name="subtype" value="Normal" checked="checked" />
+
+   Message-by-message
+  <input type="radio" name="subtype" value="Digest" />
+   Digest format
+ </p>
+
+ <p>
+  <input type="hidden" name="listName" value="issues" />
+  <input type="submit" name="Button" value="Subscribe" />
+  &nbsp;&nbsp;
+  <input type="hidden" name="listName" value="issues" />
+
+  <input type="submit" name="Button" value="Unsubscribe" />
+ </p>
+
+ </form>
+
+</div>
+
+<div class="h2">
+    <h2>commits&#064;subethasmtp.tigris.org</h2>  
+ 
+ <p>
+
+    <a href="http://subethasmtp.tigris.org/servlets/SummarizeList?listName=commits">View mailing list archive</a> | <a href="http://subethasmtp.tigris.org/servlets/SearchList?listName=commits">Search mailing list archive</a>
+     | <a href="http://subethasmtp.tigris.org/servlets/MailingListEdit?list=commits">Edit mailing list</a>
+   </p>
+ 
+ <dl>
+  <dt>Description</dt>
+
+  <dd>A mailing list for Subversion commit messages. Behaves same as described in cvs@ mailing list.</dd>
+ 
+ 
+      <dt>Subscribe</dt>
+   <dd>send email to:  <a href="mailto:commits-subscribe@subethasmtp.tigris.org">commits-subscribe@subethasmtp.tigris.org</a></dd>
+
+      <dt>Unsubscribe</dt>
+   <dd>send email to:  <a href="mailto:commits-unsubscribe@subethasmtp.tigris.org">commits-unsubscribe@subethasmtp.tigris.org</a></dd>  
+  </dl>
+
+
+ <form action="ProjectMailingListList" method="post">
+
+ <p>
+  <input type="radio" name="subtype" value="Normal" checked="checked" />
+   Message-by-message
+  <input type="radio" name="subtype" value="Digest" />
+   Digest format
+ </p>
+
+ <p>
+
+  <input type="hidden" name="listName" value="commits" />
+  <input type="submit" name="Button" value="Subscribe" />
+  &nbsp;&nbsp;
+  <input type="hidden" name="listName" value="commits" />
+  <input type="submit" name="Button" value="Unsubscribe" />
+ </p>
+
+ </form>
+
+</div>
+
+
+	</div>
+
+</div>
+
+</body>
+</html>

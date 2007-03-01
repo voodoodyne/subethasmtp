@@ -1,0 +1,141 @@
+<?xml version="1.0"?>
+
+<!--
+	$Id$
+	$URL$
+
+	Top-level build file for SubEthaSMTP.  Imports build files for the
+	various modules, so this is the only entry point.
+	
+	To run the junit tests, you must copy junit.jar into ANT_HOME/lib.
+-->
+
+<project name="subethasmtp" default="smtp-jar" basedir=".">
+
+	<property name="name" value="${ant.project.name}" />
+	
+	<property file="user.properties" />
+	<property file="build.properties" />
+
+	<property name="build.dir" location="build" />
+	<property name="build.javadoc.dir" location="${build.dir}/api" />
+	
+	<property name="build.debug" value="on" />
+	<property name="build.deprecation" value="on" />
+
+	<property name="retroweaver.version" value="2.0Beta4" />
+	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
+	
+	<!-- Set up a basic path for everyone -->
+	<path id="base.classpath">
+		<pathelement path="${java.class.path}" />
+	</path>
+	
+	<!-- Now the rest of the imports -->
+	<import file="smtp/build.xml"/>
+	<import file="wiser/build.xml"/>
+	<import file="rtest/build.xml"/>
+
+	<target name="usage"> 
+		<echo message="  Execute 'ant -projecthelp' for build file help."/> 
+		<echo message="  Execute 'ant -help' for Ant help."/> 
+	</target> 
+
+	<target name="help" depends="usage"/>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="input-version">
+		<input addproperty="build.version" message="Version number?" />
+	</target>
+	
+	<target name="formal-build" depends="clean, input-version, smtp-jar, wiser-jar">
+	</target>
+	
+	<target name="formal-deploy" depends="formal-build, deploy">
+	</target>
+	
+	<target name="init">
+		<tstamp/>
+		<property name="build.version" value="UNVERSIONED"/>
+	</target>
+
+	<target name="javadoc">
+		<mkdir dir="${build.javadoc.dir}"/>
+		
+		<!-- this classpath isn't right -->
+		<javadoc
+			destdir="${build.javadoc.dir}"
+			packagenames="*"
+			classpathref="smtp.classpath"
+			author="true"
+			version="true"
+		>
+			<fileset dir="${smtp.javasrc.dir}"/>
+			<fileset dir="${wiser.javasrc.dir}"/>
+		</javadoc>
+	</target>
+	
+	<target name="deploy" depends="smtp-jar, wiser-jar">
+		<copy file="${build.smtp.jar.file}" todir="../Subetha/core/lib" />
+		<copy file="${build.wiser.jar.file}" todir="../Subetha/rtest/lib" />
+	</target>
+	
+	<target name="dist" depends="clean, formal-build, javadoc">
+		<property name="build.dist.dir" location="${build.dir}/${ant.project.name}-${build.version}"/>
+		<property name="build.dist.zip" location="${build.dir}/${ant.project.name}-${build.version}.zip"/>
+
+		<basename property="build.javadoc.dir.basename" file="${build.javadoc.dir}" />
+		
+		<antcall target="smtp-jdk1.4-jar" />
+		<antcall target="wiser-jdk1.4-jar" />
+	
+		<copy todir="${build.dist.dir}">
+			<fileset dir="${build.dir}">
+				<include name="${build.javadoc.dir.basename}/**" />
+				<include name="*.jar" />
+			</fileset>
+			
+			<fileset dir=".">
+				<include name="README.html" />
+				<include name="LICENSE.txt" />
+				<include name="www/**" />
+			</fileset>
+
+			<fileset dir="smtp">
+				<include name="lib/*.jar" />
+			</fileset>
+		</copy>
+
+		<copy todir="${build.dist.dir}/src/smtp">
+			<fileset dir="smtp/src">
+				<include name="org/**" />
+			</fileset>
+		</copy>
+		<copy todir="${build.dist.dir}/src/wiser">
+			<fileset dir="wiser/src">
+				<include name="org/**" />
+			</fileset>
+		</copy>
+		
+		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
+		<basename property="build.dist.dir.basename" file="${build.dist.dir}" />
+		
+		<zip zipfile="${build.dist.zip}" basedir="${build.dist.dir.dirname}">
+			<include name="${build.dist.dir.basename}/**" />
+		</zip>
+	</target>
+
+	<target name="rt-task">
+		<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+		  <classpath>
+		    <fileset dir="${retroweaver.home}/lib" includes="**/*"/>
+		    <pathelement location="${retroweaver.home}/release/retroweaver-all-${retroweaver.version}.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+
+</project>
+
