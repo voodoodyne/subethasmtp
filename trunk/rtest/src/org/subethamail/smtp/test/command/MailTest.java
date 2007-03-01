@@ -19,7 +19,7 @@ public class MailTest extends ServerTestCase
 		send("MAIL FROM: test@example.com");
 		expect("503 Error: send HELO/EHLO first");
 	}
-	
+
 	public void testAlreadySpecified() throws Exception
 	{
 		expect("220");
@@ -56,6 +56,28 @@ public class MailTest extends ServerTestCase
 		expect("501 Syntax: MAIL FROM: <address>  Error in parameters:");
 	}
 
+	public void testEmptyFromCommand() throws Exception
+	{
+		expect("220");
+
+		send("HELO foo.com");
+		expect("250");
+
+		send("MAIL FROM: <>");
+		expect("250");
+	}
+
+	public void testEmptyEmailFromCommand() throws Exception
+	{
+		expect("220");
+
+		send("HELO foo.com");
+		expect("250");
+
+		send("MAIL FROM:");
+		expect("501 Syntax: MAIL FROM: <address>");
+	}
+	
 	public void testMailWithoutWhitespace() throws Exception
 	{
 		expect("220");

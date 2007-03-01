@@ -197,6 +197,14 @@ smtpServer.start();</pre>
 		When using the SMTPServer with the MessageListener interface, it actually creates a
 		MessageListenerAdapter under the covers.
 	</p>
+
+	<p>
+		SubEtha SMTP now supports the SMTP AUTH commands. PLAIN and LOGIN are included as part 
+		of the distribution. The implementation of AUTH is done with a pluggable implementation 
+		so that you can write your own backend authentication handler. Please see the 
+		org.tigris.smtp.auth package for more information. The unit tests also contain example 
+		usage.
+	</p>
 	
 	<h2>Performance and Security</h2>
 	
@@ -259,7 +267,14 @@ smtpServer.start();</pre>
 		Thanks to a contribution from 
 		<a href="mailto:mike REPLACEWITH@ wildpaner.com">Michael Wildpaner</a>, 
 		we now support the 
-		<a href="http://www.rfc-editor.org/rfc/rfc2487.txt">StartTLS specification</a>.
+		<a href="http://rfc.net/rfc2487.html">StartTLS specification</a>.
+	</p>
+
+	<p>
+		Thanks to a contribution from 
+		<a href="mailto:mrctrevisan REPLACEWITH@ yahoo.it">Marco Trevisan</a>, 
+		we now support the 
+		<a href="http://rfc.net/rfc2554.html">SMTP AUTH specification</a>.
 	</p>
 
 </div>

@@ -34,6 +34,12 @@ public class MailCommand extends BaseCommand
 		}
 		else
 		{
+			if (commandString.trim().equals("MAIL FROM:"))
+			{
+				context.sendResponse("501 Syntax: MAIL FROM: <address>");
+				return;
+			}
+
 			String args = getArgPredicate(commandString);
 			if (!args.toUpperCase().startsWith("FROM:"))
 			{
