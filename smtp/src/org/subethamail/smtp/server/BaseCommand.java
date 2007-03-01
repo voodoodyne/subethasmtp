@@ -38,6 +38,9 @@ abstract public class BaseCommand implements Command
 		setHelp(new HelpMessage(name, help, argumentDescription));
 	}
 	
+	/**
+	 * This is the main method that you need to override in order to implement a command.
+	 */
 	abstract public void execute(String commandString, ConnectionContext context) throws IOException;
 	
 	public void setHelp(HelpMessage helpMessage)
@@ -46,7 +49,7 @@ abstract public class BaseCommand implements Command
 	}
 	
 	public HelpMessage getHelp(String commandName)
-	throws CommandException
+		throws CommandException
 	{
 		HelpMessage msg = helpMessageMap.get(commandName.toUpperCase());
 		if (msg == null)
@@ -74,6 +77,10 @@ abstract public class BaseCommand implements Command
 	
 	protected boolean isValidEmailAddress(String address)
 	{
+		// MAIL FROM: <>
+		if (address.length() == 0)
+			return true;
+
 		boolean result = false;
 		try
 		{
