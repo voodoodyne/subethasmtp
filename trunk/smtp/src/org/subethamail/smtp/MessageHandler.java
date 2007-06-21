@@ -47,4 +47,10 @@ public interface MessageHandler extends AuthenticationHandler
 	 * @throws IOException if there is an IO error reading the input data.
 	 */
 	public void data(InputStream data) throws RejectException, TooMuchDataException, IOException;
+	
+	/**
+	 * This method is called whenever a RSET command is sent. It should
+	 * be used to clean up any pending deliveries.
+	 */
+	public void resetMessageState();	
 }
