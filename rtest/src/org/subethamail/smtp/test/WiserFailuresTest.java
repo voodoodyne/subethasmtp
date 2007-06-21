@@ -230,7 +230,7 @@ public class WiserFailuresTest extends TestCase
 	{
 		Properties mailProps = getMailProperties(SMTP_PORT);
 		Session session = Session.getInstance(mailProps, null);
-		session.setDebug(true);
+		//session.setDebug(true);
 
 		MimeMessage msg = createMessage(session, from, to, subject, body);
 		Transport.send(msg);
