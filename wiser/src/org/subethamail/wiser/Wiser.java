@@ -145,6 +145,9 @@ public class Wiser implements MessageListener
 		return this.server;
 	}
 
+	/**
+	 * Creates the AuthHandlerFactory which logs the user/pass.
+	 */
 	public class AuthHandlerFactory implements AuthenticationHandlerFactory
 	{
 		public AuthenticationHandler create()

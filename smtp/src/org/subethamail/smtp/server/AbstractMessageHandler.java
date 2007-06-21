@@ -22,4 +22,8 @@ abstract public class AbstractMessageHandler implements MessageHandler
 	public void recipient(String recipient) throws RejectException
 	{
 	}
+	
+	public void resetMessageState()
+	{
+	}
 }

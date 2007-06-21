@@ -91,7 +91,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	/**
 	 * Class which implements the actual handler interface.
 	 */
-	class Handler extends AbstractMessageHandler
+	class Handler extends AbstractMessageHandler implements AuthenticationHandler
 	{
 		MessageContext ctx;
 		String from;
@@ -101,7 +101,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		
 		/**
 		 * Holds the SMTPAuthenticationHandler instantiation logic.
-		 * @return
+		 * @return a new AuthenticationHandler
 		 */
 		private AuthenticationHandler getAuthenticationHandler()
 		{
@@ -156,6 +156,13 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		}
 		
 		/** */
+		@Override
+		public void resetMessageState()
+		{
+			this.deliveries.clear();
+		}
+
+		/** */
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
 			if (this.deliveries.size() == 1)
@@ -203,6 +210,9 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		}
 	}
 	
+	/**
+	 * Auth always return true.
+	 */
 	class DummyAuthenticatioHandler implements AuthenticationHandler
 	{
 		public List<String> getAuthenticationMechanisms()

@@ -104,6 +104,7 @@ public class Session
 
 	public void reset(boolean hasSeenHelo)
 	{
+		this.messageHandler.resetMessageState();
 		this.hasSender = false;
 		this.dataMode = false;
 		this.active = true;
