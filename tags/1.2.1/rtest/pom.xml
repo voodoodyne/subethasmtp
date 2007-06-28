@@ -1,0 +1,38 @@
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+  <modelVersion>4.0.0</modelVersion>
+  <parent>
+    <groupId>org.subethamail</groupId>
+    <artifactId>subethasmtp-parent</artifactId>
+    <version>1.2.1</version>
+  </parent>
+
+  <groupId>org.subethamail</groupId>
+  <artifactId>subethasmtp-rtest</artifactId>
+
+  <name>subethasmtp-rtest</name>
+  <description>Testing framework for the smtpd.</description>
+
+  <dependencies>
+    <dependency>
+      <groupId>org.subethamail</groupId>
+      <artifactId>subethasmtp-smtp</artifactId>
+      <version>1.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>org.subethamail</groupId>
+      <artifactId>subethasmtp-wiser</artifactId>
+      <version>1.2.1</version>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>4.0</version>
+    </dependency>
+  </dependencies>
+
+  <build>
+  	<sourceDirectory>src</sourceDirectory>
+  	<testSourceDirectory>src</testSourceDirectory>
+  </build>
+</project>
