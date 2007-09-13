@@ -12,8 +12,8 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
 
 /**
@@ -29,7 +29,7 @@ public class SMTPClientTest extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(SMTPClientTest.class);
+	private static Logger log = LoggerFactory.getLogger(SMTPClientTest.class);
 	
 	/** */
 	public static final int PORT = 2566;

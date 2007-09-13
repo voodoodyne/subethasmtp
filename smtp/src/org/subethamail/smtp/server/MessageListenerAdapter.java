@@ -10,13 +10,13 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.RejectException;
-import org.subethamail.smtp.AuthenticationHandler;
-import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 
@@ -177,9 +177,11 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 				try
 				{
 					int value;
-					while ((value = data.read()) >= 0)
+                    byte buffer[] = new byte[8192];
+                    
+					while ((value = data.read(buffer)) >= 0)
 					{
-						dfos.write(value);
+						dfos.write(buffer, 0, value-1);
 					}
 					
 					for (Delivery delivery: this.deliveries)
@@ -199,7 +201,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 			return getAuthenticationHandler().getAuthenticationMechanisms();
 		}
 		
-		public boolean auth(String clientInput, StringBuffer response) throws RejectException
+		public boolean auth(String clientInput, StringBuilder response) throws RejectException
 		{
 			return getAuthenticationHandler().auth(clientInput,response);
 		}
@@ -220,7 +222,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 			return new ArrayList<String>();
 		}
 		
-		public boolean auth(String clientInput, StringBuffer response) throws RejectException
+		public boolean auth(String clientInput, StringBuilder response) throws RejectException
 		{
 			return true;
 		}

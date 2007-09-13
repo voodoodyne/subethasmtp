@@ -12,8 +12,8 @@ import java.util.StringTokenizer;
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -24,7 +24,7 @@ abstract public class BaseCommand implements Command
 	private String name;
 	private static Map<String, HelpMessage> helpMessageMap = new HashMap<String, HelpMessage>();
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(BaseCommand.class);
+	private static Logger log = LoggerFactory.getLogger(BaseCommand.class);
 	
 	public BaseCommand(String name, String help)
 	{
@@ -97,18 +97,16 @@ abstract public class BaseCommand implements Command
 		return result;
 	}
 	
-	protected static String getTokenizedString(Collection<String> items, String delim)
+	protected static void getTokenizedString(StringBuilder sb, Collection<String> items, String delim)
 	{
-		StringBuffer ret = new StringBuffer();
 		for( Iterator<String> it=items.iterator(); it.hasNext(); )
 		{
-			ret.append(it.next());
+			sb.append(it.next());
 			if( it.hasNext() )
 			{
-				ret.append(delim);
+				sb.append(delim);
 			}
 		}
-		return ret.toString();
 	}
 	
 	protected String[] getArgs(String commandString)

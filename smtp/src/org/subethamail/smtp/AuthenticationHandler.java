@@ -33,7 +33,7 @@ public interface AuthenticationHandler
 	 * @param response a buffer filled with your response to the client input.
 	 * @throws org.subethamail.smtp.RejectException if authentication fails.
 	 */
-	public boolean auth(String clientInput, StringBuffer response) throws RejectException;
+	public boolean auth(String clientInput, StringBuilder response) throws RejectException;
 	
 	/**
 	 * Since a so-designed handler has its own state, it seems reasonable to enable resetting
