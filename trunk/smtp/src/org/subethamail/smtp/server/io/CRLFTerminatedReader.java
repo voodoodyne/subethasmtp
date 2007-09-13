@@ -98,7 +98,7 @@ public class CRLFTerminatedReader extends Reader
 		this(in);
 	}
 
-    private StringBuffer lineBuffer = new StringBuffer();
+    private StringBuilder lineBuffer = new StringBuilder();
     private final int
             EOF = -1,
             CR  = 13,
@@ -122,7 +122,7 @@ public class CRLFTerminatedReader extends Reader
      */
     public String readLine() throws IOException
 	{
-        //start with the StringBuffer empty
+        //start with the StringBuilder empty
         lineBuffer.delete(0, lineBuffer.length());
 
         /* This boolean tells which state we are in,

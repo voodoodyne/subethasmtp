@@ -18,8 +18,8 @@ import javax.mail.internet.MimeMessage;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
@@ -29,7 +29,7 @@ public class WiserFailuresTest extends TestCase
 	private final static String HOST_NAME = "localhost";
 	private final static String TO_ADDRESS = "to-addr@localhost";
 	private final static int SMTP_PORT = 1081;
-	private static Log log = LogFactory.getLog(WiserFailuresTest.class);
+	private static Logger log = LoggerFactory.getLogger(WiserFailuresTest.class);
 	private BufferedReader input;
 	private PrintWriter output;
 	private Wiser server;
@@ -82,7 +82,7 @@ public class WiserFailuresTest extends TestCase
 		sendQuit();
 
 		assertEquals(1, server.getMessages().size());
-		Iterator emailIter = server.getMessages().iterator();
+		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
 		WiserMessage email = (WiserMessage)emailIter.next();
 		assertEquals("Body", email.getMimeMessage().getContent().toString());
 	}
@@ -104,7 +104,7 @@ public class WiserFailuresTest extends TestCase
 		sendQuit();
 
 		assertEquals(1, server.getMessages().size());
-		Iterator emailIter = server.getMessages().iterator();
+		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
 		WiserMessage email = (WiserMessage)emailIter.next();
 		assertEquals("Body", email.getMimeMessage().getContent().toString());
 	}
@@ -123,7 +123,7 @@ public class WiserFailuresTest extends TestCase
 		}
 
 		assertEquals(1, server.getMessages().size());
-		Iterator emailIter = server.getMessages().iterator();
+		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
 		WiserMessage email = (WiserMessage)emailIter.next();
 		assertEquals(email.getMimeMessage().getContent().toString(), bodyWithCR);
 	}
@@ -211,7 +211,7 @@ public class WiserFailuresTest extends TestCase
 			e.printStackTrace();
 		}
 
-		Iterator emailIter = server.getMessages().iterator();
+		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
 		WiserMessage email = (WiserMessage)emailIter.next();
 		assertTrue(email.getMimeMessage().getHeader("Subject")[0].equals("Test"));
 		assertTrue(email.getMimeMessage().getContent().toString().equals("Test Body"));

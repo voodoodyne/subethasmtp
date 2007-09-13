@@ -1,7 +1,10 @@
 package org.subethamail.smtp.server;
 
 import java.io.IOException;
-import java.net.Socket;
+import java.net.SocketAddress;
+
+import org.apache.mina.common.IoSession;
+import org.subethamail.smtp.server.io.ByteBufferInputStream;
 
 /**
  * This context is used for managing information
@@ -11,9 +14,10 @@ import java.net.Socket;
  */
 public interface ConnectionContext
 {
+	public ByteBufferInputStream getInput();
 	public Session getSession();
-	public ConnectionHandler getConnection();
-	public SMTPServer getServer();
-	public Socket getSocket();
 	public void sendResponse(String response) throws IOException;
+	public SocketAddress getRemoteAddress();
+	public SMTPServer getSMTPServer();
+	public IoSession getIOSession();
 }

@@ -26,9 +26,9 @@ public class HelloCommand extends BaseCommand
 			context.sendResponse("501 Syntax: HELO <hostname>");
 			return;
 		}
-		
+
 		Session session = context.getSession();
 		session.setHasSeenHelo(true);
-		context.sendResponse("250 " + context.getServer().getHostName());
+		context.sendResponse("250 " + context.getSMTPServer().getHostName());
 	}
 }

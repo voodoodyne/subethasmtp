@@ -16,9 +16,7 @@ public class ReceiptCommand extends BaseCommand
 {
 	public ReceiptCommand()
 	{
-		super("RCPT",
-				"Specifies the recipient. Can be used any number of times.",
-				"TO: <recipient> [ <parameters> ]");
+		super("RCPT", "Specifies the recipient. Can be used any number of times.", "TO: <recipient> [ <parameters> ]");
 	}
 
 	@Override
@@ -30,7 +28,7 @@ public class ReceiptCommand extends BaseCommand
 			context.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (session.getRecipientCount() >= context.getServer().getMaxRecipients())
+		else if (session.getRecipientCount() >= context.getSMTPServer().getMaxRecipients())
 		{
 			context.sendResponse("452 Error: too many recipients");
 			return;
@@ -39,9 +37,7 @@ public class ReceiptCommand extends BaseCommand
 		String args = getArgPredicate(commandString);
 		if (!args.toUpperCase().startsWith("TO:"))
 		{
-			context.sendResponse(
-					"501 Syntax: RCPT TO: <address>  Error in parameters: \""
-					+ args + "\"");
+			context.sendResponse("501 Syntax: RCPT TO: <address>  Error in parameters: \"" + args + "\"");
 			return;
 		}
 		else

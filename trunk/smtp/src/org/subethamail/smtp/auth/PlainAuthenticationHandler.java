@@ -32,7 +32,7 @@ public class PlainAuthenticationHandler implements AuthenticationHandler
 		return ret;
 	}
 
-	public boolean auth(String clientInput, StringBuffer response)
+	public boolean auth(String clientInput, StringBuilder response)
 			throws RejectException
 	{
 		StringTokenizer stk = new StringTokenizer(clientInput);

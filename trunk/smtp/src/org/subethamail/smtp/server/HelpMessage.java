@@ -43,8 +43,8 @@ public class HelpMessage
 	private void buildOutputString()
 	{
 		StringTokenizer stringTokenizer = new StringTokenizer(helpMessage, "\n");
-		StringBuilder stringBuilder = new StringBuilder().append("214-")
-				.append(commandName).append(argumentDescription);
+		StringBuilder stringBuilder = new StringBuilder();
+        stringBuilder.append("214-").append(commandName).append(argumentDescription);
 		while (stringTokenizer.hasMoreTokens())
 		{
 			stringBuilder.append("\n214-    ").append(

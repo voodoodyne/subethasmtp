@@ -9,6 +9,7 @@ import org.subethamail.smtp.server.Session;
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class EhloCommand extends BaseCommand
 {
@@ -26,39 +27,43 @@ public class EhloCommand extends BaseCommand
 			context.sendResponse("501 Syntax: EHLO hostname");
 			return;
 		}
-		
-//		postfix returns...
-//		250-server.host.name
-//		250-PIPELINING
-//		250-SIZE 10240000
-//		250-ETRN
-//		250 8BITMIME
+
+		//		postfix returns...
+		//		250-server.host.name
+		//		250-PIPELINING
+		//		250-SIZE 10240000
+		//		250-ETRN
+		//		250 8BITMIME
 
 		Session session = context.getSession();
+		StringBuilder response = new StringBuilder();
 		if (!session.getHasSeenHelo())
 		{
 			session.setHasSeenHelo(true);
-			String response = "250-" + context.getServer().getHostName() + "\r\n" + 
-								"250-8BITMIME";
+			response.append("250-");
+			response.append(context.getSMTPServer().getHostName());
+			response.append("\r\n");
+			response.append("250-8BITMIME");
 
-			if (context.getServer().getCommandHandler().containsCommand("STARTTLS"))
+			if (context.getSMTPServer().getCommandHandler().containsCommand("STARTTLS"))
 			{
-				response = response + "\r\n" + "250-STARTTLS";
+				response.append("\r\n").append("250-STARTTLS");
 			}
 
-			if (context.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
+			if (context.getSMTPServer().getCommandHandler().containsCommand(AuthCommand.VERB))
 			{
-				response = response
-						+ AuthCommand.getEhloString(context.getSession()
-								.getMessageHandler());
+				response.append(AuthCommand.getEhloString(context.getSession().getMessageHandler()));
 			}
-			response = response + "\r\n" + "250 Ok";
-			context.sendResponse(response);
+			response.append("\r\n");
+			response.append("250 Ok");
 		}
 		else
 		{
 			String remoteHost = args[1];
-			context.sendResponse("503 " + remoteHost + " Duplicate EHLO");
+			response.append("503 ");
+			response.append(remoteHost);
+			response.append(" Duplicate EHLO");
 		}
+		context.sendResponse(response.toString());
 	}
 }

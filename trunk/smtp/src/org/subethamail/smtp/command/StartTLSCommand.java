@@ -1,23 +1,35 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
-import java.net.Socket;
 
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
-
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.mina.filter.SSLFilter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.io.DummySSLSocketFactory;
 
 /**
- * @author Michael Wildpaner &lt;mike@wildpaner.com&gt;
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class StartTLSCommand extends BaseCommand
 {
-	private static Log log = LogFactory.getLog(StartTLSCommand.class);
+	private static Logger log = LoggerFactory.getLogger(StartTLSCommand.class);
+
+	private static SSLFilter sslFilter;
+
+	static
+	{
+		try
+		{
+			DummySSLSocketFactory socketFactory = new DummySSLSocketFactory();
+			sslFilter = new SSLFilter(socketFactory.getSSLContext());
+		}
+		catch (Exception e)
+		{
+			e.printStackTrace();
+		}
+	}
 
 	public StartTLSCommand()
 	{
@@ -35,31 +47,29 @@ public class StartTLSCommand extends BaseCommand
 
 		try
 		{
-			Socket socket = context.getConnection().getSocket();
-			if (socket instanceof SSLSocket)
+			if (sslFilter.isSSLStarted(context.getIOSession()))
 			{
 				context.sendResponse("454 TLS not available due to temporary reason: TLS already active");
 				return;
 			}
 
+			// Insert SSLFilter to get ready for handshaking
+			context.getIOSession().getFilterChain().addFirst("SSLfilter", sslFilter);
+
+			// Disable encryption temporarilly.
+			// This attribute will be removed by SSLFilter
+			// inside the Session.write() call below.
+			context.getIOSession().setAttribute(SSLFilter.DISABLE_ENCRYPTION_ONCE, Boolean.TRUE);
+
+			// Write StartTLSResponse which won't be encrypted.
 			context.sendResponse("220 Ready to start TLS");
 
-			InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-			SSLSocketFactory sf = ((SSLSocketFactory) SSLSocketFactory.getDefault());
-			SSLSocket s = (SSLSocket) (sf.createSocket(socket, remoteAddress.getHostName(), socket.getPort(), true));
+			// Now DISABLE_ENCRYPTION_ONCE attribute is cleared.
+			assert context.getIOSession().getAttribute(SSLFilter.DISABLE_ENCRYPTION_ONCE) == null;
 
-			// we are a server
-			s.setUseClientMode(false);
-
-			// allow all supported cipher suites
-			s.setEnabledCipherSuites(s.getSupportedCipherSuites());
-			
-			s.startHandshake();
-
-			context.getConnection().setSocket(s);
-			context.getSession().reset(); // clean slate
+			context.getSession().reset(); // clean state
 		}
-		catch (IOException e)
+		catch (Exception e)
 		{
 			log.warn("startTLS() failed: " + e.getMessage(), e);
 		}

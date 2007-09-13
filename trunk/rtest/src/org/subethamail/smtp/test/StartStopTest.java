@@ -8,14 +8,13 @@ import junit.framework.Test;
 import junit.framework.TestCase;
 import junit.framework.TestSuite;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
 
 /**
- * This class attempts to quickly start/stop 10 Wiser
- * servers. It makes sure that the socket bind address is
- * correctly shut down.
+ * This class attempts to quickly start/stop 10 Wiser servers. It makes sure that the socket bind address is correctly
+ * shut down.
  * 
  * @author Jon Stevens
  */
@@ -23,29 +22,33 @@ public class StartStopTest extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(StartStopTest.class);
-	
+	private static Logger log = LoggerFactory.getLogger(StartStopTest.class);
+
 	/** */
 	public static final int PORT = 2566;
 
 	/** */
 	protected Session session;
+
 	protected int counter = 0;
-	
+
 	/** */
-	public StartStopTest(String name) { super(name); }
-	
+	public StartStopTest(String name)
+	{
+		super(name);
+	}
+
 	/** */
 	protected void setUp() throws Exception
 	{
-		super.setUp();		
+		super.setUp();
 
 		Properties props = new Properties();
 		props.setProperty("mail.smtp.host", "localhost");
 		props.setProperty("mail.smtp.port", Integer.toString(PORT));
 		this.session = Session.getDefaultInstance(props);
 	}
-	
+
 	/** */
 	protected void tearDown() throws Exception
 	{
@@ -54,7 +57,7 @@ public class StartStopTest extends TestCase
 
 	public void testMultipleStartStop() throws Exception
 	{
-		for(int i=0; i<10; i++)
+		for (int i = 0; i < 10; i++)
 		{
 			startStop();
 		}
@@ -65,11 +68,11 @@ public class StartStopTest extends TestCase
 	{
 		Wiser wiser = new Wiser();
 		wiser.setPort(PORT);
-		
+
 		wiser.start();
 
 		wiser.stop();
-		
+
 		counter++;
 	}
 

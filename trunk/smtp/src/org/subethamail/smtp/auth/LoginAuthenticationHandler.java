@@ -8,7 +8,7 @@ import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.util.Base64;
 
 /**
- * Implements the SMTP AUTH LOGIN mechanism.<br>
+ * Implements the SMTP AUTH LOGIN mechanism.<br />
  * You are only required to plug your UsernamePasswordValidator implementation
  * for username and password validation to take effect.
  * 
@@ -17,7 +17,9 @@ import org.subethamail.smtp.util.Base64;
 public class LoginAuthenticationHandler implements AuthenticationHandler
 {
 	private String username;
+
 	private String password;
+
 	private UsernamePasswordValidator helper;
 
 	/** Creates a new instance of PlainAuthenticationHandler */
@@ -26,6 +28,9 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 		this.helper = helper;
 	}
 
+	/**
+	 * 
+	 */
 	public List<String> getAuthenticationMechanisms()
 	{
 		List<String> ret = new ArrayList<String>(1);
@@ -33,8 +38,10 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 		return ret;
 	}
 
-	public boolean auth(String clientInput, StringBuffer response)
-			throws RejectException
+	/**
+	 * 
+	 */
+	public boolean auth(String clientInput, StringBuilder response) throws RejectException
 	{
 		StringTokenizer stk = new StringTokenizer(clientInput);
 		String token = stk.nextToken();
@@ -48,17 +55,18 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 				response.append("504 AUTH mechanism mismatch.");
 				return true;
 			}
+
 			if (stk.hasMoreTokens())
 			{
 				// the client submitted an initial response
-				response
-						.append("535 Initial response not allowed in AUTH LOGIN.");
+				response.append("535 Initial response not allowed in AUTH LOGIN.");
 				return true;
 			}
-			response.append("334 ").append(
-					Base64.encodeToString("Username:".getBytes(), false));
+
+			response.append("334 ").append(Base64.encodeToString("Username:".getBytes(), false));
 			return false;
 		}
+
 		if (username == null)
 		{
 			byte[] decoded = Base64.decode(clientInput);
@@ -67,8 +75,7 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 				throw new RejectException();
 			}
 			this.username = new String(decoded);
-			response.append("334 ").append(
-					Base64.encodeToString("Password:".getBytes(), false));
+			response.append("334 ").append(Base64.encodeToString("Password:".getBytes(), false));
 			return false;
 		}
 
@@ -79,6 +86,7 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 		}
 
 		this.password = new String(decoded);
+		
 		try
 		{
 			helper.login(username, password);
@@ -92,6 +100,9 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 		return true;
 	}
 
+	/**
+	 * 
+	 */
 	public void resetState()
 	{
 		this.username = null;

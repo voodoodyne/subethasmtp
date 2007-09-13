@@ -1,141 +1,153 @@
 package org.subethamail.smtp.server;
 
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.io.PrintWriter;
-import java.net.Socket;
+import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.apache.mina.common.IdleStatus;
+import org.apache.mina.common.IoHandlerAdapter;
+import org.apache.mina.common.IoSession;
+import org.apache.mina.common.TransportType;
+import org.apache.mina.filter.SSLFilter;
+import org.apache.mina.filter.SSLFilter.SSLFilterMessage;
+import org.apache.mina.transport.socket.nio.SocketSessionConfig;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.command.DataEndCommand;
+import org.subethamail.smtp.server.io.ByteBufferInputStream;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
-import org.subethamail.smtp.server.io.LastActiveInputStream;
 
 /**
- * The thread that handles a connection. This class
+ * The IoHandler that handles a connection. This class
  * passes most of it's responsibilities off to the
  * CommandHandler.
  * 
  * @author Jon Stevens
+ * 
+ * This file has been used and differs from the original
+ * by the use of MINA NIO framework.
+ * 
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
-public class ConnectionHandler extends Thread implements ConnectionContext, MessageContext
+public class ConnectionHandler extends IoHandlerAdapter
 {
-	private static Log log = LogFactory.getLog(ConnectionHandler.class);
+	public class Context implements ConnectionContext, MessageContext
+	{
+		private ByteBufferInputStream input = new ByteBufferInputStream();
+
+		private SMTPServer server;
+
+		private Session sessionCtx;
+
+		private IoSession session;
+
+		public Context(SMTPServer server, IoSession session)
+		{
+			this.server = server;
+			this.session = session;
+			sessionCtx = new Session(this.server.getMessageHandlerFactory().create(this));
+		}
+
+		public ByteBufferInputStream getInput()
+		{
+			return input;
+		}
+
+		public Session getSession()
+		{
+			return sessionCtx;
+		}
+
+		public void sendResponse(String response) throws IOException
+		{
+			ConnectionHandler.sendResponse(session, response);
+		}
+
+		public SocketAddress getRemoteAddress()
+		{
+			return session.getRemoteAddress();
+		}
+
+		public SMTPServer getSMTPServer()
+		{
+			return server;
+		}
+
+		public IoSession getIOSession()
+		{
+			return session;
+		}
+	}
+
+	private final static byte[] EOL = new byte[] {'\r', '\n'};
+
+	private final static byte[] END_OF_DATA = new byte[] {'.', '\r', '\n'};
+
+	// Session objects
+	private final static String CONTEXT_ATTRIBUTE = ConnectionHandler.class.getName() + ".ctx";
+
+	private static Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
 
 	private SMTPServer server;
-	private Session session;
 
-	private InputStream input;
-	private OutputStream output;
+	private int numberOfConnections;
 
-	private CRLFTerminatedReader reader;
-	private PrintWriter writer;
-
-	private Socket socket;
-
-	private long startTime;
-	private long lastActiveTime;
-	
-	public ConnectionHandler(SMTPServer server, Socket socket)
-		throws IOException
+	public ConnectionHandler(SMTPServer server)
 	{
-		super(server.getConnectionGroup(), ConnectionHandler.class.getName());
 		this.server = server;
-
-		setSocket(socket);
-
-		this.startTime = System.currentTimeMillis();
-		this.lastActiveTime = this.startTime;
-		
-	}
-	
-	public Session getSession()
-	{
-		return this.session;
-	}
-	
-	public ConnectionHandler getConnection()
-	{
-		return this;
-	}
-	
-	public SMTPServer getServer()
-	{
-		return this.server;
 	}
 
-	public void timeout() throws IOException
+	private synchronized void updateNumberOfConnections(int newValue)
 	{
-		try
+		numberOfConnections = newValue;
+		if (log.isDebugEnabled())
+			log.debug("Active connections = " + numberOfConnections);
+	}
+
+	/**
+	 * @return The number of open connections
+	 */
+	public int getNumberOfConnections()
+	{
+		return numberOfConnections;
+	}
+
+	/**
+	 * 
+	 */
+	public void sessionCreated(IoSession session)
+	{
+		updateNumberOfConnections(numberOfConnections + 1);
+
+		if (session.getTransportType() == TransportType.SOCKET)
 		{
-			this.sendResponse("421 Timeout waiting for data from client.");
+			((SocketSessionConfig)session.getConfig()).setReceiveBufferSize(128);
+			((SocketSessionConfig)session.getConfig()).setSendBufferSize(64);
 		}
-		finally
-		{
-			closeConnection();
-		}
-	}
 
-	public void run()
-	{
+		session.setIdleTime(IdleStatus.READER_IDLE, server.getConnectionTimeout() / 1000);
+
+		// We're going to use SSL negotiation notification.
+		session.setAttribute(SSLFilter.USE_NOTIFICATION);
+
+		// Init protocol internals
 		if (log.isDebugEnabled())
 			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
 
-		this.session = new Session(this.server.getMessageHandlerFactory().create(this));
+		Context minaCtx = new Context(server, session);
+		session.setAttribute(CONTEXT_ATTRIBUTE, minaCtx);
+
 		try
 		{
 			if (this.server.hasTooManyConnections())
 			{
 				log.debug("SMTP Too many connections!");
 
-				this.sendResponse("554 Transaction failed. Too many connections.");
-				return;
+				sendResponse(session, "554 Transaction failed. Too many connections.");
 			}
 
-			this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getName());
-
-			while (session.isActive())
-			{
-				try
-				{
-					String line = this.reader.readLine();
-					if (line == null)
-					{
-						log.debug("no more lines from client");
-						break;
-					}
-
-					if (log.isDebugEnabled())
-						log.debug("Client: " + line);
-
-					this.server.getCommandHandler().handleCommand(this, line);
-					lastActiveTime = System.currentTimeMillis();
-				}
-				catch (CRLFTerminatedReader.TerminationException te)
-				{
-					String msg = "501 Syntax error at character position "
-						+ te.position()
-						+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.";
-
-					log.debug(msg);
-					this.sendResponse(msg);
-
-					// if people are screwing with things, close connection
-					break;
-				}
-				catch (CRLFTerminatedReader.MaxLineLengthException mlle)
-				{
-					String msg = "501 " + mlle.getMessage();
-
-					log.debug(msg);
-					this.sendResponse(msg);
-
-					// if people are screwing with things, close connection
-					break;
-				}
-			}
+			sendResponse(session, "220 " + this.server.getHostName() + " ESMTP " + this.server.getName());
 		}
 		catch (IOException e1)
 		{
@@ -144,107 +156,153 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 				// primarily if things fail during the MessageListener.deliver(), then try
 				// to send a temporary failure back so that the server will try to resend 
 				// the message later.
-				this.sendResponse("450 Problem attempting to execute commands. Please try again later.");
+				sendResponse(session, "450 Problem when connecting. Please try again later.");
 			}
 			catch (IOException e)
 			{
 			}
 			if (log.isDebugEnabled())
-				log.debug(e1);
-		}
-		finally
-		{
-			closeConnection();
+				log.debug("Error on session creation", e1);
+
+			session.close();
 		}
 	}
 
-	private void closeConnection()
+	/**
+	 * 
+	 */
+	public void sessionClosed(IoSession session) throws Exception
+	{
+		updateNumberOfConnections(numberOfConnections - 1);
+	}
+
+	/**
+	 * Sends a response that a session is idle and closes it.
+	 */
+	public void sessionIdle(IoSession session, IdleStatus status)
 	{
 		try
 		{
-			try
-			{
-				this.writer.close();
-				this.input.close();
-			}
-			finally
-			{
-				closeSocket();
-			}
+			sendResponse(session, "421 Timeout waiting for data from client.");
+		}
+		catch (IOException ioex)
+		{
+		}
+		finally
+		{
+			session.close();
+		}
+	}
+
+	/**
+	 * 
+	 */
+	public void exceptionCaught(IoSession session, Throwable cause)
+	{
+		if (log.isDebugEnabled())
+			log.debug("Exception occured :", cause);
+
+		try
+		{
+			// primarily if things fail during the MessageListener.deliver(), then try
+			// to send a temporary failure back so that the server will try to resend 
+			// the message later.
+			sendResponse(session, "450 Problem attempting to execute commands. Please try again later.");
 		}
 		catch (IOException e)
 		{
-			log.debug(e);
+		}
+		finally
+		{
+			session.close();
 		}
 	}
 
-	public void setSocket(Socket socket) throws IOException
+	/**
+	 * 
+	 */
+	public void messageReceived(IoSession session, Object message) throws Exception
 	{
-		this.socket = socket;
-		this.input = new LastActiveInputStream(this.socket.getInputStream(), this);
-		this.output = this.socket.getOutputStream();
-		this.reader = new CRLFTerminatedReader(this.input);
-		this.writer = new PrintWriter(this.output);
+		if (message instanceof SSLFilterMessage)
+		{
+			if (log.isDebugEnabled())
+				log.debug("SSL FILTER message -> " + message);
+			return;
+		}
+
+		try
+		{
+			String line = (String)message;
+			if (line == null)
+			{
+				if (log.isDebugEnabled())
+					log.debug("no more lines from client");
+				return;
+			}
+
+			if (log.isDebugEnabled())
+				log.debug("C: " + line);
+
+			Context minaCtx = (Context)session.getAttribute(CONTEXT_ATTRIBUTE);
+
+			if (minaCtx.getSession().isDataMode())
+			{
+				try
+				{
+					if (line.equals("."))
+					{
+						minaCtx.getInput().write(END_OF_DATA);
+						new DataEndCommand().execute(null, minaCtx);
+					}
+					else
+					{
+						//WARNING see character encoding                        
+						minaCtx.getInput().write(line.getBytes(SMTPServer.CODEPAGE));
+						minaCtx.getInput().write(EOL);
+					}
+				}
+				catch (UnsupportedEncodingException e)
+				{
+					log.error("Exception : ", e);
+				}
+			}
+			else
+			{
+				this.server.getCommandHandler().handleCommand(minaCtx, line);
+			}
+		}
+		catch (CRLFTerminatedReader.TerminationException te)
+		{
+			String msg =
+				"501 Syntax error at character position " + te.position()
+								+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.";
+
+			log.debug(msg);
+			sendResponse(session, msg);
+
+			// if people are screwing with things, close connection
+			session.close();
+		}
+		catch (CRLFTerminatedReader.MaxLineLengthException mlle)
+		{
+			String msg = "501 " + mlle.getMessage();
+
+			log.debug(msg);
+			sendResponse(session, msg);
+
+			// if people are screwing with things, close connection
+			session.close();
+		}
 	}
 
-	public Socket getSocket()
-	{
-		return this.socket;
-	}
-
-	private void closeSocket() throws IOException
-	{
-		if (this.socket != null && this.socket.isBound() && !this.socket.isClosed())
-			this.socket.close();
-	}
-
-	public InputStream getInput()
-	{
-		return this.input;
-	}
-
-	public OutputStream getOutput()
-	{
-		return this.output;
-	}
-
-	public void sendResponse(String response) throws IOException
+	public static void sendResponse(IoSession session, String response) throws IOException
 	{
 		if (log.isDebugEnabled())
-			log.debug("Server: " + response);
+			log.debug("S: " + response);
 
-		this.writer.print(response + "\r\n");
-		this.writer.flush();
-	}
-	
-	public long getStartTime()
-	{
-		return this.startTime;
-	}
+		if (response == null)
+			return;
 
-	public long getLastActiveTime()
-	{
-		return this.lastActiveTime;
-	}
-
-	public void refreshLastActiveTime()
-	{
-		this.lastActiveTime = System.currentTimeMillis();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
-	 */
-	public SocketAddress getRemoteAddress()
-	{
-		return this.socket.getRemoteSocketAddress();
-	}
-
-	/* (non-Javadoc)
-	 * @see org.subethamail.smtp.MessageContext#getSMTPServer()
-	 */
-	public SMTPServer getSMTPServer()
-	{
-		return this.server;
+		session.write(response);
 	}
 }

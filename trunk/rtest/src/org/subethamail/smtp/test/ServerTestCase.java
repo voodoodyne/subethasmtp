@@ -2,8 +2,8 @@ package org.subethamail.smtp.test;
 
 import junit.framework.TestCase;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.test.util.Client;
 import org.subethamail.wiser.Wiser;
 
@@ -14,11 +14,11 @@ import org.subethamail.wiser.Wiser;
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
-public class ServerTestCase extends TestCase
+public abstract class ServerTestCase extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(ServerTestCase.class);
+	private static Logger log = LoggerFactory.getLogger(ServerTestCase.class);
 	
 	/** */
 	public static final int PORT = 2566;

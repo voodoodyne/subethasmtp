@@ -15,9 +15,7 @@ public class MailCommand extends BaseCommand
 {
 	public MailCommand()
 	{
-		super("MAIL", 
-				"Specifies the sender.",
-				"FROM: <sender> [ <parameters> ]");
+		super("MAIL", "Specifies the sender.", "FROM: <sender> [ <parameters> ]");
 	}
 
 	@Override
@@ -43,12 +41,11 @@ public class MailCommand extends BaseCommand
 			String args = getArgPredicate(commandString);
 			if (!args.toUpperCase().startsWith("FROM:"))
 			{
-				context.sendResponse(
-						"501 Syntax: MAIL FROM: <address>  Error in parameters: \"" +
-						getArgPredicate(commandString) + "\"");
+				context.sendResponse("501 Syntax: MAIL FROM: <address>  Error in parameters: \""
+								+ getArgPredicate(commandString) + "\"");
 				return;
 			}
-			
+
 			String emailAddress = extractEmailAddress(args, 5);
 			if (isValidEmailAddress(emailAddress))
 			{
