@@ -25,13 +25,13 @@ import org.subethamail.smtp.server.io.CRLFTerminatedReader;
  * 
  * @author Jon Stevens
  * 
- * This file has been used and differs from the original
- * by the use of MINA NIO framework.
+ * This class has been rewritten to use the MINA NIO framework.
  * 
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class ConnectionHandler extends IoHandlerAdapter
 {
+	/** */
 	public class Context implements ConnectionContext, MessageContext
 	{
 		private ByteBufferInputStream input = new ByteBufferInputStream();
@@ -267,9 +267,10 @@ public class ConnectionHandler extends IoHandlerAdapter
 				}
 			}
 			else
-			{
-				this.server.getCommandHandler().handleCommand(minaCtx, line);
-			}
+            if (minaCtx.getSession().isAuthenticating())
+            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
+            else
+                this.server.getCommandHandler().handleCommand(minaCtx, line);
 		}
 		catch (CRLFTerminatedReader.TerminationException te)
 		{

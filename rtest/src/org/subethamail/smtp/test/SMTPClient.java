@@ -45,7 +45,7 @@ public class SMTPClient
 											new ProtocolCodecFilter(new TextLineCodecFactory(Charset.forName("UTF-8"))));
 		connector.getFilterChain().addLast("logger", new LoggingFilter());
 
-		SMTPSessionHandler handler = new SMTPSessionHandler("WFGQN7R2J");
+		SMTPSessionHandler handler = new SMTPSessionHandler("localhost");
 		while (true)
 		{
 			try
