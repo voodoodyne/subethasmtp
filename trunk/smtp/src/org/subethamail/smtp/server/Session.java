@@ -14,6 +14,7 @@ import org.subethamail.smtp.MessageHandler;
 @SuppressWarnings("serial")
 public class Session
 {
+	private boolean authenticating =false;
 	private boolean authenticated =false;
 	private boolean dataMode = false;
 	private boolean hasSeenHelo = false;
@@ -92,6 +93,16 @@ public class Session
 		this.authenticated = authenticated;
 	}
 	
+	public boolean isAuthenticating() 
+	{
+		return authenticating;
+	}
+
+	public void setAuthenticating(boolean authenticating) 
+	{
+		this.authenticating = authenticating;
+	}
+
 	/**
 	 * Executes a full reset() of the session
 	 * which requires a new HELO command to be sent
@@ -105,6 +116,7 @@ public class Session
 	public void reset(boolean hasSeenHelo)
 	{
 		this.messageHandler.resetMessageState();
+		this.authenticating = false;
 		this.hasSender = false;
 		this.dataMode = false;
 		this.active = true;
