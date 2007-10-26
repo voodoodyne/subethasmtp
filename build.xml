@@ -205,11 +205,6 @@
 				<include name="org/**" />
 			</fileset>
 		</copy>
-		<copy todir="${build.dist.dir}/src/wiser">
-			<fileset dir="wiser/src">
-				<include name="org/**" />
-			</fileset>
-		</copy>
 		
 		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
 		<basename property="build.dist.dir.basename" file="${build.dist.dir}" />
