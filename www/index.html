@@ -122,7 +122,9 @@ google_color_url = "FF0000";
 	
 	<p>
 		Ian McFarland contributed the first codebase to SubEtha Mail. Then, Jon Stevens
-		and Jeff Schnitzer re-wrote most of Ian's code into what we have today.
+		and Jeff Schnitzer re-wrote most of Ian's code into what we have today. Edouard De Oliveira
+		re-wrote the network layer to use <a href="http://mina.apache.org/">Apache Mina</a> to provide
+		Native IO (NIO) support.
 	</p>
 	
 	<h2>Project Status</h2>
@@ -228,8 +230,10 @@ smtpServer.start();</pre>
 	<h2>Performance and Security</h2>
 	
 	<p>
-		SubEthaSMTP is multithreaded.  One thread waits for socket accepts
-		and then spawns a new handler thread for each connection.
+		SubEthaSMTP is fully multithreaded. For the fastest possible networking, 
+		it uses <a href="http://mina.apache.org/">Apache Mina</a> to provide NIO based
+		stream handling. This should be one of the fastest Java SMTP receivers on the 
+		planet.
 	</p>
 	
 	<p>
@@ -252,10 +256,6 @@ smtpServer.start();</pre>
 			a complete copy of the buffered message.
 		</li>
 	</ul>
-	
-	<p>
-		SubEthaSMTP will time out idle connections.
-	</p>
 	
 	<p>
 		Java by it's nature should be immune to buffer-overflow attacks.
