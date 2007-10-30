@@ -161,9 +161,13 @@ google_color_url = "FF0000";
 	<h2>How To Use It</h2>
 	
 	<p>
-		SubEthaSMTP and <a href="wiser.html">Wiser</a> depends on commons-logging.jar, 
-		mail.jar/activation.jar. For your convenience, these jar files are 
-		included in the distribution.
+		SubEthaSMTP and <a href="wiser.html">Wiser</a> depends on
+		commons-logging.jar, mail.jar/activation.jar. As of version 2.0,
+		this project also now depends on a few more jar files because we
+		use Mina as our underlying networking layer. These jars are:
+		mina-core.jar, mina-filter-ssl.jar, mina-integration-jmx.jar and
+		slf4j-api.jar. <strong>For your convenience, these jar files are
+		included in the distribution in the lib directory</strong>.
 	</p>
 
 	<p>
