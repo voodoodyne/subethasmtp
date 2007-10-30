@@ -117,7 +117,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 			else
 			{
 				// A placeholder.
-				this.authHandler = new DummyAuthenticatioHandler();
+				this.authHandler = new DummyAuthenticationHandler();
 			}
 			// Rerurn the variable, which can be null
 			return this.authHandler;
@@ -215,7 +215,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	/**
 	 * Auth always return true.
 	 */
-	class DummyAuthenticatioHandler implements AuthenticationHandler
+	class DummyAuthenticationHandler implements AuthenticationHandler
 	{
 		public List<String> getAuthenticationMechanisms()
 		{
