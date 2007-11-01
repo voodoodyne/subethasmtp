@@ -219,7 +219,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 	}
 
 	/**
-	 * 
+	 * Deal with each line of the smtp commands
 	 */
 	public void messageReceived(IoSession session, Object message) throws Exception
 	{
@@ -245,6 +245,9 @@ public class ConnectionHandler extends IoHandlerAdapter
 
 			Context minaCtx = (Context)session.getAttribute(CONTEXT_ATTRIBUTE);
 
+			// This is where we handle re-entry into stream parsing if 
+			// after issuing a command, we expect more data. There are only
+			// two cases of this right now. isDataMode() and isAuthenticating()
 			if (minaCtx.getSession().isDataMode())
 			{
 				try
@@ -266,11 +269,14 @@ public class ConnectionHandler extends IoHandlerAdapter
 					log.error("Exception : ", e);
 				}
 			}
-			else
-            if (minaCtx.getSession().isAuthenticating())
+			else if (minaCtx.getSession().isAuthenticating())
+			{
             	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
+			}
             else
+            {
                 this.server.getCommandHandler().handleCommand(minaCtx, line);
+            }
 		}
 		catch (CRLFTerminatedReader.TerminationException te)
 		{
@@ -296,6 +302,9 @@ public class ConnectionHandler extends IoHandlerAdapter
 		}
 	}
 
+	/**
+	 * Sends a response back to the client.
+	 */
 	public static void sendResponse(IoSession session, String response) throws IOException
 	{
 		if (log.isDebugEnabled())
