@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.subethamail.smtp.AuthenticationHandler;
@@ -100,16 +101,20 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		AuthenticationHandler authHandler;
 		
 		/**
-		 * Holds the SMTPAuthenticationHandler instantiation logic.
+		 * Holds the AuthenticationHandler instantiation logic.
+		 * Either try to use a user defined AuthHandlerFactory
+		 * or default to the internal class DummyAuthenticationHandler
+		 * which always returns true.
+		 *
 		 * @return a new AuthenticationHandler
 		 */
 		private AuthenticationHandler getAuthenticationHandler()
 		{
-			if( this.authHandler != null )
+			if (this.authHandler != null)
 			{
 				return this.authHandler;
 			}
-			if( getAuthenticationHandlerFactory() != null )
+			if (getAuthenticationHandlerFactory() != null)
 			{
 				// The user has plugged in a factory. let's use it.
 				this.authHandler = getAuthenticationHandlerFactory().create();
@@ -162,7 +167,12 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 			this.deliveries.clear();
 		}
 
-		/** */
+		/**
+		 * Implementation of the data receiving portion of things. By default
+		 * deliver a copy of the stream to each recipient of the message. If
+		 * you would like to change this behavior, then you should implement
+		 * the MessageHandler interface yourself.
+		 */
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
 			if (this.deliveries.size() == 1)
@@ -217,9 +227,10 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	 */
 	class DummyAuthenticationHandler implements AuthenticationHandler
 	{
+		@SuppressWarnings("unchecked")
 		public List<String> getAuthenticationMechanisms()
 		{
-			return new ArrayList<String>();
+			return Collections.EMPTY_LIST;
 		}
 		
 		public boolean auth(String clientInput, StringBuilder response) throws RejectException
@@ -232,11 +243,17 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		}
 	}
 	
+	/**
+	 * Returns the auth handler factory
+	 */
 	public AuthenticationHandlerFactory getAuthenticationHandlerFactory()
 	{
 		return authenticationHandlerFactory;
 	}
 	
+	/**
+	 * Sets the auth handler factory.
+	 */
 	public void setAuthenticationHandlerFactory(AuthenticationHandlerFactory authenticationHandlerFactory)
 	{
 		this.authenticationHandlerFactory = authenticationHandlerFactory;
