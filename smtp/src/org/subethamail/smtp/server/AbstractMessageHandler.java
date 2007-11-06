@@ -15,14 +15,26 @@ import org.subethamail.smtp.RejectException;
  */
 abstract public class AbstractMessageHandler implements MessageHandler
 {
+	/*
+	 * (non-Javadoc)
+	 * @see org.subethamail.smtp.MessageHandler#from(java.lang.String)
+	 */
 	public void from(String from) throws RejectException
 	{
 	}
 
+	/*
+	 * (non-Javadoc)
+	 * @see org.subethamail.smtp.MessageHandler#recipient(java.lang.String)
+	 */
 	public void recipient(String recipient) throws RejectException
 	{
 	}
 	
+	/*
+	 * (non-Javadoc)
+	 * @see org.subethamail.smtp.MessageHandler#resetMessageState()
+	 */
 	public void resetMessageState()
 	{
 	}
