@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.command.DataEndCommand;
-import org.subethamail.smtp.server.io.ByteBufferInputStream;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
+import org.subethamail.smtp.server.io.SMTPMessageDataStream;
 
 /**
  * The IoHandler that handles a connection. This class
@@ -25,16 +25,16 @@ import org.subethamail.smtp.server.io.CRLFTerminatedReader;
  * 
  * @author Jon Stevens
  * 
- * This class has been rewritten to use the MINA NIO framework.
+ * This file has been used and differs from the original
+ * by the use of MINA NIO framework.
  * 
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class ConnectionHandler extends IoHandlerAdapter
 {
-	/** */
 	public class Context implements ConnectionContext, MessageContext
 	{
-		private ByteBufferInputStream input = new ByteBufferInputStream();
+		private SMTPMessageDataStream input;
 
 		private SMTPServer server;
 
@@ -46,10 +46,11 @@ public class ConnectionHandler extends IoHandlerAdapter
 		{
 			this.server = server;
 			this.session = session;
+			this.input = new SMTPMessageDataStream(server.getDataDeferredSize());
 			sessionCtx = new Session(this.server.getMessageHandlerFactory().create(this));
 		}
 
-		public ByteBufferInputStream getInput()
+		public SMTPMessageDataStream getInput()
 		{
 			return input;
 		}
@@ -169,7 +170,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 	}
 
 	/**
-	 * 
+	 * Session closed.
 	 */
 	public void sessionClosed(IoSession session) throws Exception
 	{
@@ -177,7 +178,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 	}
 
 	/**
-	 * Sends a response that a session is idle and closes it.
+	 * Sends a response telling that the session is idle and closes it.
 	 */
 	public void sessionIdle(IoSession session, IdleStatus status)
 	{
@@ -219,7 +220,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 	}
 
 	/**
-	 * Deal with each line of the smtp commands
+	 * 
 	 */
 	public void messageReceived(IoSession session, Object message) throws Exception
 	{
@@ -240,16 +241,13 @@ public class ConnectionHandler extends IoHandlerAdapter
 				return;
 			}
 
-			if (log.isDebugEnabled())
-				log.debug("C: " + line);
-
 			Context minaCtx = (Context)session.getAttribute(CONTEXT_ATTRIBUTE);
 
-			// This is where we handle re-entry into stream parsing if 
-			// after issuing a command, we expect more data. There are only
-			// two cases of this right now. isDataMode() and isAuthenticating()
 			if (minaCtx.getSession().isDataMode())
 			{
+				if (log.isTraceEnabled())
+					log.trace("C: " + line);
+
 				try
 				{
 					if (line.equals("."))
@@ -269,14 +267,16 @@ public class ConnectionHandler extends IoHandlerAdapter
 					log.error("Exception : ", e);
 				}
 			}
-			else if (minaCtx.getSession().isAuthenticating())
+			else
 			{
-            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
+				if (log.isDebugEnabled())
+					log.debug("C: " + line);
+				
+	            if (minaCtx.getSession().isAuthenticating())
+	            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
+	            else
+	                this.server.getCommandHandler().handleCommand(minaCtx, line);
 			}
-            else
-            {
-                this.server.getCommandHandler().handleCommand(minaCtx, line);
-            }
 		}
 		catch (CRLFTerminatedReader.TerminationException te)
 		{
@@ -302,9 +302,6 @@ public class ConnectionHandler extends IoHandlerAdapter
 		}
 	}
 
-	/**
-	 * Sends a response back to the client.
-	 */
 	public static void sendResponse(IoSession session, String response) throws IOException
 	{
 		if (log.isDebugEnabled())
