@@ -91,6 +91,7 @@ public class SMTPServer
 	 * defaults to 5000
 	 */
 	private int backlog = 5000;
+	
 	private MessageHandlerFactory messageHandlerFactory;
 	private CommandHandler commandHandler;
 	private SocketAcceptor acceptor;
@@ -117,7 +118,15 @@ public class SMTPServer
 	 * The maximal number of recipients that this server accepts per message delivery request.
 	 */
 	private int maxRecipients = 1000;
-
+	
+	/**
+	 * 4 megs by default. The server will buffer incoming messages to disk
+	 * when they hit this limit in the DATA received.
+	 */
+	private final static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*4;
+	
+	private int dataDeferredSize = DEFAULT_DATA_DEFERRED_SIZE;
+	
 	/**
 	 * The primary constructor.
 	 */
@@ -212,14 +221,14 @@ public class SMTPServer
 
 			DefaultIoFilterChainBuilder chain = config.getFilterChain();
 
-			executor = Executors.newCachedThreadPool();
-			chain.addLast("threadPool", new ExecutorFilter(executor));
-
-			if (log.isDebugEnabled())
+			if (log.isTraceEnabled())
 				chain.addLast("logger", new LoggingFilter());
 
 			chain.addLast("codec", new ProtocolCodecFilter(new SMTPCodecFactory(Charset.forName(CODEPAGE))));
 
+			executor = Executors.newCachedThreadPool();
+			chain.addLast("threadPool", new ExecutorFilter(executor));
+			
 			handler = new ConnectionHandler(this);
 		}
 		catch (Exception ex)
@@ -452,5 +461,44 @@ public class SMTPServer
 	public void setMaxRecipients(int maxRecipients)
 	{
 		this.maxRecipients = maxRecipients;
+	}
+
+	/**
+	 * Get the maximum size in bytes of a single message before it is 
+	 * dumped to a temporary file.
+	 */	
+	public int getDataDeferredSize() 
+	{
+		return dataDeferredSize;
+	}
+
+	/**
+	 * Set the maximum size in bytes of a single message before it is 
+	 * dumped to a temporary file. Argument must be a positive power 
+	 * of two in order to follow the expanding algorithm of 
+	 * {@link org.apache.mina.common.ByteBuffer} to prevent unnecessary
+	 * memory consumption.
+	 */	
+	public void setDataDeferredSize(int dataDeferredSize) 
+	{
+		if (isPowerOfTwo(dataDeferredSize))
+			this.dataDeferredSize = dataDeferredSize;
+		else
+			throw new IllegalArgumentException(
+					"Argument dataDeferredSize must be a positive power of two");
+	}
+	
+	/**
+	 * Demonstration : if x is a power of 2, it can't share any bit with x-1. So 
+	 * x & (x-1) should be equal to 0. To get rid of negative values, we check
+	 * that x is higher than 1 (0 and 1 being of course unacceptable values 
+	 * for a buffer length). 
+	 * 
+	 * @param x the number to test
+	 * @return true if x is a power of two
+	 */
+	public boolean isPowerOfTwo(int x)
+	{
+		return (x > 1) && (x & (x-1)) == 0;
 	}
 }

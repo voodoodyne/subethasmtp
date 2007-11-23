@@ -1,6 +1,5 @@
 package org.subethamail.smtp.command;
 
-import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
@@ -21,7 +20,7 @@ import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
  */
 public class DataEndCommand extends BaseCommand
 {
-	private final static char[] SMTP_TERMINATOR = {'\r', '\n', '.', '\r', '\n'};
+	public final static char[] SMTP_TERMINATOR = {'\r', '\n', '.', '\r', '\n'};
 
 	public DataEndCommand()
 	{
@@ -32,8 +31,8 @@ public class DataEndCommand extends BaseCommand
 	{
 		Session session = context.getSession();
 
-		InputStream stream = context.getInput();
-		stream = new BufferedInputStream(stream);
+		InputStream stream = context.getInput().getInputStream();
+		
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
 

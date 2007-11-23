@@ -5,8 +5,6 @@
 
 package org.subethamail.wiser;
 
-import java.io.BufferedInputStream;
-import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
@@ -35,12 +33,13 @@ import org.subethamail.smtp.server.SMTPServer;
  * Wiser is a smart mail testing application.
  * 
  * @author Jon Stevens
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class Wiser implements MessageListener
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(Wiser.class);
+	private final static Logger log = LoggerFactory.getLogger(Wiser.class);
 	
 	/** */
 	SMTPServer server;
@@ -120,22 +119,13 @@ public class Wiser implements MessageListener
 	}
 
 	/**
-	 * Cache the messages in memory
+	 * Cache the messages in memory. Now avoids unnecessary memory copying. 
 	 */
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException
 	{
-		ByteArrayOutputStream out = new ByteArrayOutputStream();
-		data = new BufferedInputStream(data);
-
-		// read the data from the stream
-		int current;
-		while ((current = data.read()) >= 0)
-		{
-			out.write(current);
-		}
-
-		// create a new WiserMessage.
-		messages.add(new WiserMessage(this, from, recipient, out.toByteArray()));
+		log.info("Delivering new message ...");
+		WiserMessage msg = new WiserMessage(this, from, recipient, data);
+		messages.add(msg);		
 	}
 	
 	/**

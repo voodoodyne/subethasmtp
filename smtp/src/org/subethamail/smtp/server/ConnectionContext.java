@@ -4,7 +4,7 @@ import java.io.IOException;
 import java.net.SocketAddress;
 
 import org.apache.mina.common.IoSession;
-import org.subethamail.smtp.server.io.ByteBufferInputStream;
+import org.subethamail.smtp.server.io.SMTPMessageDataStream;
 
 /**
  * This context is used for managing information
@@ -14,7 +14,7 @@ import org.subethamail.smtp.server.io.ByteBufferInputStream;
  */
 public interface ConnectionContext
 {
-	public ByteBufferInputStream getInput();
+	public SMTPMessageDataStream getInput();
 	public Session getSession();
 	public void sendResponse(String response) throws IOException;
 	public SocketAddress getRemoteAddress();
