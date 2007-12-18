@@ -77,15 +77,29 @@ public class CommandHandler
 		throws SocketTimeoutException, IOException
 	{
 		try
-		{
+		{	
 			Command command = getCommandFromString(commandString);
-			command.execute(commandString, context);
+			handleCommand(context, commandString, command);
 		}
 		catch (CommandException e)
 		{
 			context.sendResponse("500 " + e.getMessage());
 		}
 	}
+	
+	/**
+	 * Calls the execute method on a command.
+	 * 
+	 * @param context
+	 * @param commandString
+	 * @throws SocketTimeoutException
+	 * @throws IOException
+	 */
+	public void handleCommand(ConnectionContext context, String commandString, Command command)
+		throws SocketTimeoutException, IOException
+	{
+			command.execute(commandString, context);
+	}	
 	
 	/**
 	 * Executes an auth command.
@@ -110,7 +124,7 @@ public class CommandHandler
 	 * @throws UnknownCommandException
 	 * @throws InvalidCommandNameException
 	 */
-	private Command getCommandFromString(String commandString)
+	protected Command getCommandFromString(String commandString)
 		throws UnknownCommandException, InvalidCommandNameException
 	{
 		Command command = null;

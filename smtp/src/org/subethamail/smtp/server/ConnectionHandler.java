@@ -14,7 +14,13 @@ import org.apache.mina.transport.socket.nio.SocketSessionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.command.AuthCommand;
 import org.subethamail.smtp.command.DataEndCommand;
+import org.subethamail.smtp.command.EhloCommand;
+import org.subethamail.smtp.command.HelloCommand;
+import org.subethamail.smtp.command.NoopCommand;
+import org.subethamail.smtp.command.QuitCommand;
+import org.subethamail.smtp.command.ResetCommand;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 import org.subethamail.smtp.server.io.SMTPMessageDataStream;
 
@@ -275,27 +281,37 @@ public class ConnectionHandler extends IoHandlerAdapter
 	            if (minaCtx.getSession().isAuthenticating())
 	            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
 	            else
+	            if (!minaCtx.getSession().isAuthenticated() 
+	            		&& !minaCtx.getSession().getMessageHandler().getAuthenticationMechanisms().isEmpty())
+	            {
+	            	Command cmd = null;
+	            	try
+	            	{
+	            		cmd = this.server.getCommandHandler().getCommandFromString(line);
+	            	}
+	            	catch (Exception ex) {}
+
+            		if (cmd != null && (cmd instanceof AuthCommand || cmd instanceof EhloCommand || cmd instanceof HelloCommand 
+        					|| cmd instanceof NoopCommand || cmd instanceof ResetCommand || cmd instanceof QuitCommand ))
+	            		this.server.getCommandHandler().handleCommand(minaCtx, line, cmd);
+	            	else
+	            		sendResponse(session, "530 Authentication required");	            		
+	            }
+	            else
 	                this.server.getCommandHandler().handleCommand(minaCtx, line);
 			}
 		}
 		catch (CRLFTerminatedReader.TerminationException te)
 		{
-			String msg =
-				"501 Syntax error at character position " + te.position()
-								+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.";
-
-			log.debug(msg);
-			sendResponse(session, msg);
+			sendResponse(session, "501 Syntax error at character position " + te.position()
+					+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.");
 
 			// if people are screwing with things, close connection
 			session.close();
 		}
 		catch (CRLFTerminatedReader.MaxLineLengthException mlle)
 		{
-			String msg = "501 " + mlle.getMessage();
-
-			log.debug(msg);
-			sendResponse(session, msg);
+			sendResponse(session, "501 " + mlle.getMessage());
 
 			// if people are screwing with things, close connection
 			session.close();
