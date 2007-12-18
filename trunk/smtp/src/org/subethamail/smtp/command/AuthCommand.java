@@ -25,15 +25,14 @@ public class AuthCommand extends BaseCommand
 		List<String> supportedMechanisms = handler
 				.getAuthenticationMechanisms();
 		if (supportedMechanisms.isEmpty())
-		{
 			return "";
-		}
 		else
 		{
             StringBuilder sb = new StringBuilder(30);
             sb.append("\r\n");
             sb.append("250-");
             sb.append(VERB);
+            sb.append(' ');
             getTokenizedString(sb, supportedMechanisms, " ");
             
 			return sb.toString();
