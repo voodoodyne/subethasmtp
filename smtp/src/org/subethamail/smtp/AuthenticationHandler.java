@@ -2,6 +2,8 @@ package org.subethamail.smtp;
 
 import java.util.List;
 
+import org.subethamail.smtp.server.ConnectionContext;
+
 /**
  * The interface that enables challenge-response communication necessary for SMTP AUTH.<p>
  * Since the authentication process can be stateful, an instance of this class can be stateful too.<br>
@@ -31,9 +33,10 @@ public interface AuthenticationHandler
 	 * @return <code>true</code> if the authentication process is finished, <code>false</code> otherwise.
 	 * @param clientInput The client's input.
 	 * @param response a buffer filled with your response to the client input.
+	 * @param ctx the connection context filled with the credential of the user if authentication succeeds.
 	 * @throws org.subethamail.smtp.RejectException if authentication fails.
 	 */
-	public boolean auth(String clientInput, StringBuilder response) throws RejectException;
+	public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx) throws RejectException;
 	
 	/**
 	 * Since a so-designed handler has its own state, it seems reasonable to enable resetting

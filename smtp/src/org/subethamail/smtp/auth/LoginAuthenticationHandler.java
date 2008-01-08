@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.util.Base64;
 
 /**
@@ -41,7 +42,7 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 	/**
 	 * 
 	 */
-	public boolean auth(String clientInput, StringBuilder response) throws RejectException
+	public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx) throws RejectException
 	{
 		StringTokenizer stk = new StringTokenizer(clientInput);
 		String token = stk.nextToken();
@@ -97,6 +98,8 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 			resetState();
 			throw new RejectException();
 		}
+		
+		ctx.setCredential(new Credential(username));
 		return true;
 	}
 

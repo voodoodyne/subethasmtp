@@ -4,25 +4,21 @@
  */
 package org.subethamail.smtp;
 
-import java.net.SocketAddress;
-
-import org.subethamail.smtp.server.SMTPServer;
+import org.subethamail.smtp.auth.Credential;
+import org.subethamail.smtp.server.BaseContext;
 
 
 /**
  * Interface which provides context to the message handlers.
  * 
  * @author Jeff Schnitzer
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
-public interface MessageContext
+public interface MessageContext extends BaseContext
 {
 	/**
-	 * @return the SMTPServer object.
+	 * @return the logged identity. Can be null if connection is still in
+	 * authorization state or if authentication isn't required. 
 	 */
-	public SMTPServer getSMTPServer();
-	
-	/**
-	 * @return the IP address of the remote server.
-	 */
-	public SocketAddress getRemoteAddress();
+	public Credential getCredential();	
 }

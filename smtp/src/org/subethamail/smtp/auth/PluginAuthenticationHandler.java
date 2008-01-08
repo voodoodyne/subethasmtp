@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.server.ConnectionContext;
 
 /**
  * This handler makes it possible to sum the capabilities of two or more handlers types.<br>
@@ -36,7 +37,7 @@ public class PluginAuthenticationHandler implements AuthenticationHandler
 		return ret;
 	}
 
-	public boolean auth(String clientInput, StringBuilder response)
+	public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx)
 			throws RejectException
 	{
 		StringTokenizer stk = new StringTokenizer(clientInput);
@@ -45,7 +46,7 @@ public class PluginAuthenticationHandler implements AuthenticationHandler
 			resetState();
 			activateHandler(stk.nextToken().toUpperCase());
 		}
-		return getActiveHandler().auth(clientInput, response);
+		return getActiveHandler().auth(clientInput, response, ctx);
 	}
 
 	public void resetState()
