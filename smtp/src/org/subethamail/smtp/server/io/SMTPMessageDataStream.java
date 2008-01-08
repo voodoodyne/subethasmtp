@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 /**
  * This class provides an {@link InputStream} backed by a {@link ByteBuffer} 
- * till the threshold is reached. It will then create a temporary file and store the 
+ * till the threshold is reached. It will then create a temporary file, store the 
  * previously buffered and incoming data into it to prevent OOM exceptions.
  *  
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
@@ -38,7 +38,7 @@ public class SMTPMessageDataStream
 	/** If we switch to file output, this is the file. */
 	File outFile;
 
-	/** If we switch to file output, this is the channel used to write to the file. */ 
+	/** If we switch to file output, this is the stream to write to the file. */ 
 	FileOutputStream stream;
 	
 	/** When to trigger */
