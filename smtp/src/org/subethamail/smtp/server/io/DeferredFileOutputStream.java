@@ -68,9 +68,14 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 		// output stream to the file version.
 		
 		this.outFile = File.createTempFile(TMPFILE_PREFIX, TMPFILE_SUFFIX);
+		System.err.println("v0 - Writing temp deferred file to :"+outFile.getAbsoluteFile().getName());
 		this.outFileStream = new FileOutputStream(this.outFile);
 
-		((ByteArrayOutputStream)this.output).writeTo(this.outFileStream);
+		ByteArrayOutputStream baos = (ByteArrayOutputStream) this.output;
+		baos.writeTo(this.outFileStream);
+		baos.flush();
+		baos.close();
+		
 		this.output = new BufferedOutputStream(this.outFileStream);
 	}
 	
