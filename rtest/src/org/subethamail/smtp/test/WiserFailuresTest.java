@@ -213,8 +213,9 @@ public class WiserFailuresTest extends TestCase
 
 		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
 		WiserMessage email = (WiserMessage)emailIter.next();
-		assertTrue(email.getMimeMessage().getHeader("Subject")[0].equals("Test"));
-		assertTrue(email.getMimeMessage().getContent().toString().equals("Test Body"));
+		MimeMessage mime = email.getMimeMessage();
+		assertTrue(mime.getHeader("Subject")[0].equals("Test"));
+		assertTrue(mime.getContent().toString().equals("Test Body"));
 	}
 
 	private Properties getMailProperties(int port)
