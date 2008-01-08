@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.StringTokenizer;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.util.Base64;
 
 /**
@@ -16,7 +17,6 @@ import org.subethamail.smtp.util.Base64;
  */
 public class PlainAuthenticationHandler implements AuthenticationHandler
 {
-
 	private UsernamePasswordValidator helper;
 
 	/** Creates a new instance of PlainAuthenticationHandler */
@@ -32,7 +32,7 @@ public class PlainAuthenticationHandler implements AuthenticationHandler
 		return ret;
 	}
 
-	public boolean auth(String clientInput, StringBuilder response)
+	public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx)
 			throws RejectException
 	{
 		StringTokenizer stk = new StringTokenizer(clientInput);
@@ -86,6 +86,8 @@ public class PlainAuthenticationHandler implements AuthenticationHandler
 			resetState();
 			throw new RejectException();
 		}
+		
+		ctx.setCredential(new Credential(username));
 		return true;
 	}
 
