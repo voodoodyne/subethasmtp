@@ -497,7 +497,7 @@ public class SMTPServer
 	 * @param x the number to test
 	 * @return true if x is a power of two
 	 */
-	public boolean isPowerOfTwo(int x)
+	protected boolean isPowerOfTwo(int x)
 	{
 		return (x > 1) && (x & (x-1)) == 0;
 	}
