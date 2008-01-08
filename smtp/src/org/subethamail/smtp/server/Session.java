@@ -3,7 +3,7 @@ package org.subethamail.smtp.server;
 import org.subethamail.smtp.MessageHandler;
 
 /**
- * A sesssion describes events which happen during a
+ * A session describes events which happen during a
  * SMTP session. It keeps track of all of the recipients
  * who will receive the message.
  * 
