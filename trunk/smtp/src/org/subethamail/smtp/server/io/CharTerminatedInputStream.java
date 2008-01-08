@@ -159,4 +159,8 @@ public class CharTerminatedInputStream
         pos--;
         return b;
     }
+
+	public void close() throws IOException {
+		in.close();
+	}
 }
