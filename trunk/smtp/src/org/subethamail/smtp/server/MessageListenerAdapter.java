@@ -94,11 +94,12 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		 */
 		private AuthenticationHandler getAuthenticationHandler()
 		{
-			if( this.authHandler != null )
+			if (this.authHandler != null)
 			{
 				return this.authHandler;
 			}
-			if( getAuthenticationHandlerFactory() != null )
+
+			if (getAuthenticationHandlerFactory() != null)
 			{
 				// The user has plugged in a factory. let's use it.
 				this.authHandler = getAuthenticationHandlerFactory().create();
@@ -170,12 +171,18 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 					continue;
 				}
 				else
+				{
 					in = ctx.getInput().getInputStream();
+				}
 
 				if (ctx.getInput().isThresholdReached())
+				{
 					in = ((SharedFileInputStream) in).newStream(0, -1);
+				}
 				else
+				{
 					in = ((SharedByteArrayInputStream) in).newStream(0, -1);
+				}
 			
 				in = new CharTerminatedInputStream(in, DataEndCommand.SMTP_TERMINATOR);
 				in = new DotUnstuffingInputStream(in);
