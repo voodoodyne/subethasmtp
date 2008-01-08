@@ -104,7 +104,8 @@ public class SMTPMessageDataStream
 	private void thresholdReached(int current, int predicted) throws IOException
 	{
 		this.outFile = File.createTempFile(TMPFILE_PREFIX, TMPFILE_SUFFIX);
-		log.debug("Writing message to file : "+outFile.getAbsoluteFile().getName());
+		if (log.isDebugEnabled())
+			log.debug("Writing message to file : " + outFile.getAbsoluteFile().getName());
 		this.stream = new FileOutputStream(this.outFile);
 
 		this.stream.write(this.buffer.array());
