@@ -65,10 +65,8 @@ public class DeferredFileOutputStream extends ThresholdingOutputStream
 	protected void thresholdReached(int current, int predicted) throws IOException
 	{
 		// Open a temp file, write the byte array version, and swap the
-		// output stream to the file version.
-		
+		// output stream to the file version.		
 		this.outFile = File.createTempFile(TMPFILE_PREFIX, TMPFILE_SUFFIX);
-		System.err.println("v0 - Writing temp deferred file to :"+outFile.getAbsoluteFile().getName());
 		this.outFileStream = new FileOutputStream(this.outFile);
 
 		ByteArrayOutputStream baos = (ByteArrayOutputStream) this.output;
