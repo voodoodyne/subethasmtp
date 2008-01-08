@@ -91,4 +91,8 @@ public class DotUnstuffingInputStream extends FilterInputStream {
 
         return i;
     }
+    
+	public void close() throws IOException {
+		in.close();
+	}    
 }
