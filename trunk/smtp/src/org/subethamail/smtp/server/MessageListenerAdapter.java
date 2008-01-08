@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.List;
+
+import javax.mail.util.SharedByteArrayInputStream;
+import javax.mail.util.SharedFileInputStream;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
@@ -19,7 +21,10 @@ import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.server.io.DeferredFileOutputStream;
+import org.subethamail.smtp.auth.DummyAuthenticationHandler;
+import org.subethamail.smtp.command.DataEndCommand;
+import org.subethamail.smtp.server.io.CharTerminatedInputStream;
+import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
 
 /**
  * MessageHandlerFactory implementation which adapts to a collection of
@@ -30,37 +35,16 @@ import org.subethamail.smtp.server.io.DeferredFileOutputStream;
  */
 public class MessageListenerAdapter implements MessageHandlerFactory
 {
-	/**
-	 * 5 megs by default. The server will buffer incoming messages to disk
-	 * when they hit this limit in the DATA received.
-	 */
-	private static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*5;
-	
 	private Collection<MessageListener> listeners;
-	private int dataDeferredSize;
 	
 	private AuthenticationHandlerFactory authenticationHandlerFactory;
 	
 	/**
 	 * Initializes this factory with the listeners.
-	 *
-	 * Default data deferred size is 5 megs.
 	 */
 	public MessageListenerAdapter(Collection<MessageListener> listeners)
 	{
-		this(listeners, DEFAULT_DATA_DEFERRED_SIZE);
-	}
-	
-	/**
-	 * Initializes this factory with the listeners.
-	 * @param dataDeferredSize The server will buffer
-	 *        incoming messages to disk when they hit this limit in the
-	 *        DATA received.
-	 */
-	public MessageListenerAdapter(Collection<MessageListener> listeners, int dataDeferredSize)
-	{
 		this.listeners = listeners;
-		this.dataDeferredSize = dataDeferredSize;
 	}
 	
 	/* (non-Javadoc)
@@ -110,11 +94,11 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		 */
 		private AuthenticationHandler getAuthenticationHandler()
 		{
-			if (this.authHandler != null)
+			if( this.authHandler != null )
 			{
 				return this.authHandler;
 			}
-			if (getAuthenticationHandlerFactory() != null)
+			if( getAuthenticationHandlerFactory() != null )
 			{
 				// The user has plugged in a factory. let's use it.
 				this.authHandler = getAuthenticationHandlerFactory().create();
@@ -124,7 +108,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 				// A placeholder.
 				this.authHandler = new DummyAuthenticationHandler();
 			}
-			// Rerurn the variable, which can be null
+			// Return the variable, which can be null
 			return this.authHandler;
 		}
 		
@@ -175,34 +159,28 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		 */
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
-			if (this.deliveries.size() == 1)
-			{
-				Delivery delivery = this.deliveries.get(0);
-				delivery.getListener().deliver(this.from, delivery.getRecipient(), data);
-			}
-			else
-			{
-				DeferredFileOutputStream dfos = new DeferredFileOutputStream(dataDeferredSize);
+			InputStream in = data;
+			
+			for (Delivery delivery: this.deliveries)
+			{				
+				if (in == data)
+				{
+					delivery.getListener().deliver(this.from, delivery.getRecipient(), data);
+					in = null;
+					continue;
+				}
+				else
+					in = ctx.getInput().getInputStream();
+
+				if (ctx.getInput().isThresholdReached())
+					in = ((SharedFileInputStream) in).newStream(0, -1);
+				else
+					in = ((SharedByteArrayInputStream) in).newStream(0, -1);
+			
+				in = new CharTerminatedInputStream(in, DataEndCommand.SMTP_TERMINATOR);
+				in = new DotUnstuffingInputStream(in);
 				
-				try
-				{
-					int value;
-                    byte buffer[] = new byte[8192];
-                    
-					while ((value = data.read(buffer)) >= 0)
-					{
-						dfos.write(buffer, 0, value-1);
-					}
-					
-					for (Delivery delivery: this.deliveries)
-					{
-						delivery.getListener().deliver(this.from, delivery.getRecipient(), dfos.getInputStream());
-					}
-				}
-				finally
-				{
-					dfos.close();
-				}
+				delivery.getListener().deliver(this.from, delivery.getRecipient(), in);
 			}
 		}
 		
@@ -211,35 +189,14 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 			return getAuthenticationHandler().getAuthenticationMechanisms();
 		}
 		
-		public boolean auth(String clientInput, StringBuilder response) throws RejectException
+		public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx) throws RejectException
 		{
-			return getAuthenticationHandler().auth(clientInput,response);
+			return getAuthenticationHandler().auth(clientInput, response, ctx);
 		}
 		
 		public void resetState()
 		{
 			getAuthenticationHandler().resetState();
-		}
-	}
-	
-	/**
-	 * Auth always return true.
-	 */
-	class DummyAuthenticationHandler implements AuthenticationHandler
-	{
-		@SuppressWarnings("unchecked")
-		public List<String> getAuthenticationMechanisms()
-		{
-			return Collections.EMPTY_LIST;
-		}
-		
-		public boolean auth(String clientInput, StringBuilder response) throws RejectException
-		{
-			return true;
-		}
-		
-		public void resetState()
-		{
 		}
 	}
 	
