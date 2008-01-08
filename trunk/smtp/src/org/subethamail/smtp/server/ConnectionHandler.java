@@ -14,6 +14,7 @@ import org.apache.mina.transport.socket.nio.SocketSessionConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.auth.Credential;
 import org.subethamail.smtp.command.AuthCommand;
 import org.subethamail.smtp.command.DataEndCommand;
 import org.subethamail.smtp.command.EhloCommand;
@@ -47,6 +48,8 @@ public class ConnectionHandler extends IoHandlerAdapter
 		private Session sessionCtx;
 
 		private IoSession session;
+		
+		private Credential credential;
 
 		public Context(SMTPServer server, IoSession session)
 		{
@@ -84,6 +87,16 @@ public class ConnectionHandler extends IoHandlerAdapter
 		public IoSession getIOSession()
 		{
 			return session;
+		}
+
+		public Credential getCredential() 
+		{
+			return credential;
+		}
+
+		public void setCredential(Credential credential) 
+		{
+			this.credential = credential;
 		}
 	}
 
@@ -239,21 +252,21 @@ public class ConnectionHandler extends IoHandlerAdapter
 
 		try
 		{
-			String line = (String)message;
-			if (line == null)
+			if (message == null)
 			{
 				if (log.isDebugEnabled())
 					log.debug("no more lines from client");
 				return;
 			}
 
-			Context minaCtx = (Context)session.getAttribute(CONTEXT_ATTRIBUTE);
+			String line = (String) message;
+			Context minaCtx = (Context) session.getAttribute(CONTEXT_ATTRIBUTE);
 
 			if (minaCtx.getSession().isDataMode())
 			{
 				if (log.isTraceEnabled())
 					log.trace("C: " + line);
-
+				
 				try
 				{
 					if (line.equals("."))
@@ -277,6 +290,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 			{
 				if (log.isDebugEnabled())
 					log.debug("C: " + line);
+
 				
 	            if (minaCtx.getSession().isAuthenticating())
 	            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
@@ -284,21 +298,17 @@ public class ConnectionHandler extends IoHandlerAdapter
 	            if (!minaCtx.getSession().isAuthenticated() 
 	            		&& !minaCtx.getSession().getMessageHandler().getAuthenticationMechanisms().isEmpty())
 	            {
-	            	Command cmd = null;
-	            	try
-	            	{
-	            		cmd = this.server.getCommandHandler().getCommandFromString(line);
-	            	}
-	            	catch (Exception ex) {}
-
-            		if (cmd != null && (cmd instanceof AuthCommand || cmd instanceof EhloCommand || cmd instanceof HelloCommand 
-        					|| cmd instanceof NoopCommand || cmd instanceof ResetCommand || cmd instanceof QuitCommand ))
-	            		this.server.getCommandHandler().handleCommand(minaCtx, line, cmd);
+	            	// Per RFC 2554
+	            	Command cmd = this.server.getCommandHandler().getCommandFromString(line);
+	            	
+	            	if (cmd != null && (cmd instanceof AuthCommand || cmd instanceof EhloCommand || cmd instanceof HelloCommand ||
+	            			   cmd instanceof NoopCommand || cmd instanceof ResetCommand || cmd instanceof QuitCommand))
+	            		this.server.getCommandHandler().handleCommand(minaCtx, line);
 	            	else
-	            		sendResponse(session, "530 Authentication required");	            		
+	            		sendResponse(session, "530 Authentication required");
 	            }
 	            else
-	                this.server.getCommandHandler().handleCommand(minaCtx, line);
+	            	this.server.getCommandHandler().handleCommand(minaCtx, line);
 			}
 		}
 		catch (CRLFTerminatedReader.TerminationException te)
