@@ -18,14 +18,16 @@ import org.subethamail.smtp.server.ConnectionContext;
 public class AuthCommand extends BaseCommand
 {
 	public static final String VERB = "AUTH";
+	
 	public static final String AUTH_CANCEL_COMMAND = "*";
 
 	static String getEhloString(MessageHandler handler)
 	{
-		List<String> supportedMechanisms = handler
-				.getAuthenticationMechanisms();
+		List<String> supportedMechanisms = handler.getAuthenticationMechanisms();
 		if (supportedMechanisms.isEmpty())
+		{
 			return "";
+		}
 		else
 		{
             StringBuilder sb = new StringBuilder(30);
@@ -42,30 +44,27 @@ public class AuthCommand extends BaseCommand
 	/** Creates a new instance of AuthCommand */
 	public AuthCommand()
 	{
-		super(
-				VERB,
-				"Authentication service",
-				VERB
-						+ " <mechanism> [initial-response] \n"
+		super(VERB, "Authentication service", VERB + " <mechanism> [initial-response] \n"
 						+ "\t mechanism = a string identifying a SASL authentication mechanism,\n"
 						+ "\t an optional base64-encoded response");
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context)
-			throws IOException
+	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
 		if (context.getSession().isAuthenticated())
 		{
 			context.sendResponse("503 Refusing any other AUTH command.");
 			return;
 		}
+
 		MessageHandler msgHandler = getMessageHandler(context);
 		boolean authenticating = context.getSession().isAuthenticating();
 		
 		if (!authenticating)
 		{
 			String[] args = getArgs(commandString);
+			
 			// Let's check the command syntax
 			if (args.length < 2)
 			{
@@ -73,6 +72,7 @@ public class AuthCommand extends BaseCommand
 						+ " mechanism [initial-response]");
 				return;
 			}
+			
 			// Let's check if we support the required authentication mechanism
 			String mechanism = args[1];
 			if (!msgHandler.getAuthenticationMechanisms().contains(
@@ -84,7 +84,7 @@ public class AuthCommand extends BaseCommand
 			}
 		}
 		
-		// OK, let's go through the authentication process.
+		// OK, let's go trough the authentication process.
 		// The authentication process may require a series of
 		// challenge-responses
 		try
@@ -97,7 +97,7 @@ public class AuthCommand extends BaseCommand
 			}
 			
 			StringBuilder response = new StringBuilder();
-			boolean finished = msgHandler.auth(commandString, response);
+			boolean finished = msgHandler.auth(commandString, response, context);
 			
 			context.getSession().setAuthenticating(!finished);
 			
