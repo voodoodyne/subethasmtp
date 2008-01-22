@@ -28,7 +28,8 @@ public class ReceiptCommand extends BaseCommand
 			context.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (session.getRecipientCount() >= context.getSMTPServer().getMaxRecipients())
+		else if (context.getSMTPServer().getMaxRecipients() > -1 &&
+				session.getRecipientCount() >= context.getSMTPServer().getMaxRecipients())
 		{
 			context.sendResponse("452 Error: too many recipients");
 			return;

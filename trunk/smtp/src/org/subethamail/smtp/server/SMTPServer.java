@@ -289,7 +289,10 @@ public class SMTPServer
 	/** @return the host name that will be reported to SMTP clients */
 	public String getHostName()
 	{
-		return this.hostName;
+		if (this.hostName == null)
+			return "localhost";
+		else
+			return this.hostName;
 	}
 
 	/** The host name that will be reported to SMTP clients */
@@ -332,7 +335,7 @@ public class SMTPServer
 	/**
 	 * Is the server running after start() has been called?
 	 */
-	public boolean isRunning()
+	public synchronized boolean isRunning()
 	{
 		return this.go;
 	}
@@ -405,11 +408,12 @@ public class SMTPServer
 	}
 
 	/**
-	 * Are we over the maximum amount of connections?
+	 * Are we over the maximum amount of connections ?
 	 */
 	public boolean hasTooManyConnections()
 	{
-		return (getNumberOfConnections() >= maxConnections);
+		return (this.maxConnections > -1 && 
+				getNumberOfConnections() >= this.maxConnections);
 	}
 
 	/**
@@ -422,7 +426,7 @@ public class SMTPServer
 
 	/**
 	 * Set's the maximum number of connections this server instance will
-	 * accept. 
+	 * accept. If set to -1 then limit is ignored.
 	 * 
 	 * @param maxConnections
 	 */
@@ -448,7 +452,7 @@ public class SMTPServer
 	}
 
 	/**
-	 * What is the maximum number of recipients for a single message?
+	 * What is the maximum number of recipients for a single message ?
 	 */
 	public int getMaxRecipients()
 	{
@@ -457,6 +461,7 @@ public class SMTPServer
 
 	/**
 	 * Set the maximum number of recipients for a single message.
+	 * If set to -1 then limit is ignored.
 	 */
 	public void setMaxRecipients(int maxRecipients)
 	{
