@@ -23,7 +23,7 @@
 	<property name="build.debug" value="on" />
 	<property name="build.deprecation" value="on" />
 
-	<property name="retroweaver.version" value="2.0" />
+	<property name="retroweaver.version" value="2.0.3" />
 	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
 
 	<path id="classpath">
