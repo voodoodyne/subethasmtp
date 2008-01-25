@@ -12,6 +12,19 @@
 		
 		<h2>Changes</h2>
 		<dl>
+			<dt>2.0.1 - January 25, 2008</dt>
+			<dd>
+				<ul>
+					<li>Fix issue with Wiser not storing messages for re-use.</li>
+					<li>Major refatoring to prevent OOM and improve perfs when dealing with large attached files</li>
+					<li>Changed returned hostname to locahost when null</li>
+					<li>Added -1 value to override limits on setMaxConnections() and setMaxRecipients()</li>
+					<li>Fixed handling of auth mechanisms to require a configured auth mechanism when needed</li>
+					<li>Fixed missing space char in extended HELO AUTH string</li>
+					<li>Will prevent an SLF4J error on startup by linking the jdk14 logging facility</li>
+				</ul>
+			</dd>
+
 			<dt>2.0 - October 26, 2007</dt>
 			<dd>
 				<ul>
