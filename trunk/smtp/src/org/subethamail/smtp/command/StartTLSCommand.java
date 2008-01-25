@@ -36,6 +36,18 @@ public class StartTLSCommand extends BaseCommand
 		super("STARTTLS", "The starttls command");
 	}
 
+	/**
+	 * Ability to override the SSLFilter
+	 * @param filter
+	 */
+	public static void setSSLFilter(SSLFilter filter)
+	{
+		if (filter == null)
+			throw new IllegalArgumentException("filter argument can't be null");
+
+		sslFilter = filter;
+	}
+
 	@Override
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
