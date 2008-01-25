@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry exported="true" kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="lib/slf4j-api-1.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/mail.jar"/>
+	<classpathentry kind="lib" path="lib/junit.jar"/>
+	<classpathentry kind="lib" path="lib/mina-integration-jmx-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/mina-filter-ssl-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/mina-core-1.1.3.jar"/>
+	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.4.3.jar"/>
+	<classpathentry kind="src" path="smtp/src"/>
+	<classpathentry kind="src" path="rtest/src"/>
+	<classpathentry kind="output" path="_eclipse"/>
+</classpath>

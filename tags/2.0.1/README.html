@@ -1,0 +1,124 @@
+<html>
+	<head>
+		<title>README for SubEtha SMTP</title>
+	</head>
+
+	<body>
+		<h1>README</h1>
+		
+		<p>
+			For usage instructions, see <a href="www/index.html">the homepage</a>.
+		</p>
+		
+		<h2>Changes</h2>
+		<dl>
+			<dt>2.0.1 - January 25, 2008</dt>
+			<dd>
+				<ul>
+					<li>Fix issue with Wiser not storing messages for re-use.</li>
+					<li>Major refatoring to prevent OOM and improve perfs when dealing with large attached files</li>
+					<li>Changed returned hostname to locahost when null</li>
+					<li>Added -1 value to override limits on setMaxConnections() and setMaxRecipients()</li>
+					<li>Fixed handling of auth mechanisms to require a configured auth mechanism when needed</li>
+					<li>Fixed missing space char in extended HELO AUTH string</li>
+					<li>Will prevent an SLF4J error on startup by linking the jdk14 logging facility</li>
+				</ul>
+			</dd>
+
+			<dt>2.0 - October 26, 2007</dt>
+			<dd>
+				<ul>
+					<li>Use Apache Mina 1.1.3 for the networking layer. This make us Native IO (NIO) based. woot!</li>
+					<li>Expose Mina JMX monitoring.</li>
+					<li>Use slf4j instead of log4j for logging.</li>
+					<li>Rewrite build system to be easier / cleaner / faster.</li>
+					<li>Remove Maven pom.xml crap. Its a pile of dog shit. Don't ever use it.</li>
+				</ul>
+			</dd>
+
+			<dt>1.2.1 - June 28, 2007</dt>
+			<dd>
+				<ul>
+					<li>Fix issue with requiring a HELO/EHLO after a RSET.</li>
+					<li>Fix issue with cancelling the sending of a message and not resetting internal state.</li>
+					<li>Add more unit tests.</li>
+				</ul>
+			</dd>
+
+			<dt>1.2 - March 1, 2007</dt>
+			<dd>
+				<ul>
+					<li>Integrate retroweaver into the ant build system for JDK 1.4 compatibility.</li>
+					<li>Change the license from LGPL to ASFL 2.0 to allow for wider adoption.</li>
+					<li>New feature: Pluggable SMTP AUTH and related unit tests. Thanks Marco.</li>
+					<li>Bug fix: Accept 'MAIL FROM: &lt;&gt;' and properly reject 'MAIL FROM:'. 
+						Thanks to the report from David Haggerty.</li>
+				</ul>
+			</dd>
+
+			<dt>1.1 - Oct 5, 2006</dt>
+			<dd>
+				<ul>
+					<li>Added new interface for instantiating the server 
+					(MessageHandler/MessageHandlerFactory). 
+					This allows much more control over the message handling. MessageListenerAdapter
+					has been added as a backwards compatible way of creating the server instance.</li>
+					<li>Removed SMTPServer.setDataDeferredSize() method. This is a non backwards
+					compatible change, but we assume not many people were using it anyway. It's 
+					possible to still modify this setting by instantiating your own SMTPServer
+					instance and passing the value into MessageListenerAdapter or your own 
+					MessageHandlerFactory.</li>
+					<li>Rewrote unit tests to use a lightweight telnet client.</li>
+					<li>Fixed some threading issues with fast start/stop'ing of the server.</li>
+					<li>Added code to explicitly close any open Socket connections when the server is
+					shut down.</li>
+					<li>Now including the source code in the distribution for easy viewing.</li>
+					<li>java -jar on the smtp/wiser jar files now returns it's version info.</li>
+				</ul>
+			</dd>
+			<dt>1.0.4 - Sep 12, 2006</dt>
+			<dd>
+				<ul>
+					<li>Fixed issue where HELO/EHLO was required after
+						a RSET.</li>
+				</ul>
+			</dd>
+			<dt>1.0.3 - Aug 20, 2006</dt>
+			<dd>
+				<ul>
+					<li>Fixed issue with sockets not properly being closed.</li>
+					<li>Made it possible to override the way that sockets
+						are created.</li>
+					<li>Fixed a bug when MAIL FROM is executed after RSET is 
+						called after DATA.</li>
+					<li>Added support for TLS. Might have bugs.</li>
+					<li>More maven POM cleanup.</li>
+				</ul>
+			</dd>
+			<dt>1.0.2 - Aug 2, 2006</dt>
+			<dd>
+				<ul>
+					<li>Include <a href="www/wiser.html">Wiser</a> in the distribution.</li>
+					<li>Add <a href="http://maven.apache.org/">Maven</a> pom.xml files.</li>
+					<li>Documentation improvements.</li>
+				</ul>
+			</dd>		
+
+			<dt>1.0.1 - Jul 5, 2006</dt>
+			<dd>
+				<ul>
+					<li>Adding junit tests.</li>
+					<li>SMTP spec compliance improvements.</li>
+					<li>Fixes a problem with multiple recipients.</li>
+				</ul>
+			</dd>
+
+			<dt>1.0 - Jun 20, 2006</dt>
+			<dd>
+				<ul>
+					<li>First public release.</li>
+				</ul>
+			</dd>
+		</dl>
+	</body>
+</html>
