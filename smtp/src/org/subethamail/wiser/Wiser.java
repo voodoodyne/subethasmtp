@@ -124,7 +124,7 @@ public class Wiser implements MessageListener
 	 */
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException
 	{
-		log.info("Delivering new message ...");
+		log.debug("Delivering new message ...");
 		WiserMessage msg = new WiserMessage(this, from, recipient, data);
 		messages.add(msg);		
 	}
@@ -163,8 +163,8 @@ public class Wiser implements MessageListener
 				public void login(String username, String password)
 						throws LoginFailedException
 				{
-					log.info("Username=" + username);
-					log.info("Password=" + password);
+					log.debug("Username=" + username);
+					log.debug("Password=" + password);
 				}
 			};
 			ret.addPlugin(new PlainAuthenticationHandler(validator));
