@@ -27,6 +27,7 @@ public class WiserMessage
 	String envelopeReceiver;
 	InputStream stream;
 	byte[] array;
+	MimeMessage message = null;
 	
 	WiserMessage(Wiser wiser, String envelopeSender, String envelopeReceiver, InputStream stream)
 	{
@@ -42,7 +43,11 @@ public class WiserMessage
 	 */
 	public MimeMessage getMimeMessage() throws MessagingException
 	{
-		return new MimeMessage(this.wiser.getSession(), stream);
+		if (message == null)
+		{
+			 message = new MimeMessage(this.wiser.getSession(), stream);
+		}
+		return message;
 	}
 
 	/**
