@@ -8,6 +8,7 @@ import java.nio.charset.Charset;
 import java.util.Collection;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.ThreadFactory;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.InstanceNotFoundException;
@@ -226,7 +227,16 @@ public class SMTPServer
 
 			chain.addLast("codec", new ProtocolCodecFilter(new SMTPCodecFactory(Charset.forName(CODEPAGE))));
 
-			executor = Executors.newCachedThreadPool();
+			executor = Executors.newCachedThreadPool(new ThreadFactory() {
+				int sequence;
+				
+				public Thread newThread(Runnable r) 
+				{					
+					sequence += 1;
+					return new Thread(r, "SubEthaSMTP Thread "+sequence);
+				}			
+			});
+			
 			chain.addLast("threadPool", new ExecutorFilter(executor));
 			
 			handler = new ConnectionHandler(this);
