@@ -24,28 +24,27 @@ public class DataEndCommand extends BaseCommand
 
 	public DataEndCommand()
 	{
-		super("DATA_END", "Marks the end of data reception " + "when <CR><LF>.<CR><LF> received");
+		super("DATA_END", "Marks the end of data reception when <CR><LF>.<CR><LF> received");
 	}
 
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
 		Session session = context.getSession();
 
-		InputStream stream = context.getInput().getInputStream();
-		
+		InputStream stream = context.getInput().getInputStream();		
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
 
 		try
 		{
 			session.getMessageHandler().data(stream);
+			session.reset(true); // reset session, but don't require new HELO/EHLO
 			context.sendResponse("250 Ok");
 		}
 		catch (RejectException ex)
 		{
+			session.reset(true); // reset session, but don't require new HELO/EHLO
 			context.sendResponse(ex.getMessage());
 		}
-
-		session.reset(true); // reset session, but don't require new HELO/EHLO
 	}
 }
