@@ -71,7 +71,7 @@ public class SMTPServer
 {
 	private static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
-	public final static String CODEPAGE = "UTF-8";
+	public final static Charset CODEPAGE = Charset.forName("ISO-8859-1");
 
 	/**
 	 * default to all interfaces
@@ -225,7 +225,7 @@ public class SMTPServer
 			if (log.isTraceEnabled())
 				chain.addLast("logger", new LoggingFilter());
 
-			chain.addLast("codec", new ProtocolCodecFilter(new SMTPCodecFactory(Charset.forName(CODEPAGE))));
+			chain.addLast("codec", new ProtocolCodecFilter(new SMTPCodecFactory(CODEPAGE)));
 
 			executor = Executors.newCachedThreadPool(new ThreadFactory() {
 				int sequence;
