@@ -11,10 +11,12 @@ import java.util.Properties;
 
 import javax.activation.DataHandler;
 import javax.activation.FileDataSource;
+import javax.mail.Address;
 import javax.mail.Message;
 import javax.mail.Multipart;
 import javax.mail.Session;
 import javax.mail.Transport;
+import javax.mail.URLName;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
@@ -27,13 +29,16 @@ import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
 import org.subethamail.wiser.WiserMessage;
 
+import com.sun.mail.smtp.SMTPTransport;
+
 public class BigAttachmentTest  extends TestCase
 {
 	private final static Logger log = LoggerFactory.getLogger(BigAttachmentTest.class);
 	private final static int SMTP_PORT = 1081;
-	
+	private final static String TO_CHANGE = "<path>/<your_bigfile.ext>";
+		
 	// Set the full path name of the big file to use for the test.
-	private final static String BIGFILE_PATH = "<path>/<your_bigfile.zip>";
+	private final static String BIGFILE_PATH = TO_CHANGE;
 	
 	private Wiser server;
 	
@@ -64,6 +69,7 @@ public class BigAttachmentTest  extends TestCase
 	
 	public void testAttachments() throws Exception
 	{	
+		assertNotSame("To complete this test you must change the BIGFILE_PATH var to point out a file on your disk !", TO_CHANGE, BIGFILE_PATH);
 		Properties props = System.getProperties();
 		props.setProperty("mail.smtp.host", "localhost");
 		props.setProperty("mail.smtp.port", SMTP_PORT+"");
@@ -90,10 +96,14 @@ public class BigAttachmentTest  extends TestCase
 				"success@subethamail.org"));
 		baseMsg.setSubject("Test Big attached file message");
 		baseMsg.setContent(multipart);
-        baseMsg.saveChanges();
+        baseMsg.saveChanges();        
         
-        log.debug("Send started");
-        Transport.send(baseMsg);
+        log.debug("Send started");        
+        Transport t = new SMTPTransport(session, new URLName("smtp://localhost:"+SMTP_PORT));
+        t.connect();
+        t.sendMessage(baseMsg, new Address[] {new InternetAddress(
+				"success@subethamail.org")});
+        t.close();
         
         WiserMessage msg = server.getMessages().get(0);
         
