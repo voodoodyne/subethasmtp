@@ -109,6 +109,28 @@ public class WiserFailuresTest extends TestCase
 		assertEquals("Body", email.getMimeMessage().getContent().toString());
 	}
 
+  public void testSendEncodedMessage() throws IOException, MessagingException
+  {
+		String body = "\u3042\u3044\u3046\u3048\u304a"; // some Japanese letters
+		String charset = "iso-2022-jp";
+		
+		try 
+		{
+			sendMessageWithCharset(SMTP_PORT, "sender@hereagain.com",
+					"EncodedMessage", body, "receivingagain@there.com", charset);
+		} 
+		catch (Exception e) 
+		{
+			e.printStackTrace();
+			fail("Unexpected exception: " + e);
+		}
+
+		assertEquals(1, server.getMessages().size());
+		Iterator<WiserMessage> emailIter = server.getMessages().iterator();
+		WiserMessage email = (WiserMessage)emailIter.next();
+		assertEquals(body, email.getMimeMessage().getContent().toString());
+	}
+	  
 	public void testSendMessageWithCarriageReturn() throws IOException, MessagingException
 	{
 		String bodyWithCR = "\r\n\r\nKeep these\r\npesky\r\n\r\ncarriage returns\r\n";
@@ -249,6 +271,37 @@ public class WiserFailuresTest extends TestCase
 		return msg;
 	}
 
+    private void sendMessageWithCharset(int port, String from, String subject, String body, String to, String charset) 
+		throws MessagingException 
+	{
+	   Properties mailProps = getMailProperties(port);
+	   Session session = Session.getInstance(mailProps, null);
+	   //session.setDebug(true);
+	
+	   MimeMessage msg = createMessageWithCharset(session, from, to, subject, body, charset);
+	   Transport.send(msg);
+	 }
+	
+	private MimeMessage createMessageWithCharset(
+	  Session session, String from, String to, String subject, String body, String charset) 
+		throws MessagingException 
+	{
+	   MimeMessage msg = new MimeMessage(session);
+	   msg.setFrom(new InternetAddress(from));
+	   msg.setSubject(subject);
+	   msg.setSentDate(new Date());
+	   if (charset != null) 
+	   {
+		   msg.setText(body, charset);
+		   msg.setHeader("Content-Transfer-Encoding", "7bit");
+	   } 
+	   else
+		   msg.setText(body);
+	
+	   msg.setRecipient(Message.RecipientType.TO, new InternetAddress(to));
+	   return msg;
+	 }
+	
 	private void assertConnect() throws IOException
 	{
 		String response = readInput();
