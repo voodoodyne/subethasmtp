@@ -34,7 +34,7 @@ public class DataCommand extends BaseCommand
 			return;
 		}
 
-		context.sendResponse("354 End data with <CR><LF>.<CR><LF>");
 		session.setDataMode(true);
+		context.sendResponse("354 End data with <CR><LF>.<CR><LF>");		
 	}
 }
