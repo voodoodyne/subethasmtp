@@ -78,6 +78,25 @@ public class Wiser implements MessageListener
 	}
 	
 	/**
+	 * Set the size at which the mail will be temporary 
+	 * stored on disk.
+	 * @param dataDeferredSize
+	 */
+	public void setDataDeferredSize(int dataDeferredSize)
+	{
+		this.server.setDataDeferredSize(dataDeferredSize);
+	}
+	
+	/**
+	 * Set the receive buffer size.
+	 * @param size
+	 */
+	public void setReceiveBufferSize(int size)
+	{
+		this.server.setReceiveBufferSize(size);
+	}
+	
+	/**
 	 * The hostname that the server should listen on.
 	 * @param hostname
 	 */
@@ -126,7 +145,7 @@ public class Wiser implements MessageListener
 	{
 		log.debug("Delivering new message ...");
 		WiserMessage msg = new WiserMessage(this, from, recipient, data);
-		messages.add(msg);		
+		this.messages.add(msg);		
 	}
 	
 	/**
