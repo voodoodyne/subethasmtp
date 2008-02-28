@@ -7,8 +7,6 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
-import org.subethamail.smtp.server.io.CharTerminatedInputStream;
-import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
 
 /**
  * Data command splitted to adapt to MINA framework.
@@ -20,8 +18,6 @@ import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
  */
 public class DataEndCommand extends BaseCommand
 {
-	public final static char[] SMTP_TERMINATOR = {'\r', '\n', '.', '\r', '\n'};
-
 	public DataEndCommand()
 	{
 		super("DATA_END", "Marks the end of data reception when <CR><LF>.<CR><LF> received");
@@ -30,10 +26,7 @@ public class DataEndCommand extends BaseCommand
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
 		Session session = context.getSession();
-
-		InputStream stream = context.getInput().getInputStream();		
-		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
-		stream = new DotUnstuffingInputStream(stream);
+		InputStream stream = context.getInputStream();
 
 		try
 		{
