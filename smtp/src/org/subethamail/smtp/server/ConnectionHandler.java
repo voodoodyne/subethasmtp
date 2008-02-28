@@ -2,9 +2,9 @@ package org.subethamail.smtp.server;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 
+import org.apache.mina.common.BufferDataException;
 import org.apache.mina.common.IdleStatus;
 import org.apache.mina.common.IoHandlerAdapter;
 import org.apache.mina.common.IoSession;
@@ -23,7 +23,6 @@ import org.subethamail.smtp.command.HelloCommand;
 import org.subethamail.smtp.command.NoopCommand;
 import org.subethamail.smtp.command.QuitCommand;
 import org.subethamail.smtp.command.ResetCommand;
-import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 
 /**
  * The IoHandler that handles a connection. This class
@@ -231,10 +230,17 @@ public class ConnectionHandler extends IoHandlerAdapter
 
 		try
 		{
-			// primarily if things fail during the MessageListener.deliver(), then try
-			// to send a temporary failure back so that the server will try to resend 
-			// the message later.
-			sendResponse(session, "450 Problem attempting to execute commands. Please try again later.");
+			if (cause instanceof BufferDataException)
+			{
+				sendResponse(session, "501 " + cause.getMessage());
+			}
+			else
+			{
+				// primarily if things fail during the MessageListener.deliver(), then try
+				// to send a temporary failure back so that the server will try to resend 
+				// the message later.
+				sendResponse(session, "450 Problem attempting to execute commands. Please try again later.");
+			}
 		}
 		catch (IOException e)
 		{
@@ -248,6 +254,13 @@ public class ConnectionHandler extends IoHandlerAdapter
 	/** */
 	public void messageReceived(IoSession session, Object message) throws Exception
 	{
+		if (message == null)
+		{
+			if (log.isDebugEnabled())
+				log.debug("no more lines from client");
+			return;
+		}
+		
 		if (message instanceof SSLFilterMessage)
 		{
 			if (log.isDebugEnabled())
@@ -255,69 +268,37 @@ public class ConnectionHandler extends IoHandlerAdapter
 			return;
 		}
 
-		try
+		Context minaCtx = (Context) session.getAttribute(CONTEXT_ATTRIBUTE);
+
+		if (message instanceof InputStream)
 		{
-			if (message == null)
-			{
-				if (log.isDebugEnabled())
-					log.debug("no more lines from client");
-				return;
-			}
-
-			Context minaCtx = (Context) session.getAttribute(CONTEXT_ATTRIBUTE);
-
-			if (message instanceof InputStream)
-			{
-				try
-				{
-					minaCtx.setInputStream((InputStream) message);
-					new DataEndCommand().execute(null, minaCtx);
-				}
-				catch (UnsupportedEncodingException e)
-				{
-					log.error("Exception : ", e);
-				}
-			}
-			else
-			{
-				String line = (String) message;
-				
-				if (log.isDebugEnabled())
-					log.debug("C: " + line);
-				
-	            if (minaCtx.getSession().isAuthenticating())
-	            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
-	            else
-	            if (!minaCtx.getSession().isAuthenticated() 
-	            		&& !minaCtx.getSession().getMessageHandler().getAuthenticationMechanisms().isEmpty())
-	            {
-	            	// Per RFC 2554
-	            	Command cmd = this.server.getCommandHandler().getCommandFromString(line);
-	            	
-	            	if (cmd != null && (cmd instanceof AuthCommand || cmd instanceof EhloCommand || cmd instanceof HelloCommand ||
-	            			   cmd instanceof NoopCommand || cmd instanceof ResetCommand || cmd instanceof QuitCommand))
-	            		this.server.getCommandHandler().handleCommand(minaCtx, line);
-	            	else
-	            		sendResponse(session, "530 Authentication required");
-	            }
-	            else
-	            	this.server.getCommandHandler().handleCommand(minaCtx, line);
-			}
+			minaCtx.setInputStream((InputStream) message);
+			new DataEndCommand().execute(null, minaCtx);
 		}
-		catch (CRLFTerminatedReader.TerminationException te)
+		else
 		{
-			sendResponse(session, "501 Syntax error at character position " + te.position()
-					+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.");
-
-			// if people are screwing with things, close connection
-			session.close();
-		}
-		catch (CRLFTerminatedReader.MaxLineLengthException mlle)
-		{
-			sendResponse(session, "501 " + mlle.getMessage());
-
-			// if people are screwing with things, close connection
-			session.close();
+			String line = (String) message;
+			
+			if (log.isDebugEnabled())
+				log.debug("C: " + line);
+			
+            if (minaCtx.getSession().isAuthenticating())
+            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
+            else
+            if (!minaCtx.getSession().isAuthenticated() 
+            		&& !minaCtx.getSession().getMessageHandler().getAuthenticationMechanisms().isEmpty())
+            {
+            	// Per RFC 2554
+            	Command cmd = this.server.getCommandHandler().getCommandFromString(line);
+            	
+            	if (cmd != null && (cmd instanceof AuthCommand || cmd instanceof EhloCommand || cmd instanceof HelloCommand ||
+            			   cmd instanceof NoopCommand || cmd instanceof ResetCommand || cmd instanceof QuitCommand))
+            		this.server.getCommandHandler().handleCommand(minaCtx, line);
+            	else
+            		sendResponse(session, "530 Authentication required");
+            }
+            else
+            	this.server.getCommandHandler().handleCommand(minaCtx, line);
 		}
 	}
 
