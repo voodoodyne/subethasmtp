@@ -57,7 +57,10 @@ public class SMTPCodecDecoder implements ProtocolDecoder
 
     private final Charset charset;
 
-    private int maxLineLength = 1024;
+    /**
+     * <a href="http://rfc.net/rfc2822.html#s2.1.1.">RFC 2822</a>
+     */
+    private int maxLineLength = 998;
     
     /** When to trigger */
     private int threshold;    
