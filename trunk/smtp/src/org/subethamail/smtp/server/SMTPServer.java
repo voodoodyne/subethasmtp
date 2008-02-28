@@ -71,7 +71,7 @@ public class SMTPServer
 {
 	private static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
-	public final static Charset CODEPAGE = Charset.forName("ISO-8859-1");
+	public final static Charset DEFAULT_CHARSET = Charset.forName("ISO-8859-1");
 
 	/**
 	 * default to all interfaces
@@ -101,6 +101,7 @@ public class SMTPServer
 	private IoServiceManager serviceManager;
 	private ObjectName jmxName;
 	private ConnectionHandler handler;
+	private SMTPCodecDecoder codecDecoder;
 	private boolean go = false;
 
 	/** 
@@ -124,7 +125,7 @@ public class SMTPServer
 	 * 4 megs by default. The server will buffer incoming messages to disk
 	 * when they hit this limit in the DATA received.
 	 */
-	private final static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*4;
+	protected final static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*4;
 	
 	private int dataDeferredSize = DEFAULT_DATA_DEFERRED_SIZE;
 	
@@ -225,7 +226,9 @@ public class SMTPServer
 			if (log.isTraceEnabled())
 				chain.addLast("logger", new LoggingFilter());
 
-			chain.addLast("codec", new ProtocolCodecFilter(new SMTPCodecFactory(CODEPAGE)));
+			SMTPCodecFactory codecFactory = new SMTPCodecFactory(DEFAULT_CHARSET, getDataDeferredSize());
+			codecDecoder = (SMTPCodecDecoder) codecFactory.getDecoder();
+			chain.addLast("codec", new ProtocolCodecFilter(codecFactory));
 
 			executor = Executors.newCachedThreadPool(new ThreadFactory() {
 				int sequence;
@@ -497,11 +500,23 @@ public class SMTPServer
 	public void setDataDeferredSize(int dataDeferredSize) 
 	{
 		if (isPowerOfTwo(dataDeferredSize))
+		{
 			this.dataDeferredSize = dataDeferredSize;
+			if (codecDecoder != null)
+				codecDecoder.setDataDeferredSize(dataDeferredSize);
+		}
 		else
 			throw new IllegalArgumentException(
 					"Argument dataDeferredSize must be a positive power of two");
 	}
+	
+	/**
+	 * Sets the receive buffer size.
+	 */
+	public void setReceiveBufferSize(int receiveBufferSize)
+	{
+		handler.setReceiveBufferSize(receiveBufferSize);
+	}	
 	
 	/**
 	 * Demonstration : if x is a power of 2, it can't share any bit with x-1. So 
