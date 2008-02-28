@@ -11,7 +11,6 @@ import java.util.Collection;
 import java.util.List;
 
 import javax.mail.util.SharedByteArrayInputStream;
-import javax.mail.util.SharedFileInputStream;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
@@ -22,9 +21,9 @@ import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.auth.DummyAuthenticationHandler;
-import org.subethamail.smtp.command.DataEndCommand;
 import org.subethamail.smtp.server.io.CharTerminatedInputStream;
 import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
+import org.subethamail.smtp.server.io.SharedTmpFileInputStream;
 
 /**
  * MessageHandlerFactory implementation which adapts to a collection of
@@ -32,9 +31,12 @@ import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
  * interface.
  *
  * @author Jeff Schnitzer
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt; 
  */
 public class MessageListenerAdapter implements MessageHandlerFactory
 {
+	public final static char[] SMTP_TERMINATOR = {'\r', '\n', '.', '\r', '\n'};
+	
 	private Collection<MessageListener> listeners;
 	
 	private AuthenticationHandlerFactory authenticationHandlerFactory;
@@ -161,46 +163,44 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
 			InputStream in = data;
+			boolean notFirstLoop = false;
 			
 			for (Delivery delivery: this.deliveries)
 			{				
-				if (in == data)
+				if (notFirstLoop)
 				{
-					delivery.getListener().deliver(this.from, delivery.getRecipient(), data);
-					in = null;
-					continue;
+					if (data instanceof SharedByteArrayInputStream)
+						in = ((SharedByteArrayInputStream) data).newStream(0, -1);
+					else
+					if (data instanceof SharedTmpFileInputStream)
+						in = ((SharedTmpFileInputStream) data).newStream(0, -1);
+					else
+						throw new IllegalArgumentException("Unexpected data stream type : "
+								+data.getClass().getName());
 				}
 				else
-				{
-					in = ctx.getInput().getInputStream();
-				}
-
-				if (ctx.getInput().isThresholdReached())
-				{
-					in = ((SharedFileInputStream) in).newStream(0, -1);
-				}
-				else
-				{
-					in = ((SharedByteArrayInputStream) in).newStream(0, -1);
-				}
-			
-				in = new CharTerminatedInputStream(in, DataEndCommand.SMTP_TERMINATOR);
-				in = new DotUnstuffingInputStream(in);
+					notFirstLoop = true;
 				
-				delivery.getListener().deliver(this.from, delivery.getRecipient(), in);
+				in = new CharTerminatedInputStream(in, SMTP_TERMINATOR);
+				in = new DotUnstuffingInputStream(in);					
+				
+			    delivery.getListener().deliver(this.from, delivery.getRecipient(), in);
 			}
 		}
 		
+		/** */
 		public List<String> getAuthenticationMechanisms()
 		{
 			return getAuthenticationHandler().getAuthenticationMechanisms();
 		}
 		
+		/** */
 		public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx) throws RejectException
 		{
 			return getAuthenticationHandler().auth(clientInput, response, ctx);
 		}
 		
+		/** */
 		public void resetState()
 		{
 			getAuthenticationHandler().resetState();
