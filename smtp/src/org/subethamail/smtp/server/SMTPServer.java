@@ -97,6 +97,7 @@ public class SMTPServer
 	private CommandHandler commandHandler;
 	private SocketAcceptor acceptor;
 	private ExecutorService executor;
+	private ExecutorService acceptorThreadPool;
 	private SocketAcceptorConfig config;
 	private IoServiceManager serviceManager;
 	private ObjectName jmxName;
@@ -210,8 +211,9 @@ public class SMTPServer
 			ByteBuffer.setUseDirectBuffers(false);
 			ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
 
+			acceptorThreadPool = Executors.newCachedThreadPool();
 			acceptor =
-				new SocketAcceptor(Runtime.getRuntime().availableProcessors() + 1, Executors.newCachedThreadPool());
+				new SocketAcceptor(Runtime.getRuntime().availableProcessors() + 1, acceptorThreadPool);
 
 			// JMX instrumentation
 			serviceManager = new IoServiceManager(acceptor);
@@ -292,6 +294,8 @@ public class SMTPServer
 		{
 			log.info("SMTP Server socket shut down.");
 			acceptor.unbindAll();
+			executor.shutdown();
+			acceptorThreadPool.shutdown();
 		}
 		finally
 		{
