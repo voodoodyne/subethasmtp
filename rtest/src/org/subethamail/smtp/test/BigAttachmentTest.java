@@ -31,11 +31,18 @@ import org.subethamail.wiser.WiserMessage;
 
 import com.sun.mail.smtp.SMTPTransport;
 
-public class BigAttachmentTest  extends TestCase
+/**
+ * This class tests the transfer speed of emails that carry 
+ * attached files.
+ * 
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
+ */
+public class BigAttachmentTest extends TestCase
 {
 	private final static Logger log = LoggerFactory.getLogger(BigAttachmentTest.class);
 	private final static int SMTP_PORT = 1081;
 	private final static String TO_CHANGE = "<path>/<your_bigfile.ext>";
+	private final static int BUFFER_SIZE = 32768;
 		
 	// Set the full path name of the big file to use for the test.
 	private final static String BIGFILE_PATH = TO_CHANGE;
@@ -52,7 +59,8 @@ public class BigAttachmentTest  extends TestCase
 		super.setUp();
 		server = new Wiser();
 		server.setPort(SMTP_PORT);
-		server.start();
+		server.setReceiveBufferSize(BUFFER_SIZE);
+		server.start();		
 	}
 
 	protected void tearDown() throws Exception
@@ -73,7 +81,7 @@ public class BigAttachmentTest  extends TestCase
 		Properties props = System.getProperties();
 		props.setProperty("mail.smtp.host", "localhost");
 		props.setProperty("mail.smtp.port", SMTP_PORT+"");
-		Session session = Session.getDefaultInstance(props, null);
+		Session session = Session.getInstance(props);
 
 		MimeMessage baseMsg = new MimeMessage(session);
 		MimeBodyPart bp1 = new MimeBodyPart();
@@ -96,14 +104,17 @@ public class BigAttachmentTest  extends TestCase
 				"success@subethamail.org"));
 		baseMsg.setSubject("Test Big attached file message");
 		baseMsg.setContent(multipart);
-        baseMsg.saveChanges();        
+        baseMsg.saveChanges();
         
         log.debug("Send started");        
         Transport t = new SMTPTransport(session, new URLName("smtp://localhost:"+SMTP_PORT));
+		long started = System.currentTimeMillis();
         t.connect();
         t.sendMessage(baseMsg, new Address[] {new InternetAddress(
 				"success@subethamail.org")});
         t.close();
+        started = System.currentTimeMillis() - started;
+        log.info("Elapsed ms = "+started);
         
         WiserMessage msg = server.getMessages().get(0);
         
@@ -112,6 +123,7 @@ public class BigAttachmentTest  extends TestCase
 		
 		File compareFile = File.createTempFile("attached", ".tmp");
 		log.debug("Writing received attachment ...");
+
 		FileOutputStream fos = new FileOutputStream(compareFile);
 		((MimeMultipart) msg.getMimeMessage().getContent()).getBodyPart(1).getDataHandler().writeTo(fos);
 		fos.close();
@@ -133,8 +145,8 @@ public class BigAttachmentTest  extends TestCase
 			return false;
 		
 		int r = 0;
-		byte[] buf1 = new byte[32768];
-		byte[] buf2 = new byte[32768];
+		byte[] buf1 = new byte[BUFFER_SIZE];
+		byte[] buf2 = new byte[BUFFER_SIZE];
 		
 		while (r !=-1)
 		{
