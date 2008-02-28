@@ -4,9 +4,8 @@
  */
 package org.subethamail.smtp.server;
 
+import java.io.InputStream;
 import java.net.SocketAddress;
-
-import org.subethamail.smtp.server.io.SMTPMessageDataStream;
 
 
 /**
@@ -29,5 +28,5 @@ public interface BaseContext
 	/**
 	 * @return the original data stream.
 	 */
-	public SMTPMessageDataStream getInput();
+	public InputStream getInputStream();
 }
