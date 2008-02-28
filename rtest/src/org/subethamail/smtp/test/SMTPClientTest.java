@@ -1,12 +1,18 @@
 package org.subethamail.smtp.test;
 
+import java.io.ByteArrayOutputStream;
+import java.io.InputStream;
+import java.util.Arrays;
 import java.util.Properties;
+import java.util.Random;
 
+import javax.activation.DataHandler;
 import javax.mail.Message;
 import javax.mail.Session;
 import javax.mail.Transport;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMessage;
+import javax.mail.util.ByteArrayDataSource;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -24,6 +30,8 @@ import org.subethamail.wiser.Wiser;
  * 
  * @author Jon Stevens
  * @author Jeff Schnitzer
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
+ * @author Ville Skyttä (contributed some encoding tests)
  */
 public class SMTPClientTest extends TestCase
 {
@@ -49,7 +57,7 @@ public class SMTPClientTest extends TestCase
 		Properties props = new Properties();
 		props.setProperty("mail.smtp.host", "localhost");
 		props.setProperty("mail.smtp.port", Integer.toString(PORT));
-		this.session = Session.getDefaultInstance(props);
+		this.session = Session.getInstance(props);
 		
 		this.wiser = new Wiser();
 		this.wiser.setPort(PORT);
@@ -101,6 +109,91 @@ public class SMTPClientTest extends TestCase
 		assertEquals("barf", this.wiser.getMessages().get(1).getMimeMessage().getSubject());
 	}
 	
+
+	/** */
+	public void testUtf8EightBitMessage() throws Exception
+	{
+		String body = "€uro äää";
+		testEightBitMessage(body, "UTF-8");
+
+		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
+	}
+
+	/** */
+	public void testUtf16EightBitMessage() throws Exception
+	{
+		String body = "\u3042\u3044\u3046\u3048\u304a";
+		testEightBitMessage(body, "UTF-16");
+
+		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
+	}
+	
+	/** */
+	public void testIso88591EightBitMessage() throws Exception
+	{
+		String body = "äää";
+		testEightBitMessage(body, "ISO-8859-1");
+
+		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
+	}
+
+	/** */
+	public void testIso885915EightBitMessage() throws Exception
+	{
+		String body = "€uro äää";
+		testEightBitMessage(body, "ISO-8859-15");
+
+		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
+	}
+
+	/** */
+	private void testEightBitMessage(String body, String charset) throws Exception
+	{
+		MimeMessage message = new MimeMessage(this.session);
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress("anyone@anywhere.com"));
+		message.setFrom(new InternetAddress("someone@somewhereelse.com"));
+		message.setSubject("hello");
+		message.setText(body, charset);
+		message.setHeader("Content-Transfer-Encoding", "8bit");
+
+		Transport.send(message);
+	}
+
+	public void testIso2022JPEightBitMessage() throws Exception 
+  	{
+		String body = "\u3042\u3044\u3046\u3048\u304a"; // some Japanese letters
+		testEightBitMessage(body, "iso-2022-jp");
+		
+		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
+	}
+	
+	/** */
+	public void testBinaryEightBitMessage() throws Exception
+	{
+		byte[] body = new byte[64];
+		new Random().nextBytes(body);
+		
+		MimeMessage message = new MimeMessage(this.session);
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress("anyone@anywhere.com"));
+		message.setFrom(new InternetAddress("someone@somewhereelse.com"));
+		message.setSubject("hello");
+		message.setHeader("Content-Transfer-Encoding", "8bit");
+		message.setDataHandler(new DataHandler(new ByteArrayDataSource(body, "application/octet-stream")));
+
+		Transport.send(message);
+
+		InputStream in = this.wiser.getMessages().get(0).getMimeMessage().getInputStream();
+		ByteArrayOutputStream tmp = new ByteArrayOutputStream();
+		byte[] buf = new byte[64];
+		int n;
+		while ((n = in.read(buf)) != -1)
+		{
+			tmp.write(buf, 0, n);
+		}
+		in.close();
+		
+		assertTrue(Arrays.equals(body, tmp.toByteArray()));
+	}
 	
 	/** */
 	public static Test suite()
