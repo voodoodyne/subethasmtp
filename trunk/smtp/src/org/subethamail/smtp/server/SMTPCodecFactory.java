@@ -22,24 +22,23 @@ public class SMTPCodecFactory implements ProtocolCodecFactory
 {
 	private final TextLineEncoder encoder;
 
-	private final TextLineDecoder decoder;
+	private final SMTPCodecDecoder decoder;
 
 	/**
 	 * Creates a new instance with the current default {@link Charset}.
 	 */
 	public SMTPCodecFactory()
 	{
-		this(Charset.defaultCharset());
+		this(Charset.defaultCharset(), SMTPServer.DEFAULT_DATA_DEFERRED_SIZE);
 	}
 
 	/**
 	 * Creates a new instance with the specified {@link Charset}.
 	 */
-	public SMTPCodecFactory(Charset charset)
+	public SMTPCodecFactory(Charset charset, int thresholdBytes)
 	{
-		LineDelimiter smtpDelimiter = new LineDelimiter("\r\n");
-		encoder = new TextLineEncoder(charset, smtpDelimiter);
-		decoder = new TextLineDecoder(charset, smtpDelimiter);
+		encoder = new TextLineEncoder(charset, new LineDelimiter("\r\n"));
+		decoder = new SMTPCodecDecoder(charset, thresholdBytes);
 	}
 
 	public ProtocolEncoder getEncoder()
