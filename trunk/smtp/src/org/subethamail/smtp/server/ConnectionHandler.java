@@ -1,6 +1,7 @@
 package org.subethamail.smtp.server;
 
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.SocketAddress;
 
@@ -23,7 +24,6 @@ import org.subethamail.smtp.command.NoopCommand;
 import org.subethamail.smtp.command.QuitCommand;
 import org.subethamail.smtp.command.ResetCommand;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
-import org.subethamail.smtp.server.io.SMTPMessageDataStream;
 
 /**
  * The IoHandler that handles a connection. This class
@@ -41,8 +41,6 @@ public class ConnectionHandler extends IoHandlerAdapter
 {
 	public class Context implements ConnectionContext, MessageContext
 	{
-		private SMTPMessageDataStream input;
-
 		private SMTPServer server;
 
 		private Session sessionCtx;
@@ -50,18 +48,24 @@ public class ConnectionHandler extends IoHandlerAdapter
 		private IoSession session;
 		
 		private Credential credential;
+		
+		private InputStream inputStream;
 
 		public Context(SMTPServer server, IoSession session)
 		{
 			this.server = server;
 			this.session = session;
-			this.input = new SMTPMessageDataStream(server.getDataDeferredSize());
 			sessionCtx = new Session(this.server.getMessageHandlerFactory().create(this));
 		}
 
-		public SMTPMessageDataStream getInput()
+		public InputStream getInputStream() 
 		{
-			return input;
+			return inputStream;
+		}
+
+		public void setInputStream(InputStream inputStream) 
+		{
+			this.inputStream = inputStream;
 		}
 
 		public Session getSession()
@@ -100,24 +104,23 @@ public class ConnectionHandler extends IoHandlerAdapter
 		}
 	}
 
-	private final static byte[] EOL = new byte[] {'\r', '\n'};
-
-	private final static byte[] END_OF_DATA = new byte[] {'.', '\r', '\n'};
-
 	// Session objects
-	private final static String CONTEXT_ATTRIBUTE = ConnectionHandler.class.getName() + ".ctx";
+	protected final static String CONTEXT_ATTRIBUTE = ConnectionHandler.class.getName() + ".ctx";
 
 	private static Logger log = LoggerFactory.getLogger(ConnectionHandler.class);
 
 	private SMTPServer server;
 
 	private int numberOfConnections;
+	
+	private int receiveBufferSize = 128;
 
 	public ConnectionHandler(SMTPServer server)
 	{
 		this.server = server;
 	}
 
+	/** */
 	private synchronized void updateNumberOfConnections(int newValue)
 	{
 		numberOfConnections = newValue;
@@ -134,15 +137,21 @@ public class ConnectionHandler extends IoHandlerAdapter
 	}
 
 	/**
-	 * 
+	 * Sets the receive buffer size.
 	 */
+	public void setReceiveBufferSize(int receiveBufferSize)
+	{
+		this.receiveBufferSize=receiveBufferSize;
+	}
+	
+	/** */
 	public void sessionCreated(IoSession session)
 	{
 		updateNumberOfConnections(numberOfConnections + 1);
 
 		if (session.getTransportType() == TransportType.SOCKET)
 		{
-			((SocketSessionConfig)session.getConfig()).setReceiveBufferSize(128);
+			((SocketSessionConfig)session.getConfig()).setReceiveBufferSize(receiveBufferSize);
 			((SocketSessionConfig)session.getConfig()).setSendBufferSize(64);
 		}
 
@@ -214,9 +223,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 		}
 	}
 
-	/**
-	 * 
-	 */
+	/** */
 	public void exceptionCaught(IoSession session, Throwable cause)
 	{
 		if (log.isDebugEnabled())
@@ -238,9 +245,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 		}
 	}
 
-	/**
-	 * 
-	 */
+	/** */
 	public void messageReceived(IoSession session, Object message) throws Exception
 	{
 		if (message instanceof SSLFilterMessage)
@@ -259,27 +264,14 @@ public class ConnectionHandler extends IoHandlerAdapter
 				return;
 			}
 
-			String line = (String) message;
 			Context minaCtx = (Context) session.getAttribute(CONTEXT_ATTRIBUTE);
 
-			if (minaCtx.getSession().isDataMode())
+			if (message instanceof InputStream)
 			{
-				if (log.isTraceEnabled())
-					log.trace("C: " + line);
-				
 				try
 				{
-					if (line.equals("."))
-					{
-						minaCtx.getInput().write(END_OF_DATA);
-						new DataEndCommand().execute(null, minaCtx);
-					}
-					else
-					{
-						//WARNING see character encoding                        
-						minaCtx.getInput().write(line.getBytes(SMTPServer.CODEPAGE));
-						minaCtx.getInput().write(EOL);
-					}
+					minaCtx.setInputStream((InputStream) message);
+					new DataEndCommand().execute(null, minaCtx);
 				}
 				catch (UnsupportedEncodingException e)
 				{
@@ -288,9 +280,10 @@ public class ConnectionHandler extends IoHandlerAdapter
 			}
 			else
 			{
+				String line = (String) message;
+				
 				if (log.isDebugEnabled())
 					log.debug("C: " + line);
-
 				
 	            if (minaCtx.getSession().isAuthenticating())
 	            	this.server.getCommandHandler().handleAuthChallenge(minaCtx, line);
@@ -328,6 +321,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 		}
 	}
 
+	/** */
 	public static void sendResponse(IoSession session, String response) throws IOException
 	{
 		if (log.isDebugEnabled())

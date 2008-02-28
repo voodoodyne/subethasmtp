@@ -15,7 +15,7 @@ public class DataCommand extends BaseCommand
 {
 	public DataCommand()
 	{
-		super("DATA", "Following text is collected as the message.\n" + "End data with <CR><LF>.<CR><LF>");
+		super("DATA", "Following text is collected as the message.\nEnd data with <CR><LF>.<CR><LF>");
 	}
 
 	@Override
