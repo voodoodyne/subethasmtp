@@ -22,6 +22,7 @@
 	
 	<property name="build.debug" value="on" />
 	<property name="build.deprecation" value="on" />
+	<property name="build.encoding" value="UTF-8" />
 
 	<property name="retroweaver.version" value="2.0.3" />
 	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
@@ -38,6 +39,7 @@
 		<javac srcdir="smtp/src" destdir="${build.dir}/smtp/classes"
 			includeAntRuntime="false" debug="${build.debug}"
 			deprecation="${build.deprecation}"
+			encoding="${build.encoding}"
 			source="1.5"
 			target="1.5">
 			
@@ -63,7 +65,8 @@
 		
 		<javac srcdir="rtest/src" destdir="${build.dir}/rtest/classes"
 			includeAntRuntime="false" debug="${build.debug}"
-			deprecation="${build.deprecation}">
+			deprecation="${build.deprecation}"
+			encoding="${build.encoding}">
 			
 			<classpath refid="classpath" />
 			<classpath>
