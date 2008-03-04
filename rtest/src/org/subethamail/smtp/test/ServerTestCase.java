@@ -65,7 +65,7 @@ public abstract class ServerTestCase extends TestCase
 		this.wiser.setPort(PORT);
 		this.wiser.start();
 		
-		c = new Client("localhost", PORT);
+		this.c = new Client("localhost", PORT);
 	}
 	
 	/** */
@@ -74,18 +74,18 @@ public abstract class ServerTestCase extends TestCase
 		this.wiser.stop();
 		this.wiser = null;
 
-		c.close();
+		this.c.close();
 
 		super.tearDown();
 	}
 	
 	public void send(String msg) throws Exception
 	{
-		c.send(msg);
+		this.c.send(msg);
 	}
 
 	public void expect(String msg) throws Exception
 	{
-		c.expect(msg);
+		this.c.expect(msg);
 	}
 }
