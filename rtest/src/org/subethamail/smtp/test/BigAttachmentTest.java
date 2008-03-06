@@ -77,7 +77,11 @@ public class BigAttachmentTest extends TestCase
 	
 	public void testAttachments() throws Exception
 	{	
-		assertNotSame("To complete this test you must change the BIGFILE_PATH var to point out a file on your disk !", TO_CHANGE, BIGFILE_PATH);
+		if (BIGFILE_PATH.equals(TO_CHANGE))
+		{
+			log.error("BigAttachmentTest: To complete this test you must change the BIGFILE_PATH var to point out a file on your disk !");
+		}
+		assertNotSame("BigAttachmentTest: To complete this test you must change the BIGFILE_PATH var to point out a file on your disk !", TO_CHANGE, BIGFILE_PATH);
 		Properties props = System.getProperties();
 		props.setProperty("mail.smtp.host", "localhost");
 		props.setProperty("mail.smtp.port", SMTP_PORT+"");
