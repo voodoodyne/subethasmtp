@@ -215,7 +215,7 @@ public class SMTPServer
 
 			// JMX instrumentation
 			serviceManager = new IoServiceManager(acceptor);
-			jmxName = new ObjectName("wizer.mina.server:type=IoServiceManager");
+			jmxName = new ObjectName("subethasmtp.mina.server:type=IoServiceManager");
 
 			config = new SocketAcceptorConfig();
 			config.setThreadModel(ThreadModel.MANUAL);
