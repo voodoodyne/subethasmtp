@@ -23,10 +23,15 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 
 	private UsernamePasswordValidator helper;
 
-	/** Creates a new instance of PlainAuthenticationHandler */
+	private static List<String> AUTH_MECH;
+	
+	/** Creates a new instance of LoginAuthenticationHandler */
 	public LoginAuthenticationHandler(UsernamePasswordValidator helper)
 	{
 		this.helper = helper;
+
+		AUTH_MECH = new ArrayList<String>(1);
+		AUTH_MECH.add("LOGIN");
 	}
 
 	/**
@@ -34,9 +39,7 @@ public class LoginAuthenticationHandler implements AuthenticationHandler
 	 */
 	public List<String> getAuthenticationMechanisms()
 	{
-		List<String> ret = new ArrayList<String>(1);
-		ret.add("LOGIN");
-		return ret;
+		return AUTH_MECH;
 	}
 
 	/**

@@ -19,17 +19,20 @@ public class PlainAuthenticationHandler implements AuthenticationHandler
 {
 	private UsernamePasswordValidator helper;
 
+	private static List<String> AUTH_MECH;
+
 	/** Creates a new instance of PlainAuthenticationHandler */
 	public PlainAuthenticationHandler(UsernamePasswordValidator helper)
 	{
 		this.helper = helper;
+
+		AUTH_MECH = new ArrayList<String>(1);
+		AUTH_MECH.add("PLAIN");
 	}
 
 	public List<String> getAuthenticationMechanisms()
 	{
-		List<String> ret = new ArrayList<String>(1);
-		ret.add("PLAIN");
-		return ret;
+		return AUTH_MECH;
 	}
 
 	public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx)
