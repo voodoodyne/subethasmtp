@@ -38,15 +38,13 @@ import org.subethamail.smtp.Version;
  * hostName, port, and bind address if you wish to override the 
  * defaults, and call start(). 
  * 
- * This class starts opens a ServerSocket and creates a new
+ * This class starts opens a <a href="http://mina.apache.org/">Mina</a> 
+ * based listener and creates a new
  * instance of the ConnectionHandler class when a new connection
  * comes in.  The ConnectionHandler then parses the incoming SMTP
  * stream and hands off the processing to the CommandHandler which
  * will execute the appropriate SMTP command class.
  *  
- * This class also manages a watchdog thread which will timeout 
- * stale connections.
- *
  * There are two ways of using this server.  The first is to
  * construct with a MessageHandlerFactory.  This provides the
  * lowest-level and most flexible access.  The second way is
