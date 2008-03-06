@@ -5,6 +5,7 @@
 	<classpathentry kind="lib" path="lib/mail.jar"/>
 	<classpathentry kind="lib" path="lib/junit.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-jdk14-1.4.3.jar"/>
+	<classpathentry kind="lib" path="lib/activation.jar"/>
 	<classpathentry kind="src" path="smtp/src"/>
 	<classpathentry kind="src" path="rtest/src"/>
 	<classpathentry kind="lib" path="lib/mina-core-1.1.6.jar"/>
