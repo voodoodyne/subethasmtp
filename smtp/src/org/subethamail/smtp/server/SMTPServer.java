@@ -293,9 +293,9 @@ public class SMTPServer
 		try
 		{
 			log.info("SMTP Server socket shut down.");
-			acceptor.unbindAll();
-			executor.shutdown();
-			acceptorThreadPool.shutdown();
+			try { acceptor.unbindAll(); } catch (Exception e) { }
+			try { executor.shutdown(); } catch (Exception e) { }
+			try { acceptorThreadPool.shutdown(); } catch (Exception e) { }
 		}
 		finally
 		{
