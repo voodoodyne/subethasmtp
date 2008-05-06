@@ -128,6 +128,8 @@ public class SMTPServer
 	
 	private int dataDeferredSize = DEFAULT_DATA_DEFERRED_SIZE;
 	
+	private boolean announceTls = true;
+
 	/**
 	 * The primary constructor.
 	 */
@@ -301,7 +303,25 @@ public class SMTPServer
 		}
 	}
 
-	/** @return the host name that will be reported to SMTP clients */
+	/**
+	 * Tells the server to announce the TLS support. Defaults to true. 
+	 */
+	public void setAnnounceTLS(boolean announceTls)
+	{
+		this.announceTls = announceTls;
+	}
+	
+	/**
+	 * @return true if server is allowed to announce TLS support.
+	 */
+	public boolean announceTLS()
+	{
+		return announceTls;
+	}
+
+	/** 
+	 * @return the host name that will be reported to SMTP clients 
+	 */
 	public String getHostName()
 	{
 		if (this.hostName == null)
@@ -310,7 +330,9 @@ public class SMTPServer
 			return this.hostName;
 	}
 
-	/** The host name that will be reported to SMTP clients */
+	/** 
+	 * The host name that will be reported to SMTP clients 
+	 */
 	public void setHostName(String hostName)
 	{
 		this.hostName = hostName;
