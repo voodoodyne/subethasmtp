@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.SMTPServer;
 import org.subethamail.smtp.server.Session;
 
 /**
@@ -45,7 +46,9 @@ public class EhloCommand extends BaseCommand
 			response.append("\r\n");
 			response.append("250-8BITMIME");
 
-			if (context.getSMTPServer().getCommandHandler().containsCommand("STARTTLS"))
+			SMTPServer server = context.getSMTPServer();
+			if (server.announceTLS() &&		
+					context.getSMTPServer().getCommandHandler().containsCommand("STARTTLS"))
 			{
 				response.append("\r\n").append("250-STARTTLS");
 			}
