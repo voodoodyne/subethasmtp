@@ -308,9 +308,11 @@ public class ConnectionHandler extends IoHandlerAdapter
 		if (log.isDebugEnabled())
 			log.debug("S: " + response);
 
-		if (response == null)
-			return;
-
-		session.write(response);
+		if (response != null)
+			session.write(response);
+		
+		Context minaCtx = (Context) session.getAttribute(CONTEXT_ATTRIBUTE);
+		if (!minaCtx.getSession().isActive())
+			session.close();
 	}
 }
