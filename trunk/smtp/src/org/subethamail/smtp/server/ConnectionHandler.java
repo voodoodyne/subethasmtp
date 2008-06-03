@@ -44,17 +44,17 @@ public class ConnectionHandler extends IoHandlerAdapter
 
 		private Session sessionCtx;
 
-		private IoSession session;
+		private IoSession ioSession;
 		
 		private Credential credential;
 		
 		private InputStream inputStream;
 
-		public Context(SMTPServer server, IoSession session)
+		public Context(SMTPServer server, IoSession ioSession)
 		{
 			this.server = server;
-			this.session = session;
-			sessionCtx = new Session(this.server.getMessageHandlerFactory().create(this));
+			this.ioSession = ioSession;
+			this.sessionCtx = new Session(this.server.getMessageHandlerFactory().create(this));
 		}
 
 		public InputStream getInputStream() 
@@ -74,12 +74,12 @@ public class ConnectionHandler extends IoHandlerAdapter
 
 		public void sendResponse(String response) throws IOException
 		{
-			ConnectionHandler.sendResponse(session, response);
+			ConnectionHandler.sendResponse(ioSession, response);
 		}
 
 		public SocketAddress getRemoteAddress()
 		{
-			return session.getRemoteAddress();
+			return ioSession.getRemoteAddress();
 		}
 
 		public SMTPServer getSMTPServer()
@@ -89,7 +89,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 
 		public IoSession getIOSession()
 		{
-			return session;
+			return ioSession;
 		}
 
 		public Credential getCredential() 
