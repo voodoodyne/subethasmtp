@@ -19,7 +19,7 @@ public class QuitCommand extends BaseCommand
 	@Override
 	public void execute(String commandString, ConnectionContext context) throws IOException
 	{
-		context.sendResponse("221 Bye");
 		context.getSession().quit();
+		context.sendResponse("221 Bye");		
 	}
 }
