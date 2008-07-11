@@ -12,6 +12,30 @@
 		
 		<h2>Changes</h2>
 		<dl>
+			<dt>2.1 - July 11, 2008</dt>
+			<dd>
+				<ul>
+					<li>Fix to ensure session is closed on QUIT command response</li>
+					<li>Fix to close connections after QUIT for clients which don't auto close the session</li>
+					<li>Announce TLS support patch</li>
+					<li>small optimization for getAuthenticationMechanisms()</li>
+					<li>catch exceptions so that all the shutdown methods get called if there is an error.</li>
+					<li>Default MessageHandler implementation easily extendable or replaceable</li>
+					<li>Modified to allow easier tweaking of the message handling</li>
+					<li>Added default authentication handling / removed dummy message handling methods / added a private stream generator</li>
+					<li>Replaced the old AuthLoginTest and AuthPlainTest classes</li>
+					<li>Fix for encoding problems in junit classes src</li>
+					<li>Fixed issue 8 : shutdown the thread pools to avoid unnecessary delays when server stopped</li>
+					<li>Fixed max length to comply with RFC</li>
+					<li>Added some encoding tests</li>
+					<li>The new smtp decoder (enhanced performances, charset friendly)</li>
+					<li>Fixed default charset and added some methods to further configure the core</li>
+					<li>Added SMTP server configuration methods</li>
+					<li>Updated mina libraries</li>
+					<li>Modified ThreadFactory to setup debug friendly thread's names</li>
+				</ul>
+			</dd>
+			
 			<dt>2.0.1 - January 25, 2008</dt>
 			<dd>
 				<ul>
