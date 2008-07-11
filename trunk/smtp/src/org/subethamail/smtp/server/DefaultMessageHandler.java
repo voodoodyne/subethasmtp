@@ -93,7 +93,7 @@ public class DefaultMessageHandler
 		{				
 		    delivery.getListener().deliver(this.from, 
 		    		delivery.getRecipient(), getPrivateInputStream(notFirstLoop, data));
-		    if  (!notFirstLoop)
+		    if (!notFirstLoop)
 		    	notFirstLoop = true;
 		}
 	}
