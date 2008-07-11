@@ -37,7 +37,6 @@ import org.subethamail.smtp.server.SMTPServer;
 public class Wiser implements MessageListener
 {
 	/** */
-	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Wiser.class);
 	
 	/** */
@@ -164,6 +163,9 @@ public class Wiser implements MessageListener
 		return this.messages;
 	}
 
+	/**
+	 * @return an instance of the SMTPServer object
+	 */
 	public SMTPServer getServer()
 	{
 		return this.server;

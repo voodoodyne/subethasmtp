@@ -11,7 +11,6 @@ import org.subethamail.smtp.MessageHandler;
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
-@SuppressWarnings("serial")
 public class Session
 {
 	private boolean authenticating =false;

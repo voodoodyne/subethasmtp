@@ -64,7 +64,6 @@ import org.subethamail.smtp.Version;
  * 
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
-@SuppressWarnings("serial")
 public class SMTPServer
 {
 	private static Logger log = LoggerFactory.getLogger(SMTPServer.class);
