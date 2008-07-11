@@ -12,8 +12,7 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.TooMuchDataException;
 
 /**
- * Default class that implements the {@link MessageHandler} interface. It extends
- * {@link AbstractMessageHandler} class.
+ * Default class that extends the {@link AbstractMessageHandler} class.
  * 
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
