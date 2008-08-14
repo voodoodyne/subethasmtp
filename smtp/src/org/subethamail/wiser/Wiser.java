@@ -30,7 +30,7 @@ import org.subethamail.smtp.server.SMTPServer;
 
 /**
  * Wiser is a smart mail testing application.
- * 
+ *
  * @author Jon Stevens
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
@@ -38,10 +38,10 @@ public class Wiser implements MessageListener
 {
 	/** */
 	private final static Logger log = LoggerFactory.getLogger(Wiser.class);
-	
+
 	/** */
 	SMTPServer server;
-	
+
 	/** */
 	List<WiserMessage> messages = Collections.synchronizedList(new ArrayList<WiserMessage>());
 
@@ -54,17 +54,17 @@ public class Wiser implements MessageListener
 	{
 		Collection<MessageListener> listeners = new ArrayList<MessageListener>(1);
 		listeners.add(this);
-		
+
 		this.server = new SMTPServer(listeners);
 		this.server.setPort(25);
-		
-		// Set max connections much higher since we use NIO now.		
+
+		// Set max connections much higher since we use NIO now.
         this.server.setMaxConnections(30000);
-        
-        // Removed in order that JUNIT tests could pass. They were incorrectly 
+
+        // Removed in order that JUNIT tests could pass. They were incorrectly
         // assuming that anonymous mode was always available.
 		/*((MessageListenerAdapter)server.getMessageHandlerFactory())
-			.setAuthenticationHandlerFactory(new AuthHandlerFactory());*/        
+			.setAuthenticationHandlerFactory(new AuthHandlerFactory());*/
 	}
 
 	/**
@@ -75,9 +75,9 @@ public class Wiser implements MessageListener
 	{
 		this.server.setPort(port);
 	}
-	
+
 	/**
-	 * Set the size at which the mail will be temporary 
+	 * Set the size at which the mail will be temporary
 	 * stored on disk.
 	 * @param dataDeferredSize
 	 */
@@ -85,7 +85,7 @@ public class Wiser implements MessageListener
 	{
 		this.server.setDataDeferredSize(dataDeferredSize);
 	}
-	
+
 	/**
 	 * Set the receive buffer size.
 	 * @param size
@@ -94,7 +94,7 @@ public class Wiser implements MessageListener
 	{
 		this.server.setReceiveBufferSize(size);
 	}
-	
+
 	/**
 	 * The hostname that the server should listen on.
 	 * @param hostname
@@ -111,7 +111,7 @@ public class Wiser implements MessageListener
 	{
 		this.server.start();
 	}
-	
+
 	/**
 	 * Stops the SMTP Server
 	 */
@@ -138,15 +138,27 @@ public class Wiser implements MessageListener
 	}
 
 	/**
-	 * Cache the messages in memory. Now avoids unnecessary memory copying. 
+	 * Cache the messages in memory. Now avoids unnecessary memory copying.
 	 */
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException
 	{
 		log.debug("Delivering new message ...");
 		WiserMessage msg = new WiserMessage(this, from, recipient, data);
-		this.messages.add(msg);		
+		this.queueMessage(msg);
 	}
-	
+
+	/**
+	 * deliver() calls queueMessage to store the message in an internal List&lt;WiserMessage&gt;
+	 * You can extend Wiser and override this method if you want to store it in a
+	 * different location instead
+	 *
+	 * @param message
+	 */
+	protected void queueMessage(WiserMessage message)
+	{
+		this.messages.add(message);
+	}
+
 	/**
 	 * Creates the JavaMail Session object for use in WiserMessage
 	 */
