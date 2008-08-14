@@ -14,22 +14,22 @@ import org.slf4j.LoggerFactory;
 /**
  * This class wraps a received message and provides
  * a way to generate a JavaMail MimeMessage from the data.
- * 
+ *
  * @author Jon Stevens
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class WiserMessage
 {
 	private final static Logger log = LoggerFactory.getLogger(WiserMessage.class);
-	
+
 	Wiser wiser;
 	String envelopeSender;
 	String envelopeReceiver;
 	InputStream stream;
 	byte[] array;
 	MimeMessage message = null;
-	
-	WiserMessage(Wiser wiser, String envelopeSender, String envelopeReceiver, InputStream stream)
+
+	public WiserMessage(Wiser wiser, String envelopeSender, String envelopeReceiver, InputStream stream)
 	{
 		this.wiser = wiser;
 		this.envelopeSender = envelopeSender;
@@ -43,33 +43,33 @@ public class WiserMessage
 	 */
 	public MimeMessage getMimeMessage() throws MessagingException
 	{
-		if (message == null)
+		if (this.message == null)
 		{
-			 message = new MimeMessage(this.wiser.getSession(), stream);
+			 this.message = new MimeMessage(this.wiser.getSession(), this.stream);
 		}
-		return message;
+		return this.message;
 	}
 
 	/**
 	 * Get's the raw message DATA.
-	 * Note : this could result in loading many data into memory in case of big 
-	 * attached files. This is why the array is only generated on the first call. 
-	 * 
-	 * @return the byte array of the raw message or an empty byte array 
-	 * if an exception occured. 
+	 * Note : this could result in loading many data into memory in case of big
+	 * attached files. This is why the array is only generated on the first call.
+	 *
+	 * @return the byte array of the raw message or an empty byte array
+	 * if an exception occured.
 	 */
 	public byte[] getData()
 	{
-		if (array == null)
-		{			
+		if (this.array == null)
+		{
 			ByteArrayOutputStream out = new ByteArrayOutputStream();
 			BufferedInputStream in;
-			
-			if (stream instanceof BufferedInputStream)
-				in = (BufferedInputStream) stream;
+
+			if (this.stream instanceof BufferedInputStream)
+				in = (BufferedInputStream) this.stream;
 			else
 				in = new BufferedInputStream(this.stream);
-	
+
 			// read the data from the stream
 			try
 			{
@@ -79,24 +79,24 @@ public class WiserMessage
 				{
 					out.write(buf, 0, b);
 				}
-				
-				array = out.toByteArray();
+
+				this.array = out.toByteArray();
 			}
 			catch (IOException ioex)
 			{
-				array = new byte[0];
+				this.array = new byte[0];
 			}
 			finally
 			{
-				try 
+				try
 				{
 					in.close();
-				} 
+				}
 				catch (IOException e) {}
 			}
 		}
-		
-		return array;
+
+		return this.array;
 	}
 
 	/**
@@ -114,20 +114,21 @@ public class WiserMessage
 	{
 		return this.envelopeSender;
 	}
-	
+
 	public void dispose()
 	{
 		try
 		{
-			finalize();
+			this.finalize();
 		}
 		catch (Throwable t)
 		{
 			log.error("On WiserMessage dispose", t);
 		}
 	}
-	
-	protected void finalize() throws Throwable 
+
+	@Override
+	protected void finalize() throws Throwable
 	{
 		super.finalize();
 		if (this.stream != null)
