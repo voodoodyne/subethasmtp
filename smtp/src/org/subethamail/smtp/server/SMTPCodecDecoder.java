@@ -122,12 +122,12 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     }
 
     /** */
-    private Context getContext(IoSession session) 
+    private DecoderContext getContext(IoSession session) 
     {
-        Context ctx = (Context) session.getAttribute(CONTEXT);
+        DecoderContext ctx = (DecoderContext) session.getAttribute(CONTEXT);
         if (ctx == null) 
         {
-            ctx = new Context();
+            ctx = new DecoderContext();
             session.setAttribute(CONTEXT, ctx);
         }
         return ctx;
@@ -143,7 +143,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     public void dispose(IoSession session) 
     	throws Exception 
     {
-        Context ctx = (Context) session.getAttribute(CONTEXT);
+        DecoderContext ctx = (DecoderContext) session.getAttribute(CONTEXT);
         if (ctx != null) 
         {
             ctx.getBuffer().release();
@@ -156,7 +156,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     public void decode(IoSession session, ByteBuffer in, ProtocolDecoderOutput out)
             throws Exception 
     {
-    	Context ctx = getContext(session);
+    	DecoderContext ctx = getContext(session);
         int matchCount = ctx.getMatchCount();
         
         ConnectionHandler.Context minaCtx = (ConnectionHandler.Context) 
@@ -214,8 +214,8 @@ public class SMTPCodecDecoder implements ProtocolDecoder
                         	if (dataMode)
                         	{
                         		delimBuf = SMTP_CMD_DELIMITER;
-                        		out.write(ctx.getInputStream());
-                        		ctx.compactBuffer();
+                        		out.write(ctx.getInputStream());                        		
+                        		ctx.reset();
                         	}
                         	else
                         	{
@@ -257,7 +257,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
         ctx.setMatchCount(matchCount);
     }
 
-    private class Context 
+    private class DecoderContext 
     {
         private final CharsetDecoder decoder;
         private ByteBuffer buf;
@@ -271,7 +271,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     	/** If we switch to file output, this is the stream to write to the file. */ 
     	FileOutputStream stream;
     	
-        private Context() 
+        private DecoderContext() 
         {
             decoder = charset.newDecoder();
             buf = ByteBuffer.allocate(80).setAutoExpand(true);
@@ -290,7 +290,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
         }
         
         /** */
-        public void compactBuffer() 
+        private void compactBuffer() 
         {
         	buf.clear();
         	if (buf.capacity() > getMaxLineLength()) 
@@ -319,11 +319,13 @@ public class SMTPCodecDecoder implements ProtocolDecoder
         }
         
         /** */
-        public void reset() 
+        protected void reset() 
         {
             overflowPosition = 0;
             matchCount = 0;
             decoder.reset();
+            thresholdReached = false;
+            compactBuffer();
         }
         
         /** */
@@ -341,7 +343,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
         }
         
         /** */
-    	public void write(byte[] src) 
+    	private void write(byte[] src) 
     		throws IOException
     	{
     		int predicted = this.thresholdReached ? 0 : this.buf.position() + src.length;
@@ -390,7 +392,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     	}
     	
     	/** */
-    	public void closeOutputStream() throws IOException
+    	protected void closeOutputStream() throws IOException
     	{
     		if (this.stream != null)
     		{
@@ -401,7 +403,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     	}
     	
     	/** */
-    	public InputStream getInputStream() throws IOException
+    	protected InputStream getInputStream() throws IOException
     	{		
     		if (this.thresholdReached)
     		{
@@ -414,7 +416,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     	}
     	
     	/** */
-        public void append(ByteBuffer in) throws CharacterCodingException 
+        private void append(ByteBuffer in) throws CharacterCodingException 
         {
             if (overflowPosition != 0) 
             {
