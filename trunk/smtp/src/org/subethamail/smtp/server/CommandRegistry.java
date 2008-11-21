@@ -7,6 +7,7 @@ package org.subethamail.smtp.server;
 
 import org.subethamail.smtp.command.AuthCommand;
 import org.subethamail.smtp.command.DataCommand;
+import org.subethamail.smtp.command.DataEndCommand;
 import org.subethamail.smtp.command.EhloCommand;
 import org.subethamail.smtp.command.HelloCommand;
 import org.subethamail.smtp.command.HelpCommand;
@@ -19,14 +20,15 @@ import org.subethamail.smtp.command.StartTLSCommand;
 import org.subethamail.smtp.command.VerifyCommand;
 
 /**
- * Enumerates all the Commands made available in this release.
+ * Enumerates all the {@link Command} available.
  * 
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
+ * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public enum CommandRegistry
 {
 	AUTH(new AuthCommand()), 
-	DATA(new DataCommand()), 
+	DATA(new DataCommand()),
 	EHLO(new EhloCommand()), 
 	HELO(new HelloCommand()), 
 	HELP(new HelpCommand()), 
@@ -36,7 +38,10 @@ public enum CommandRegistry
 	RCPT(new ReceiptCommand()), 
 	RSET(new ResetCommand()), 
 	STARTTLS(new StartTLSCommand()), 
-	VRFY(new VerifyCommand());
+	VRFY(new VerifyCommand()),
+	
+	// Adds a fake command to handle the asynchronous end of DATA 
+        DATA_END(new DataEndCommand());
 
 	private Command command;
 
