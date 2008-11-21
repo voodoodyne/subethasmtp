@@ -22,7 +22,7 @@ public class CommandHandler
 	private static Logger log = LoggerFactory.getLogger(CommandHandler.class);
 	
 	/**
-	 * Populates a default set of commands based on what is in the CommandRegistry.
+	 * Populates a default set of commands based with the CommandRegistry commands.
 	 */
 	public CommandHandler()
 	{
@@ -127,44 +127,25 @@ public class CommandHandler
 	protected Command getCommandFromString(String commandString)
 		throws UnknownCommandException, InvalidCommandNameException
 	{
-		Command command = null;
-		String key = toKey(commandString);
-		if (key != null)
-		{
-			command = this.commandMap.get(key);
-		}
+            String verb = toVerb(commandString);
+
+	        Command command = this.commandMap.get(verb);
 		if (command == null)
-		{
-			// some commands have a verb longer than 4 letters
-			String verb = toVerb(commandString);
-			if (verb != null)
-			{
-				command = this.commandMap.get(verb);
-			}
-		}
-		if (command == null)
-		{
-			throw new UnknownCommandException("Error: command not implemented");
-		}
-		return command;
-	}
-	
-	/** */
-	private String toKey(String string) throws InvalidCommandNameException
-	{
-		if (string == null || string.length() < 4)
-			throw new InvalidCommandNameException("Error: bad syntax");
+		    throw new UnknownCommandException("Error: command not implemented");
 		
-		return string.substring(0, 4).toUpperCase();
+		return command;
 	}
 	
 	/** */
 	private String toVerb(String string) throws InvalidCommandNameException
 	{
-		StringTokenizer stringTokenizer = new StringTokenizer(string);
-		if (!stringTokenizer.hasMoreTokens())
-			throw new InvalidCommandNameException("Error: bad syntax");
+            if (string == null || string.length() < 4)
+                throw new InvalidCommandNameException("Error: bad syntax");
+
+            StringTokenizer stringTokenizer = new StringTokenizer(string);
+            if (!stringTokenizer.hasMoreTokens())
+		throw new InvalidCommandNameException("Error: bad syntax");
 		
-		return stringTokenizer.nextToken().toUpperCase();
+            return stringTokenizer.nextToken().toUpperCase();
 	}
 }
