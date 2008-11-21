@@ -17,7 +17,6 @@ import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.auth.Credential;
 import org.subethamail.smtp.command.AuthCommand;
-import org.subethamail.smtp.command.DataEndCommand;
 import org.subethamail.smtp.command.EhloCommand;
 import org.subethamail.smtp.command.HelloCommand;
 import org.subethamail.smtp.command.NoopCommand;
@@ -273,7 +272,7 @@ public class ConnectionHandler extends IoHandlerAdapter
 		if (message instanceof InputStream)
 		{
 			minaCtx.setInputStream((InputStream) message);
-			new DataEndCommand().execute(null, minaCtx);
+			this.server.getCommandHandler().handleCommand(minaCtx, "DATA_END");
 		}
 		else
 		{
