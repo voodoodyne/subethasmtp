@@ -354,8 +354,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     			// If previously hit, then use the stream.
     			if (!this.thresholdReached)
     			{
-    				thresholdReached(this.buf.position(), predicted);
-    				this.thresholdReached = true;
+    				thresholdReached();
     				compactBuffer();
     			}
     			
@@ -369,14 +368,9 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     	
     	/**
 		 * Called when the threshold is about to be exceeded. Once called, it
-		 * won't be called again.
-		 * 
-		 * @param current
-		 *            is the current number of bytes that have been written
-		 * @param predicted
-		 *            is the total number after the write completes
+		 * won't be called again for the current data transfer.
 		 */
-    	private void thresholdReached(int current, int predicted) 
+    	private void thresholdReached() 
     		throws IOException
     	{
     		this.outFile = File.createTempFile(TMPFILE_PREFIX, TMPFILE_SUFFIX);
@@ -388,6 +382,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     		this.stream = new FileOutputStream(this.outFile);
     		this.buf.flip();
     		this.stream.write(asArray(this.buf));
+    		this.thresholdReached = true;
     		log.debug("ByteBuffer written to stream");
     	}
     	
