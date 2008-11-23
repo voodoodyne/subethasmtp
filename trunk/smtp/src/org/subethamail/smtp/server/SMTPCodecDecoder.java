@@ -319,13 +319,17 @@ public class SMTPCodecDecoder implements ProtocolDecoder
         }
         
         /** */
-        protected void reset() 
+        protected void reset() throws IOException 
         {
             overflowPosition = 0;
             matchCount = 0;
             decoder.reset();
-            thresholdReached = false;
-            compactBuffer();
+            if (thresholdReached)
+            {
+            	thresholdReached = false;
+            	compactBuffer();
+            	closeOutputStream();
+            }
         }
         
         /** */
@@ -393,7 +397,7 @@ public class SMTPCodecDecoder implements ProtocolDecoder
     		{
     			this.stream.flush();
     			this.stream.close();
-    			log.debug("Temp file writing achieved");
+    			log.debug("Temp file writing achieved - closing stream");
     		}
     	}
     	
