@@ -7,7 +7,7 @@ import javax.mail.util.SharedFileInputStream;
 
 /**
  * This class uses a temporary file to store big messages and asks JVM
- * to delete them when destroyed.
+ * to delete them when JVM is destroyed.
  * 
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
@@ -20,12 +20,9 @@ public class SharedTmpFileInputStream
 	{
 		super(f);
 		this.tempFile = f;
-	}
-
-	public void close() throws IOException 
-	{
-		super.close();
-		if (in == null)
-			this.tempFile.deleteOnExit();
+		
+		// Always mark file to be deleted on exit in case streams
+		// are not closed properly.
+		this.tempFile.deleteOnExit();
 	}
 }
