@@ -119,11 +119,15 @@ public class WiserMessage
 	{
 		try
 		{
-			this.finalize();
+		    if (this.stream != null)
+	            {
+	                this.stream.close();
+	                this.stream = null;
+	            }			
 		}
 		catch (Throwable t)
 		{
-			log.error("On WiserMessage dispose", t);
+		    log.error("On WiserMessage dispose", t);
 		}
 	}
 
@@ -131,7 +135,6 @@ public class WiserMessage
 	protected void finalize() throws Throwable
 	{
 		super.finalize();
-		if (this.stream != null)
-			this.stream.close();
+		dispose();
 	}
 }
