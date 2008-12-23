@@ -1,0 +1,90 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+       $Id$
+       $URL$
+
+       Build file for the smtp server.
+
+       Not an entry point; imported by the top-level buildfile.
+-->
+
+<project name="rtest" default="" basedir=".">
+	
+	<property name="build.rtest.classes.dir" location="${build.dir}/rtest-classes"/>
+	<property name="build.rtest.jar.file" location="${build.dir}/smtp-rtest.jar"/>
+	
+	<dirname property="rtest.basedir" file="${ant.file.rtest}"/>
+	<property name="rtest.javasrc.dir" location="${rtest.basedir}/src"/>
+	<property name="rtest.lib.dir" location="${rtest.basedir}/lib"/>
+
+	<!-- Hack to make Eclipse stop complaining -->	
+	<import file="../build.xml" />
+
+	<!-- used to build the rtest interfaces -->
+	<path id="rtest.classpath">
+		<fileset dir="${rtest.lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+		<pathelement location="${build.wiser.jar.file}" />
+		<path refid="wiser.classpath"/>
+	</path>
+	
+	<target name="rtest-classes" depends="init, wiser-jar">
+		<mkdir dir="${build.rtest.classes.dir}"/>
+		
+		<javac srcdir="${rtest.javasrc.dir}" destdir="${build.rtest.classes.dir}"
+			includeAntRuntime="false" debug="${build.debug}"
+			deprecation="${build.deprecation}">
+			
+			<classpath refid="rtest.classpath"/>
+		</javac>
+	</target>
+	
+	<target name="rtest-jar" depends="rtest-classes">
+		<jar jarfile="${build.rtest.jar.file}">
+			<fileset dir="${build.rtest.classes.dir}"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+			</manifest>
+		</jar>
+	</target>
+	
+	<target name="junit" depends="smtp-classes, wiser-classes, rtest-jar">
+		<junit printsummary="yes" showoutput="yes" fork="yes">
+			<jvmarg value="-Dlog4j.configuration=file:${rtest.basedir}/log4j.properties"/>
+
+			<classpath refid="rtest.classpath"/>
+			<classpath location="${build.rtest.jar.file}"/>
+
+			<formatter type="plain"/>
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.rtest.classes.dir}">
+					<include name="**/*Test.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="junit-special" depends="smtp-classes, wiser-classes, rtest-jar">
+		<junit printsummary="true" showoutput="true" fork="true">
+			<jvmarg value="-Dlog4j.configuration=file:${rtest.basedir}/log4j.properties"/>
+			
+			<classpath refid="rtest.classpath"/>
+			<classpath location="${build.rtest.jar.file}"/>
+			
+			<formatter type="plain" />
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.rtest.classes.dir}">
+					<include name="${junit.special.tests}" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+</project>
+

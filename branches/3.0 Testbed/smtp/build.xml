@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+
+<!--
+       $Id$
+       $URL$
+
+       Build file for the smtp server.
+
+       Not an entry point; imported by the top-level buildfile.
+-->
+
+<project name="smtp" default="" basedir=".">
+	
+	<property name="build.smtp.classes.dir" location="${build.dir}/smtp-classes"/>
+	<property name="build.smtp.name" value="subetha-smtp"/>
+	<property name="build.smtp.jar.file" location="${build.dir}/${build.smtp.name}.jar"/>
+	
+	<dirname property="smtp.basedir" file="${ant.file.smtp}"/>
+	<property name="smtp.javasrc.dir" location="${smtp.basedir}/src"/>
+	<property name="smtp.meta.dir" location="${smtp.basedir}/meta"/>
+	<property name="smtp.lib.dir" location="${smtp.basedir}/lib"/>
+
+	<!-- Hack to make Eclipse stop complaining -->	
+	<import file="../build.xml" />
+
+	<!-- used to build the smtp interfaces -->
+	<path id="smtp.classpath">
+		<path refid="base.classpath"/>
+		<fileset dir="${smtp.lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+	
+	<target name="smtp-classes" depends="init">
+		<mkdir dir="${build.smtp.classes.dir}"/>
+
+		<javac srcdir="${smtp.javasrc.dir}" destdir="${build.smtp.classes.dir}"
+			includeAntRuntime="false" debug="${build.debug}"
+			deprecation="${build.deprecation}"
+			source="1.5"
+			target="1.5">
+			
+			<classpath refid="smtp.classpath"/>
+		</javac>
+	</target>
+
+	<target name="smtp-jar" depends="smtp-classes">
+		<jar jarfile="${build.smtp.jar.file}">
+			<fileset dir="${build.smtp.classes.dir}"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+				<attribute name="Main-Class" value="org.subethamail.smtp.Version" />
+			</manifest>
+		</jar>
+	</target>
+
+	<target name="smtp-jdk1.4-jar" depends="smtp-jar, rt-task">
+		<retroweaver inputjar="${build.smtp.jar.file}" outputjar="${build.dir}/${build.smtp.name}-jdk1.4.jar" />
+	</target>
+
+</project>
+
