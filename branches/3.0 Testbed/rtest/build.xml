@@ -16,7 +16,7 @@
 	
 	<dirname property="rtest.basedir" file="${ant.file.rtest}"/>
 	<property name="rtest.javasrc.dir" location="${rtest.basedir}/src"/>
-	<property name="rtest.lib.dir" location="${rtest.basedir}/lib"/>
+	<property name="rtest.lib.dir" location="${rtest.basedir}/../lib"/>
 
 	<!-- Hack to make Eclipse stop complaining -->	
 	<import file="../build.xml" />

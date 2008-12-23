@@ -85,7 +85,7 @@ google_color_url = "FF0000";
 	
 	<ul>
 		<li><a href="http://james.apache.org/">Apache JAMES</a></li>
-		<li><a href="http://labs.jboss.com/portal/jbossmail/index.html">JBoss Mail Server</a></li>
+		<li><strike><a href="http://labs.jboss.com/portal/jbossmail/index.html">JBoss Mail Server</a></strike> - Now <a href="http://www.buni.org/mediawiki/index.php/Meldware_Mail">Meldware Mail</a></li>
 		<li><a href="http://quintanasoft.com/dumbster/">Dumbster</a></li>
 		<li><a href="http://www.jsmtpd.org/site/">Jsmtpd</a></li>
 		<li><a href="http://www.ericdaugherty.com/java/mailserver/">JES</a></li>
@@ -97,10 +97,10 @@ google_color_url = "FF0000";
 		Since you're reading this page you probably already know what we found:
 		Seven different SMTP implementations without the slightest thought
 		given to reusability. Even Jstmpd, which purports to be a "A Modular
-		Java SMTP Daemon", isn't.  Even though JBoss Mail is in
-		active development, the team was unintersted in componentization of the
-		SMTP processing portion of their server. GreenMail, which is based on 
-		the JAMES code base is best summarized with this 
+		Java SMTP Daemon", isn't.  Even though <strike>JBoss Mail</strike> 
+		Meldware Mail is in active development, the team was unintersted in 
+		componentization of the SMTP processing portion of their server. 
+		GreenMail, which is based on the JAMES code base is best summarized with this 
 		<a href="http://eokyere.blogspot.com/2006/10/get-wiser-with-subethasmtp.html">blog posting</a>.
 	</p>
 
@@ -122,7 +122,9 @@ google_color_url = "FF0000";
 	
 	<p>
 		Ian McFarland contributed the first codebase to SubEtha Mail. Then, Jon Stevens
-		and Jeff Schnitzer re-wrote most of Ian's code into what we have today.
+		and Jeff Schnitzer re-wrote most of Ian's code into what we have today. Edouard De Oliveira
+		re-wrote the network layer to use <a href="http://mina.apache.org/">Apache Mina</a> to provide
+		new IO (NIO) support.
 	</p>
 	
 	<h2>Project Status</h2>
@@ -159,9 +161,13 @@ google_color_url = "FF0000";
 	<h2>How To Use It</h2>
 	
 	<p>
-		SubEthaSMTP and <a href="wiser.html">Wiser</a> depends on commons-logging.jar, 
-		mail.jar/activation.jar. For your convenience, these jar files are 
-		included in the distribution.
+		SubEthaSMTP and <a href="wiser.html">Wiser</a> depends on
+		commons-logging.jar, mail.jar/activation.jar. As of version 2.0,
+		this project also now depends on a few more jar files because we
+		use Mina as our underlying networking layer. These jars are:
+		mina-core.jar, mina-filter-ssl.jar, mina-integration-jmx.jar and
+		slf4j-api.jar. <strong>For your convenience, these jar files are
+		included in the distribution in the lib directory</strong>.
 	</p>
 
 	<p>
@@ -199,7 +205,7 @@ smtpServer.start();</pre>
 	</p>
 
 	<p>
-		Take a look at the <a href="http://subethasmtp.tigris.org/source/browse/*checkout*/subethasmtp/trunk/wiser/src/org/subethamail/wiser/Wiser.java">source code</a> for <a href="wiser.html">Wiser</a> 
+		Take a look at the <a href="http://subethasmtp.tigris.org/source/browse/*checkout*/subethasmtp/trunk/smtp/src/org/subethamail/wiser/Wiser.java">source code</a> for <a href="wiser.html">Wiser</a> 
 		to see a simple example of how to implement MessageListener.deliver() so that 
 		it receives a message and converts it into a JavaMail MimeMessage object.
 		This should make it very easy to add to your application the ability 
@@ -228,8 +234,10 @@ smtpServer.start();</pre>
 	<h2>Performance and Security</h2>
 	
 	<p>
-		SubEthaSMTP is multithreaded.  One thread waits for socket accepts
-		and then spawns a new handler thread for each connection.
+		SubEthaSMTP is fully multithreaded. For the fastest possible networking, 
+		it uses <a href="http://mina.apache.org/">Apache Mina</a> to provide NIO based
+		stream handling. This should be one of the fastest Java SMTP receivers on the 
+		planet.
 	</p>
 	
 	<p>
@@ -252,10 +260,6 @@ smtpServer.start();</pre>
 			a complete copy of the buffered message.
 		</li>
 	</ul>
-	
-	<p>
-		SubEthaSMTP will time out idle connections.
-	</p>
 	
 	<p>
 		Java by it's nature should be immune to buffer-overflow attacks.

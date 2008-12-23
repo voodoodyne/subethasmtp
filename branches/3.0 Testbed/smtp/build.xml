@@ -18,7 +18,7 @@
 	<dirname property="smtp.basedir" file="${ant.file.smtp}"/>
 	<property name="smtp.javasrc.dir" location="${smtp.basedir}/src"/>
 	<property name="smtp.meta.dir" location="${smtp.basedir}/meta"/>
-	<property name="smtp.lib.dir" location="${smtp.basedir}/lib"/>
+	<property name="smtp.lib.dir" location="${smtp.basedir}/../lib"/>
 
 	<!-- Hack to make Eclipse stop complaining -->	
 	<import file="../build.xml" />

@@ -70,7 +70,7 @@ public class DataTest extends ServerTestCase
 		send("DATA");
 		expect("354 End data with <CR><LF>.<CR><LF>");
 
-		send("alsdkfj \r\n.\r\n");
+		send("alsdkfj \r\n.");
 
 		send("RSET");
 		expect("250 Ok");

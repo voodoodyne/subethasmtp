@@ -12,6 +12,61 @@
 		
 		<h2>Changes</h2>
 		<dl>
+			<dt>3.0 - December 31, 2008</dt>
+			<dd>
+				<ul>
+					<li>More info here...</li>
+				</ul>
+			</dd>
+
+			<dt>2.1 - July 11, 2008</dt>
+			<dd>
+				<ul>
+					<li>Fix to ensure session is closed on QUIT command response</li>
+					<li>Fix to close connections after QUIT for clients which don't auto close the session</li>
+					<li>Announce TLS support patch</li>
+					<li>small optimization for getAuthenticationMechanisms()</li>
+					<li>catch exceptions so that all the shutdown methods get called if there is an error.</li>
+					<li>Default MessageHandler implementation easily extendable or replaceable</li>
+					<li>Modified to allow easier tweaking of the message handling</li>
+					<li>Added default authentication handling / removed dummy message handling methods / added a private stream generator</li>
+					<li>Replaced the old AuthLoginTest and AuthPlainTest classes</li>
+					<li>Fix for encoding problems in junit classes src</li>
+					<li>Fixed issue 8 : shutdown the thread pools to avoid unnecessary delays when server stopped</li>
+					<li>Fixed max length to comply with RFC</li>
+					<li>Added some encoding tests</li>
+					<li>The new smtp decoder (enhanced performances, charset friendly)</li>
+					<li>Fixed default charset and added some methods to further configure the core</li>
+					<li>Added SMTP server configuration methods</li>
+					<li>Updated mina libraries</li>
+					<li>Modified ThreadFactory to setup debug friendly thread's names</li>
+				</ul>
+			</dd>
+			
+			<dt>2.0.1 - January 25, 2008</dt>
+			<dd>
+				<ul>
+					<li>Fix issue with Wiser not storing messages for re-use.</li>
+					<li>Major refatoring to prevent OOM and improve perfs when dealing with large attached files</li>
+					<li>Changed returned hostname to locahost when null</li>
+					<li>Added -1 value to override limits on setMaxConnections() and setMaxRecipients()</li>
+					<li>Fixed handling of auth mechanisms to require a configured auth mechanism when needed</li>
+					<li>Fixed missing space char in extended HELO AUTH string</li>
+					<li>Will prevent an SLF4J error on startup by linking the jdk14 logging facility</li>
+				</ul>
+			</dd>
+
+			<dt>2.0 - October 26, 2007</dt>
+			<dd>
+				<ul>
+					<li>Use Apache Mina 1.1.3 for the networking layer. This make us Native IO (NIO) based. woot!</li>
+					<li>Expose Mina JMX monitoring.</li>
+					<li>Use slf4j instead of log4j for logging.</li>
+					<li>Rewrite build system to be easier / cleaner / faster.</li>
+					<li>Remove Maven pom.xml crap. Its a pile of dog shit. Don't ever use it.</li>
+				</ul>
+			</dd>
+
 			<dt>1.2.1 - June 28, 2007</dt>
 			<dd>
 				<ul>
