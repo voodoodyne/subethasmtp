@@ -35,28 +35,24 @@ public class EhloCommand extends BaseCommand
 //		250-ETRN
 //		250 8BITMIME
 
-		if (!sess.getHasSeenHelo())
-		{
-			sess.setHasSeenHelo(true);
-			String response = "250-" + sess.getServer().getHostName() + "\r\n" + "250-8BITMIME";
+		// Once upon a time this code tracked whether or not HELO/EHLO has been seen
+		// already and gave an error msg.  However, this is stupid and pointless.
+		// Postfix doesn't care, so we won't either.  If you want more, read:
+		// http://homepages.tesco.net/J.deBoynePollard/FGA/smtp-avoid-helo.html
+		
+		String response = "250-" + sess.getServer().getHostName() + "\r\n" + "250-8BITMIME";
 
-			if (sess.getServer().getCommandHandler().containsCommand("STARTTLS"))
-			{
-				response = response + "\r\n" + "250-STARTTLS";
-			}
-
-			if (sess.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
-			{
-				response = response + AuthCommand.getEhloString(sess.getServer().getAuthenticationHandlerFactory());
-			}
-			
-			response = response + "\r\n" + "250 Ok";
-			sess.sendResponse(response);
-		}
-		else
+		if (sess.getServer().getCommandHandler().containsCommand("STARTTLS"))
 		{
-			String remoteHost = args[1];
-			sess.sendResponse("503 " + remoteHost + " Duplicate EHLO");
+			response = response + "\r\n" + "250-STARTTLS";
 		}
+
+		if (sess.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
+		{
+			response = response + AuthCommand.getEhloString(sess.getServer().getAuthenticationHandlerFactory());
+		}
+		
+		response = response + "\r\n" + "250 Ok";
+		sess.sendResponse(response);
 	}
 }

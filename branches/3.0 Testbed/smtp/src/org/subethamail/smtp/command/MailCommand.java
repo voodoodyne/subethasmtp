@@ -25,11 +25,7 @@ public class MailCommand extends BaseCommand
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
-		if (!sess.getHasSeenHelo())
-		{
-			sess.sendResponse("503 Error: send HELO/EHLO first");
-		}
-		else if (sess.getHasMailFrom())
+		if (sess.getHasMailFrom())
 		{
 			sess.sendResponse("503 Sender already specified.");
 		}

@@ -46,7 +46,6 @@ public class Session extends Thread implements MessageContext
 	private MessageHandler messageHandler;
 
 	/** Some state information */
-	private boolean hasSeenHelo = false;
 	private boolean hasMailFrom = false;
 	private int recipientCount = 0;
 
@@ -269,16 +268,6 @@ public class Session extends Thread implements MessageContext
 	public void setHasMailFrom(boolean value)
 	{
 		this.hasMailFrom = value;
-	}
-
-	public boolean getHasSeenHelo()
-	{
-		return this.hasSeenHelo;
-	}
-
-	public void setHasSeenHelo(boolean hasSeenHelo)
-	{
-		this.hasSeenHelo = hasSeenHelo;
 	}
 
 	public void addRecipient()
