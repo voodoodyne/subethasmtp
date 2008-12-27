@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionHandler;
+import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.util.EmailUtils;
 
 /**
@@ -22,7 +22,7 @@ public class MailCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler sess) throws IOException
+	public void execute(String commandString, Session sess) throws IOException
 	{
 		if (!sess.getHasSeenHelo())
 		{

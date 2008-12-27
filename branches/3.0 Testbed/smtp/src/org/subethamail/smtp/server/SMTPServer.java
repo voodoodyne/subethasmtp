@@ -258,7 +258,7 @@ public class SMTPServer implements Runnable
 		connectionGroup.enumerate(groupThreads);
 		for (int i=0; i<connectionGroup.activeCount(); i++)
 		{
-			ConnectionHandler handler = ((ConnectionHandler)groupThreads[i]);
+			Session handler = ((Session)groupThreads[i]);
 			if (handler != null)
 			{
 				try
@@ -309,7 +309,7 @@ public class SMTPServer implements Runnable
 		{
 			try
 			{
-				ConnectionHandler connectionHandler = new ConnectionHandler(this, this.serverSocket.accept());
+				Session connectionHandler = new Session(this, this.serverSocket.accept());
 				connectionHandler.start();
 			}
 			catch (IOException ioe)
@@ -464,7 +464,7 @@ public class SMTPServer implements Runnable
 
 				for (int i=0; i<connectionGroup.activeCount(); i++)
 				{
-					ConnectionHandler aThread = ((ConnectionHandler)groupThreads[i]);
+					Session aThread = ((Session)groupThreads[i]);
 					if (aThread != null)
 					{
 						// one minute timeout

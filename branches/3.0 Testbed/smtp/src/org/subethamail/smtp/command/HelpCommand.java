@@ -4,7 +4,7 @@ import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.CommandException;
-import org.subethamail.smtp.server.ConnectionHandler;
+import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
@@ -22,7 +22,7 @@ public class HelpCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, Session context) throws IOException
 	{
 		String args = getArgPredicate(commandString);
 		if ("".equals(args))

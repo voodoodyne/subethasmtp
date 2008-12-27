@@ -7,7 +7,7 @@ import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionHandler;
+import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 import org.subethamail.smtp.util.TextUtils;
 
@@ -48,7 +48,7 @@ public class AuthCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler sess)
+	public void execute(String commandString, Session sess)
 			throws IOException
 	{
 		if (sess.isAuthenticated())

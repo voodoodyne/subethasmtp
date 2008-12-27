@@ -9,7 +9,7 @@ import java.io.IOException;
  */
 public interface Command
 {
-	public void execute(String commandString, ConnectionHandler sess) throws IOException;
+	public void execute(String commandString, Session sess) throws IOException;
 	public HelpMessage getHelp(String commandName) throws CommandException;
 	public String getName();
 }

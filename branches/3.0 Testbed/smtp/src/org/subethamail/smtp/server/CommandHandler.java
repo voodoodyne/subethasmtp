@@ -55,7 +55,7 @@ public class CommandHandler
 	}
 	
 	/** */
-	public void handleCommand(ConnectionHandler context, String commandString)
+	public void handleCommand(Session context, String commandString)
 		throws SocketTimeoutException, IOException
 	{
 		try

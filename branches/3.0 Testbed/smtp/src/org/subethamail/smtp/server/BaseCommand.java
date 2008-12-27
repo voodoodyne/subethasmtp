@@ -46,7 +46,7 @@ abstract public class BaseCommand implements Command
 	/**
 	 * This is the main method that you need to override in order to implement a command.
 	 */
-	abstract public void execute(String commandString, ConnectionHandler context) throws IOException;
+	abstract public void execute(String commandString, Session context) throws IOException;
 	
 	static public void registerHelp(HelpMessage helpMessage)
 	{

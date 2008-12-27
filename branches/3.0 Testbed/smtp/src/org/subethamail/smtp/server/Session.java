@@ -21,9 +21,9 @@ import org.subethamail.smtp.server.io.LastActiveInputStream;
  * 
  * @author Jon Stevens
  */
-public class ConnectionHandler extends Thread implements MessageContext
+public class Session extends Thread implements MessageContext
 {
-	private static Log log = LogFactory.getLog(ConnectionHandler.class);
+	private static Log log = LogFactory.getLog(Session.class);
 
 	/** A link to our parent server */
 	private SMTPServer server;
@@ -57,10 +57,10 @@ public class ConnectionHandler extends Thread implements MessageContext
 	 * @param socket is the socket to the client
 	 * @throws IOException
 	 */
-	public ConnectionHandler(SMTPServer server, Socket socket)
+	public Session(SMTPServer server, Socket socket)
 		throws IOException
 	{
-		super(server.getConnectionGroup(), ConnectionHandler.class.getName());
+		super(server.getConnectionGroup(), Session.class.getName());
 		
 		this.server = server;
 
