@@ -5,6 +5,7 @@ import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
 import java.util.StringTokenizer;
 
 import org.apache.commons.logging.Log;
@@ -14,6 +15,7 @@ import org.apache.commons.logging.LogFactory;
  * This class manages execution of a SMTP command.
  *
  * @author Jon Stevens
+ * @author Scott Hernandez
  */
 public class CommandHandler
 {
@@ -53,6 +55,11 @@ public class CommandHandler
 	{
 		return this.commandMap.containsKey(command);
 	}
+	/** */
+	public Set<String> getVerbs()
+	{
+		return this.commandMap.keySet();
+	}
 	
 	/** */
 	public void handleCommand(Session context, String commandString)
@@ -68,6 +75,15 @@ public class CommandHandler
 			context.sendResponse("500 " + e.getMessage());
 		}
 	}
+	/**
+	 * @return the HelpMessage object for the given command name (verb)
+	 * @throws CommandException 
+	 * */
+	public HelpMessage getHelp(String command) throws CommandException
+	{
+		return this.getCommandFromString(command).getHelp();
+	}
+	
 	
 	/** */
 	private Command getCommandFromString(String commandString)

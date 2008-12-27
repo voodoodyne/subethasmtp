@@ -8,8 +8,11 @@ import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
+ * Provides a help <verb> system for people to interact with.
+ * 
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Scott Hernandez
  */
 public class HelpCommand extends BaseCommand
 {
@@ -32,7 +35,7 @@ public class HelpCommand extends BaseCommand
 		}
 		try
 		{
-			context.sendResponse(getHelp(args).toOutputString());
+			context.sendResponse(context.getServer().getCommandHandler().getHelp(args).toOutputString());
 		}
 		catch (CommandException e)
 		{
@@ -48,7 +51,7 @@ public class HelpCommand extends BaseCommand
 				+ server.getHostName()
 				+ "\r\n"
 				+ "214-Topics:\r\n"
-				+ getFormattedTopicList()
+				+ getFormattedTopicList(server)
 				+ "214-For more info use \"HELP <topic>\".\r\n"
 				+ "214-For more information about this server, visit:\r\n"
 				+ "214-    http://subetha.tigris.org\r\n"
@@ -58,10 +61,10 @@ public class HelpCommand extends BaseCommand
 				+ "214 End of HELP info";
 	}
 
-	protected String getFormattedTopicList()
+	protected String getFormattedTopicList(SMTPServer server)
 	{
 		StringBuilder sb = new StringBuilder();
-	    for (String key : super.getHelp().keySet())
+		for (String key : server.getCommandHandler().getVerbs())
 	    {
 	    	sb.append("214-     " + key + "\r\n");
 	    }
