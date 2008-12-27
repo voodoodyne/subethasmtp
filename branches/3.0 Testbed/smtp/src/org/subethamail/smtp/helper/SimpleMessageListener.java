@@ -19,7 +19,7 @@ import org.subethamail.smtp.TooMuchDataException;
  * 
  * @author Jeff Schnitzer
  */
-public interface MessageListener
+public interface SimpleMessageListener
 {
 	/**
 	 * Called once for every RCPT TO during a SMTP exchange.

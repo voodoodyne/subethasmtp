@@ -8,14 +8,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.List;
 
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.RejectException;
-import org.subethamail.smtp.AuthenticationHandler;
-import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 
@@ -26,7 +25,7 @@ import org.subethamail.smtp.server.io.DeferredFileOutputStream;
  *
  * @author Jeff Schnitzer
  */
-public class MessageListenerAdapter implements MessageHandlerFactory
+public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 {
 	/**
 	 * 5 megs by default. The server will buffer incoming messages to disk
@@ -34,17 +33,25 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	 */
 	private static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*5;
 	
-	private Collection<MessageListener> listeners;
+	private Collection<SimpleMessageListener> listeners;
 	private int dataDeferredSize;
 	
-	private AuthenticationHandlerFactory authenticationHandlerFactory;
+	/**
+	 * Initializes this factory with a single listener.
+	 *
+	 * Default data deferred size is 5 megs.
+	 */
+	public SimpleMessageListenerAdapter(SimpleMessageListener listener)
+	{
+		this(Collections.singleton(listener), DEFAULT_DATA_DEFERRED_SIZE);
+	}
 	
 	/**
 	 * Initializes this factory with the listeners.
 	 *
 	 * Default data deferred size is 5 megs.
 	 */
-	public MessageListenerAdapter(Collection<MessageListener> listeners)
+	public SimpleMessageListenerAdapter(Collection<SimpleMessageListener> listeners)
 	{
 		this(listeners, DEFAULT_DATA_DEFERRED_SIZE);
 	}
@@ -55,7 +62,7 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	 *        incoming messages to disk when they hit this limit in the
 	 *        DATA received.
 	 */
-	public MessageListenerAdapter(Collection<MessageListener> listeners, int dataDeferredSize)
+	public SimpleMessageListenerAdapter(Collection<SimpleMessageListener> listeners, int dataDeferredSize)
 	{
 		this.listeners = listeners;
 		this.dataDeferredSize = dataDeferredSize;
@@ -74,13 +81,13 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	 */
 	static class Delivery
 	{
-		MessageListener listener;
-		public MessageListener getListener() { return this.listener; }
+		SimpleMessageListener listener;
+		public SimpleMessageListener getListener() { return this.listener; }
 		
 		String recipient;
 		public String getRecipient() { return this.recipient; }
 		
-		public Delivery(MessageListener listener, String recipient)
+		public Delivery(SimpleMessageListener listener, String recipient)
 		{
 			this.listener = listener;
 			this.recipient = recipient;
@@ -90,37 +97,11 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 	/**
 	 * Class which implements the actual handler interface.
 	 */
-	class Handler extends AbstractMessageHandler implements AuthenticationHandler
+	class Handler implements MessageHandler
 	{
 		MessageContext ctx;
 		String from;
 		List<Delivery> deliveries = new ArrayList<Delivery>();
-		
-		AuthenticationHandler authHandler;
-		
-		/**
-		 * Holds the SMTPAuthenticationHandler instantiation logic.
-		 * @return a new AuthenticationHandler
-		 */
-		private AuthenticationHandler getAuthenticationHandler()
-		{
-			if( this.authHandler != null )
-			{
-				return this.authHandler;
-			}
-			if( getAuthenticationHandlerFactory() != null )
-			{
-				// The user has plugged in a factory. let's use it.
-				this.authHandler = getAuthenticationHandlerFactory().create();
-			}
-			else
-			{
-				// A placeholder.
-				this.authHandler = new DummyAuthenticatioHandler();
-			}
-			// Rerurn the variable, which can be null
-			return this.authHandler;
-		}
 		
 		/** */
 		public Handler(MessageContext ctx)
@@ -129,19 +110,17 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 		}
 		
 		/** */
-		@Override
 		public void from(String from) throws RejectException
 		{
 			this.from = from;
 		}
 		
 		/** */
-		@Override
 		public void recipient(String recipient) throws RejectException
 		{
 			boolean addedListener = false;
 			
-			for (MessageListener listener: listeners)
+			for (SimpleMessageListener listener: listeners)
 			{
 				if (listener.accept(this.from, recipient))
 				{
@@ -154,13 +133,6 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 				throw new RejectException(553, "<" + recipient + "> address unknown.");
 		}
 		
-		/** */
-		@Override
-		public void resetMessageState()
-		{
-			this.deliveries.clear();
-		}
-
 		/** */
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
@@ -192,50 +164,5 @@ public class MessageListenerAdapter implements MessageHandlerFactory
 				}
 			}
 		}
-		
-		public List<String> getAuthenticationMechanisms()
-		{
-			return getAuthenticationHandler().getAuthenticationMechanisms();
-		}
-		
-		public boolean auth(String clientInput, StringBuffer response) throws RejectException
-		{
-			return getAuthenticationHandler().auth(clientInput,response);
-		}
-		
-		public void resetState()
-		{
-			getAuthenticationHandler().resetState();
-		}
-	}
-	
-	/**
-	 * Auth always return true.
-	 */
-	class DummyAuthenticatioHandler implements AuthenticationHandler
-	{
-		public List<String> getAuthenticationMechanisms()
-		{
-			return new ArrayList<String>();
-		}
-		
-		public boolean auth(String clientInput, StringBuffer response) throws RejectException
-		{
-			return true;
-		}
-		
-		public void resetState()
-		{
-		}
-	}
-	
-	public AuthenticationHandlerFactory getAuthenticationHandlerFactory()
-	{
-		return authenticationHandlerFactory;
-	}
-	
-	public void setAuthenticationHandlerFactory(AuthenticationHandlerFactory authenticationHandlerFactory)
-	{
-		this.authenticationHandlerFactory = authenticationHandlerFactory;
 	}
 }

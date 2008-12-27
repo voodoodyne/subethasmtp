@@ -7,7 +7,7 @@ import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.PlainAuthenticationHandler;
 import org.subethamail.smtp.auth.PluginAuthenticationHandler;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
-import org.subethamail.smtp.helper.MessageListenerAdapter;
+import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.test.ServerTestCase;
 import org.subethamail.smtp.test.util.Client;
 import org.subethamail.smtp.util.Base64;
@@ -33,7 +33,7 @@ public class AuthTest extends ServerTestCase
 		this.wiser = new TestWiser();
 		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
-		((MessageListenerAdapter) wiser.getServer().getMessageHandlerFactory())
+		((SimpleMessageListenerAdapter) wiser.getServer().getMessageHandlerFactory())
 			.setAuthenticationHandlerFactory(new AuthHandlerFactory());
 		
 		this.wiser.start();

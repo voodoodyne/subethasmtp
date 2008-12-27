@@ -27,8 +27,8 @@ import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.PlainAuthenticationHandler;
 import org.subethamail.smtp.auth.PluginAuthenticationHandler;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
-import org.subethamail.smtp.helper.MessageListener;
-import org.subethamail.smtp.helper.MessageListenerAdapter;
+import org.subethamail.smtp.helper.SimpleMessageListener;
+import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
@@ -36,7 +36,7 @@ import org.subethamail.smtp.server.SMTPServer;
  * 
  * @author Jon Stevens
  */
-public class Wiser implements MessageListener
+public class Wiser implements SimpleMessageListener
 {
 	/** */
 	@SuppressWarnings("unused")
@@ -55,12 +55,12 @@ public class Wiser implements MessageListener
 	 */
 	public Wiser()
 	{
-		Collection<MessageListener> listeners = new ArrayList<MessageListener>(1);
+		Collection<SimpleMessageListener> listeners = new ArrayList<SimpleMessageListener>(1);
 		listeners.add(this);
 		
 		this.server = new SMTPServer(listeners);
 		this.server.setPort(25);
-		((MessageListenerAdapter)server.getMessageHandlerFactory())
+		((SimpleMessageListenerAdapter)server.getMessageHandlerFactory())
 			.setAuthenticationHandlerFactory(new AuthHandlerFactory());
 	}
 
