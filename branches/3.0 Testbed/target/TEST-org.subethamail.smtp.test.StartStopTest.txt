@@ -1,0 +1,15 @@
+Testsuite: org.subethamail.smtp.test.StartStopTest
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.276 sec
+------------- Standard Error -----------------
+198 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+205 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+214 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+227 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+241 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+250 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+257 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+264 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+270 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+------------- ---------------- ---------------
+
+Testcase: testMultipleStartStop took 0.272 sec

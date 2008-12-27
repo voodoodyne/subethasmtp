@@ -1,0 +1,9 @@
+Testsuite: org.subethamail.smtp.test.command.HelloTest
+Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 0.177 sec
+------------- Standard Error -----------------
+82 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+195 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+------------- ---------------- ---------------
+
+Testcase: testHelloCommand took 0.051 sec
+Testcase: testHelloReset took 0.114 sec

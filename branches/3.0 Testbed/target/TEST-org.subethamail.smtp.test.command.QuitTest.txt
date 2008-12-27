@@ -1,0 +1,7 @@
+Testsuite: org.subethamail.smtp.test.command.QuitTest
+Tests run: 1, Failures: 0, Errors: 0, Time elapsed: 0.166 sec
+------------- Standard Error -----------------
+183 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+------------- ---------------- ---------------
+
+Testcase: testQuit took 0.155 sec

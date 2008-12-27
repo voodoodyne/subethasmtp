@@ -1,0 +1,31 @@
+Testsuite: org.subethamail.smtp.test.SMTPClientTest
+Tests run: 8, Failures: 2, Errors: 0, Time elapsed: 0.481 sec
+------------- Standard Error -----------------
+251 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+294 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+311 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+336 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+354 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+401 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+456 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+482 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+------------- ---------------- ---------------
+
+Testcase: testMultipleRecipients took 0.245 sec
+Testcase: testLargeMessage took 0.042 sec
+Testcase: testUtf8EightBitMessage took 0.021 sec
+Testcase: testUtf16EightBitMessage took 0.019 sec
+Testcase: testIso88591EightBitMessage took 0.019 sec
+	FAILED
+expected:<???> but was:<???>
+junit.framework.AssertionFailedError: expected:<???> but was:<???>
+	at org.subethamail.smtp.test.SMTPClientTest.testIso88591EightBitMessage(SMTPClientTest.java:137)
+
+Testcase: testIso885915EightBitMessage took 0.045 sec
+	FAILED
+expected:<?uro ???> but was:<?uro ???>
+junit.framework.AssertionFailedError: expected:<?uro ???> but was:<?uro ???>
+	at org.subethamail.smtp.test.SMTPClientTest.testIso885915EightBitMessage(SMTPClientTest.java:146)
+
+Testcase: testIso2022JPEightBitMessage took 0.054 sec
+Testcase: testBinaryEightBitMessage took 0.025 sec

@@ -1,0 +1,13 @@
+Testsuite: org.subethamail.smtp.test.BigAttachmentTest
+Tests run: 1, Failures: 1, Errors: 0, Time elapsed: 0.056 sec
+------------- Standard Error -----------------
+66 [main] ERROR org.subethamail.smtp.test.BigAttachmentTest - BigAttachmentTest: To complete this test you must change the BIGFILE_PATH var to point out a file on your disk !
+67 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
+------------- ---------------- ---------------
+
+Testcase: testAttachments took 0.044 sec
+	FAILED
+BigAttachmentTest: To complete this test you must change the BIGFILE_PATH var to point out a file on your disk ! expected not same
+junit.framework.AssertionFailedError: BigAttachmentTest: To complete this test you must change the BIGFILE_PATH var to point out a file on your disk ! expected not same
+	at org.subethamail.smtp.test.BigAttachmentTest.testAttachments(BigAttachmentTest.java:84)
+
