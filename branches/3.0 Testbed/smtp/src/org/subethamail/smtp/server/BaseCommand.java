@@ -18,32 +18,37 @@ import org.apache.commons.logging.LogFactory;
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 abstract public class BaseCommand implements Command
 {
-	private String name;
-	private static Map<String, HelpMessage> helpMessageMap = new HashMap<String, HelpMessage>();
 	@SuppressWarnings("unused")
 	private static Log log = LogFactory.getLog(BaseCommand.class);
+	
+	/** All the help messages keyed by the command name */
+	private static Map<String, HelpMessage> helpMessageMap = new HashMap<String, HelpMessage>();
+	
+	/** Name of the command, ie HELO */
+	private String name;
 	
 	public BaseCommand(String name, String help)
 	{
 		this.name = name;
-		setHelp(new HelpMessage(name, help));
+		registerHelp(new HelpMessage(name, help));
 	}
 	
 	public BaseCommand(String name, String help, String argumentDescription)
 	{
 		this.name = name;
-		setHelp(new HelpMessage(name, help, argumentDescription));
+		registerHelp(new HelpMessage(name, help, argumentDescription));
 	}
 	
 	/**
 	 * This is the main method that you need to override in order to implement a command.
 	 */
-	abstract public void execute(String commandString, ConnectionContext context) throws IOException;
+	abstract public void execute(String commandString, ConnectionHandler context) throws IOException;
 	
-	public void setHelp(HelpMessage helpMessage)
+	static public void registerHelp(HelpMessage helpMessage)
 	{
 		helpMessageMap.put(helpMessage.getName().toUpperCase(), helpMessage);
 	}
@@ -73,42 +78,6 @@ abstract public class BaseCommand implements Command
 	public String getName()
 	{
 		return name;
-	}
-	
-	protected boolean isValidEmailAddress(String address)
-	{
-		// MAIL FROM: <>
-		if (address.length() == 0)
-			return true;
-
-		boolean result = false;
-		try
-		{
-			InternetAddress[] ia = InternetAddress.parse(address, true);
-			if (ia.length == 0)
-				result = false;
-			else
-				result = true;
-		}
-		catch (AddressException ae)
-		{
-			result = false;
-		}
-		return result;
-	}
-	
-	protected static String getTokenizedString(Collection<String> items, String delim)
-	{
-		StringBuffer ret = new StringBuffer();
-		for( Iterator<String> it=items.iterator(); it.hasNext(); )
-		{
-			ret.append(it.next());
-			if( it.hasNext() )
-			{
-				ret.append(delim);
-			}
-		}
-		return ret.toString();
 	}
 	
 	protected String[] getArgs(String commandString)

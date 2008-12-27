@@ -19,8 +19,7 @@ public class HelpMessage
 	public HelpMessage(String commandName, String helpMessage, String argumentDescription)
 	{
 		this.commandName = commandName;
-		this.argumentDescription = argumentDescription == null ? "" : " "
-				+ argumentDescription;
+		this.argumentDescription = argumentDescription == null ? "" : " " + argumentDescription;
 		this.helpMessage = helpMessage;
 		buildOutputString();
 	}
@@ -43,15 +42,13 @@ public class HelpMessage
 	private void buildOutputString()
 	{
 		StringTokenizer stringTokenizer = new StringTokenizer(helpMessage, "\n");
-		StringBuilder stringBuilder = new StringBuilder().append("214-")
-				.append(commandName).append(argumentDescription);
+		StringBuilder stringBuilder = new StringBuilder().append("214-").append(commandName).append(argumentDescription);
 		while (stringTokenizer.hasMoreTokens())
 		{
-			stringBuilder.append("\n214-    ").append(
-					stringTokenizer.nextToken());
+			stringBuilder.append("\n214-    ").append(stringTokenizer.nextToken());
 		}
-		stringBuilder.append("\n214 End of ").append(commandName).append(
-				" info");
+		
+		stringBuilder.append("\n214 End of ").append(commandName).append(" info");
 		outputString = stringBuilder.toString();
 	}
 
@@ -62,8 +59,7 @@ public class HelpMessage
 		if (o == null || getClass() != o.getClass())
 			return false;
 		final HelpMessage that = (HelpMessage) o;
-		if (argumentDescription != null ? !argumentDescription
-				.equals(that.argumentDescription)
+		if (argumentDescription != null ? !argumentDescription.equals(that.argumentDescription)
 				: that.argumentDescription != null)
 			return false;
 		if (commandName != null ? !commandName.equals(that.commandName)

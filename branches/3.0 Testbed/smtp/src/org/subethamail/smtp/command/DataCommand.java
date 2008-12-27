@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.ConnectionHandler;
 import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.io.CharTerminatedInputStream;
 import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
@@ -28,7 +28,7 @@ public class DataCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, ConnectionHandler context) throws IOException
 	{
 		Session session = context.getSession();
 
@@ -44,9 +44,8 @@ public class DataCommand extends BaseCommand
 		}
 
 		context.sendResponse("354 End data with <CR><LF>.<CR><LF>");
-		session.setDataMode(true);
 
-		InputStream stream = context.getConnection().getInput();
+		InputStream stream = context.getConnection().getRawInput();
 		stream = new BufferedInputStream(stream);
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);

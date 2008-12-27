@@ -25,4 +25,11 @@ public interface MessageContext
 	 * @return the IP address of the remote server.
 	 */
 	public SocketAddress getRemoteAddress();
+	
+	/**
+	 * @return the handler that was used to authenticate.  You will
+	 *  probably want to upcast this object to the actual implementation
+	 *  to pull out information like user identity. 
+	 */
+	public AuthenticationHandler getAuthenticationHandler();
 }

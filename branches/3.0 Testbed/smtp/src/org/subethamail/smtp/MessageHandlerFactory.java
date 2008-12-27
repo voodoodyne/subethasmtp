@@ -4,6 +4,8 @@
  */
 package org.subethamail.smtp;
 
+import java.util.List;
+
 
 /**
  * The primary interface to be implemented by clients of the SMTP library.
@@ -21,5 +23,4 @@ public interface MessageHandlerFactory
 	 * @param ctx provides information about the client.
 	 */
 	public MessageHandler create(MessageContext ctx);
-
 }

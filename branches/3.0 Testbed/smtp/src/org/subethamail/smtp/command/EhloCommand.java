@@ -3,12 +3,13 @@ package org.subethamail.smtp.command;
 import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
-import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.server.ConnectionHandler;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Jeff Schnitzer
+ * @author Scott Hernandez
  */
 public class EhloCommand extends BaseCommand
 {
@@ -18,12 +19,12 @@ public class EhloCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
 		String[] args = getArgs(commandString);
 		if (args.length < 2)
 		{
-			context.sendResponse("501 Syntax: EHLO hostname");
+			sess.sendResponse("501 Syntax: EHLO hostname");
 			return;
 		}
 		
@@ -34,31 +35,28 @@ public class EhloCommand extends BaseCommand
 //		250-ETRN
 //		250 8BITMIME
 
-		Session session = context.getSession();
-		if (!session.getHasSeenHelo())
+		if (!sess.getHasSeenHelo())
 		{
-			session.setHasSeenHelo(true);
-			String response = "250-" + context.getServer().getHostName() + "\r\n" + 
-								"250-8BITMIME";
+			sess.setHasSeenHelo(true);
+			String response = "250-" + sess.getServer().getHostName() + "\r\n" + "250-8BITMIME";
 
-			if (context.getServer().getCommandHandler().containsCommand("STARTTLS"))
+			if (sess.getServer().getCommandHandler().containsCommand("STARTTLS"))
 			{
 				response = response + "\r\n" + "250-STARTTLS";
 			}
 
-			if (context.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
+			if (sess.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
 			{
-				response = response
-						+ AuthCommand.getEhloString(context.getSession()
-								.getMessageHandler());
+				response = response + AuthCommand.getEhloString(sess.getServer().getAuthenticationHandlerFactory());
 			}
+			
 			response = response + "\r\n" + "250 Ok";
-			context.sendResponse(response);
+			sess.sendResponse(response);
 		}
 		else
 		{
 			String remoteHost = args[1];
-			context.sendResponse("503 " + remoteHost + " Duplicate EHLO");
+			sess.sendResponse("503 " + remoteHost + " Duplicate EHLO");
 		}
 	}
 }

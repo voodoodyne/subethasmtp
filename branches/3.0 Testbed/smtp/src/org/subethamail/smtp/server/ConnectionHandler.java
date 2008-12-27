@@ -2,14 +2,15 @@ package org.subethamail.smtp.server;
 
 import java.io.IOException;
 import java.io.InputStream;
-import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketAddress;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 import org.subethamail.smtp.server.io.LastActiveInputStream;
 
@@ -20,52 +21,63 @@ import org.subethamail.smtp.server.io.LastActiveInputStream;
  * 
  * @author Jon Stevens
  */
-public class ConnectionHandler extends Thread implements ConnectionContext, MessageContext
+public class ConnectionHandler extends Thread implements MessageContext
 {
 	private static Log log = LogFactory.getLog(ConnectionHandler.class);
 
+	/** A link to our parent server */
 	private SMTPServer server;
-	private Session session;
 
-	private InputStream input;
-	private OutputStream output;
+	/** When this goes true, the thread shuts down */
+	private boolean shutdown = false;
 
+	/** I/O to the client */
+	private Socket socket;
 	private CRLFTerminatedReader reader;
 	private PrintWriter writer;
 
-	private Socket socket;
+	/** Can be used to check for staleness */
+	private LastActiveInputStream input;
 
-	private long startTime;
-	private long lastActiveTime;
+	/** Might exist if the client has successfully authenticated */
+	private AuthenticationHandler authenticationHandler;
 	
+	/** Might exist if the client is giving us a message */
+	private MessageHandler messageHandler;
+
+	/** Some state information */
+	private boolean hasSeenHelo = false;
+	private boolean hasMailFrom = false;
+	private int recipientCount = 0;
+
+	/**
+	 * Creates (but does not start) the thread object.
+	 * 
+	 * @param server a link to our parent
+	 * @param socket is the socket to the client
+	 * @throws IOException
+	 */
 	public ConnectionHandler(SMTPServer server, Socket socket)
 		throws IOException
 	{
 		super(server.getConnectionGroup(), ConnectionHandler.class.getName());
+		
 		this.server = server;
 
-		setSocket(socket);
+		this.setSocket(socket);
+	}
 
-		this.startTime = System.currentTimeMillis();
-		this.lastActiveTime = this.startTime;
-		
-	}
-	
-	public Session getSession()
-	{
-		return this.session;
-	}
-	
-	public ConnectionHandler getConnection()
-	{
-		return this;
-	}
-	
+	/**
+	 * @return a reference to the master server object
+	 */
 	public SMTPServer getServer()
 	{
 		return this.server;
 	}
 
+	/**
+	 * Called by the watchdog to shut down this session. 
+	 */
 	public void timeout() throws IOException
 	{
 		try
@@ -78,12 +90,15 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 		}
 	}
 
+	/**
+	 * The thread for each session runs on this and shuts down when the shutdown member goes true.
+	 */
 	public void run()
 	{
 		if (log.isDebugEnabled())
 			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
 
-		this.session = new Session(this.server.getMessageHandlerFactory().create(this));
+		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
 		try
 		{
 			if (this.server.hasTooManyConnections())
@@ -96,7 +111,7 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 
 			this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getName());
 
-			while (session.isActive())
+			while (!this.shutdown)
 			{
 				try
 				{
@@ -111,7 +126,6 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 						log.debug("Client: " + line);
 
 					this.server.getCommandHandler().handleCommand(this, line);
-					lastActiveTime = System.currentTimeMillis();
 				}
 				catch (CRLFTerminatedReader.TerminationException te)
 				{
@@ -149,15 +163,19 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 			catch (IOException e)
 			{
 			}
+			
 			if (log.isDebugEnabled())
 				log.debug(e1);
 		}
 		finally
 		{
-			closeConnection();
+			this.closeConnection();
 		}
 	}
 
+	/** 
+	 * Close reader, writer, and socket, logging exceptions but otherwise ignoring them
+	 */
 	private void closeConnection()
 	{
 		try
@@ -169,45 +187,60 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 			}
 			finally
 			{
-				closeSocket();
+				this.closeSocket();
 			}
 		}
 		catch (IOException e)
 		{
-			log.debug(e);
+			log.info(e);
 		}
 	}
 
+	/**
+	 * Initializes our reader, writer, and the i/o filter chains based on
+	 * the specified socket.  This is called internally when we startup
+	 * and when (if) SSL is started.
+	 */
 	public void setSocket(Socket socket) throws IOException
 	{
 		this.socket = socket;
-		this.input = new LastActiveInputStream(this.socket.getInputStream(), this);
-		this.output = this.socket.getOutputStream();
+		this.input = new LastActiveInputStream(this.socket.getInputStream());
 		this.reader = new CRLFTerminatedReader(this.input);
-		this.writer = new PrintWriter(this.output);
+		this.writer = new PrintWriter(this.socket.getOutputStream());
 	}
 
+	/**
+	 * @return the current socket to the client
+	 */
 	public Socket getSocket()
 	{
 		return this.socket;
 	}
 
-	private void closeSocket() throws IOException
+	/** Close the client socket if it is open */
+	public void closeSocket() throws IOException
 	{
 		if (this.socket != null && this.socket.isBound() && !this.socket.isClosed())
 			this.socket.close();
 	}
 
-	public InputStream getInput()
+	/**
+	 * @return the raw input stream from the client
+	 */
+	public InputStream getRawInput()
 	{
 		return this.input;
 	}
-
-	public OutputStream getOutput()
+	
+	/**
+	 * @return the cooked CRLF-terminated reader from the client
+	 */
+	public CRLFTerminatedReader getReader()
 	{
-		return this.output;
+		return this.reader;
 	}
 
+	/** Sends the response to the client */
 	public void sendResponse(String response) throws IOException
 	{
 		if (log.isDebugEnabled())
@@ -217,21 +250,6 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 		this.writer.flush();
 	}
 	
-	public long getStartTime()
-	{
-		return this.startTime;
-	}
-
-	public long getLastActiveTime()
-	{
-		return this.lastActiveTime;
-	}
-
-	public void refreshLastActiveTime()
-	{
-		this.lastActiveTime = System.currentTimeMillis();
-	}
-
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
 	 */
@@ -246,5 +264,74 @@ public class ConnectionHandler extends Thread implements ConnectionContext, Mess
 	public SMTPServer getSMTPServer()
 	{
 		return this.server;
+	}
+	
+	/**
+	 * @return the current message handler
+	 */
+	public MessageHandler getMessageHandler()
+	{
+		return this.messageHandler;
+	}
+
+	/** Simple state */
+	public boolean getHasMailFrom()
+	{
+		return this.hasMailFrom;
+	}
+
+	public void setHasMailFrom(boolean value)
+	{
+		this.hasMailFrom = value;
+	}
+
+	public boolean getHasSeenHelo()
+	{
+		return this.hasSeenHelo;
+	}
+
+	public void setHasSeenHelo(boolean hasSeenHelo)
+	{
+		this.hasSeenHelo = hasSeenHelo;
+	}
+
+	public void addRecipient()
+	{
+		this.recipientCount++;
+	}
+	
+	public int getRecipientCount()
+	{
+		return this.recipientCount;
+	}
+	
+	public boolean isAuthenticated()
+	{
+		return this.authenticationHandler != null;
+	}
+	
+	public AuthenticationHandler getAuthenticationHandler()
+	{
+		return this.authenticationHandler;
+	}
+	
+	/**
+	 * This is called by the AuthCommand when a session is successfully authenticated.  The
+	 * handler will be an object created by the AuthenticationHandlerFactory.
+	 */
+	public void setAuthenticationHandler(AuthenticationHandler handler)
+	{
+		this.authenticationHandler = handler;
+	}
+	
+	/**
+	 * Some state is associated with each particular message (senders, recipients, the message handler).
+	 * Some state is not; seeing hello, TLS, authentication.
+	 */
+	public void resetMessageState()
+	{
+		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
+		this.hasMailFrom = false;
+		this.recipientCount = 0;
 	}
 }

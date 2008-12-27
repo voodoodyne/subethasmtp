@@ -2,10 +2,12 @@
  * $Id$
  * $URL$
  */
-package org.subethamail.smtp;
+package org.subethamail.smtp.helper;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.subethamail.smtp.TooMuchDataException;
 
 /**
  * This is an interface for processing the end-result messages that is

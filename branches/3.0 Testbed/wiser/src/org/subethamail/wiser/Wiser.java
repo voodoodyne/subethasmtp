@@ -21,14 +21,14 @@ import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
-import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.auth.LoginAuthenticationHandler;
 import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.PlainAuthenticationHandler;
 import org.subethamail.smtp.auth.PluginAuthenticationHandler;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
-import org.subethamail.smtp.server.MessageListenerAdapter;
+import org.subethamail.smtp.helper.MessageListener;
+import org.subethamail.smtp.helper.MessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**

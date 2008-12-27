@@ -2,7 +2,7 @@
  * $Id$
  * $URL$
  */
-package org.subethamail.smtp.server;
+package org.subethamail.smtp.helper;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -13,11 +13,11 @@ import java.util.List;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.MessageHandlerFactory;
-import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
+import org.subethamail.smtp.server.AbstractMessageHandler;
 import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 
 /**

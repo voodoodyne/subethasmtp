@@ -4,14 +4,12 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.UnknownHostException;
-import java.util.Collection;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
-import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.Version;
 
 /**
@@ -53,6 +51,7 @@ public class SMTPServer implements Runnable
 	private int backlog = 50;
 
 	private MessageHandlerFactory messageHandlerFactory;
+	private AuthenticationHandlerFactory authenticationHandlerFactory;
 
 	private CommandHandler commandHandler;
 	
@@ -86,7 +85,16 @@ public class SMTPServer implements Runnable
 	 */
 	public SMTPServer(MessageHandlerFactory handlerFactory)
 	{
-		this.messageHandlerFactory = handlerFactory;
+		this(handlerFactory, null);
+	}
+	
+	/**
+	 * The primary constructor.
+	 */
+	public SMTPServer(MessageHandlerFactory msgHandlerFact, AuthenticationHandlerFactory authHandlerFact)
+	{
+		this.messageHandlerFactory = msgHandlerFact;
+		this.authenticationHandlerFactory = authHandlerFact;
 		
 		try
 		{
@@ -100,16 +108,6 @@ public class SMTPServer implements Runnable
 		this.commandHandler = new CommandHandler();		
 
 		this.connectionHanderGroup = new ThreadGroup(SMTPServer.class.getName() + " ConnectionHandler Group");
-	}
-
-	/**
-	 * A convenience constructor that splits the smtp data among multiple listeners
-	 * (and multiple recipients).
-	 */
-	public SMTPServer(Collection<MessageListener> listeners) 
-	{
-		this(new MessageListenerAdapter(listeners));
-		
 	}
 
 	/** @return the host name that will be reported to SMTP clients */
@@ -263,16 +261,12 @@ public class SMTPServer implements Runnable
 			ConnectionHandler handler = ((ConnectionHandler)groupThreads[i]);
 			if (handler != null)
 			{
-				Socket socket = handler.getSocket();
-				if (socket != null && !socket.isClosed())
+				try
 				{
-					try
-					{
-						socket.close();
-					}
-					catch (IOException e)
-					{
-					}
+					handler.closeSocket();
+				}
+				catch (IOException e)
+				{
 				}
 			}
 		}
@@ -350,11 +344,29 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * All smtp data is eventually routed through the handlers.
+	 * @return the factory for message handlers, cannot be null
 	 */
 	public MessageHandlerFactory getMessageHandlerFactory()
 	{
 		return this.messageHandlerFactory;
+	}
+	
+	public void setMessageHandlerFactory(MessageHandlerFactory fact)
+	{
+		this.messageHandlerFactory = fact;
+	}
+	
+	/**
+	 * @return the factory for auth handlers, or null if no such factory has been set.
+	 */
+	public AuthenticationHandlerFactory getAuthenticationHandlerFactory()
+	{
+		return this.authenticationHandlerFactory;
+	}
+	
+	public void setAuthenticationHandlerFactory(AuthenticationHandlerFactory fact)
+	{
+		this.authenticationHandlerFactory = fact;
 	}
 
 	/**

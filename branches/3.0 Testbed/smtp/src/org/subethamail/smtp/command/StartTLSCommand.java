@@ -10,7 +10,7 @@ import javax.net.ssl.SSLSocketFactory;
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.ConnectionHandler;
 
 /**
  * @author Michael Wildpaner &lt;mike@wildpaner.com&gt;
@@ -25,7 +25,7 @@ public class StartTLSCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, ConnectionHandler context) throws IOException
 	{
 		if (!commandString.trim().toUpperCase().equals(this.getName()))
 		{

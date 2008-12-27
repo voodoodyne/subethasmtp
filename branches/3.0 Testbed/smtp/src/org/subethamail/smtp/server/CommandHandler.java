@@ -20,6 +20,7 @@ public class CommandHandler
 	private Map<String, Command> commandMap = new HashMap<String, Command>();
 	private static Log log = LogFactory.getLog(CommandHandler.class);
 	
+	/** */
 	public CommandHandler()
 	{
 		// This solution should be more robust than the earlier "manual" configuration.
@@ -29,6 +30,7 @@ public class CommandHandler
 		}
 	}
 
+	/** */
 	public CommandHandler(Collection<Command> availableCommands)
 	{
 		for(Command command :availableCommands )
@@ -37,19 +39,23 @@ public class CommandHandler
 		}
 	}
 	
+	/** */
 	public void addCommand(Command command)
 	{
 		if (log.isDebugEnabled())
 			log.debug("Added command: " + command.getName());
+		
 		this.commandMap.put(command.getName(), command);
 	}
 	
+	/** */
 	public boolean containsCommand(String command)
 	{
 		return this.commandMap.containsKey(command);
 	}
 	
-	public void handleCommand(ConnectionContext context, String commandString)
+	/** */
+	public void handleCommand(ConnectionHandler context, String commandString)
 		throws SocketTimeoutException, IOException
 	{
 		try
@@ -63,6 +69,7 @@ public class CommandHandler
 		}
 	}
 	
+	/** */
 	private Command getCommandFromString(String commandString)
 		throws UnknownCommandException, InvalidCommandNameException
 	{
@@ -88,6 +95,7 @@ public class CommandHandler
 		return command;
 	}
 	
+	/** */
 	private String toKey(String string) throws InvalidCommandNameException
 	{
 		if (string == null || string.length() < 4)
@@ -96,6 +104,7 @@ public class CommandHandler
 		return string.substring(0, 4).toUpperCase();
 	}
 	
+	/** */
 	private String toVerb(String string) throws InvalidCommandNameException
 	{
 		StringTokenizer stringTokenizer = new StringTokenizer(string);
