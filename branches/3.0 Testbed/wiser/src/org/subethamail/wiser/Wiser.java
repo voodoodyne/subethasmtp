@@ -10,7 +10,6 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -19,22 +18,29 @@ import javax.mail.Session;
 
 import org.apache.commons.logging.Log;
 import org.apache.commons.logging.LogFactory;
-import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.auth.LoginAuthenticationHandler;
+import org.subethamail.smtp.auth.LoginAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.PlainAuthenticationHandler;
-import org.subethamail.smtp.auth.PluginAuthenticationHandler;
+import org.subethamail.smtp.auth.MultipleAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.PlainAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.helper.SimpleMessageListener;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
- * Wiser is a smart mail testing application.
+ * Wiser is a tool for unit testing applications that send mail.  Your unit
+ * tests can start Wiser, run tests which generate emails, then examine the
+ * emails that Wiser received and verify their integrity.
+ * 
+ * Wiser is not intended to be a "real" mail server and is not adequate
+ * for that purpose; it simply stores all mail in memory.  Use the 
+ * MessageHandlerFactory interface (optionally with the SimpleMessageListenerAdapter)
+ * of SubEthaSMTP instead.
  * 
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 public class Wiser implements SimpleMessageListener
 {
@@ -55,13 +61,26 @@ public class Wiser implements SimpleMessageListener
 	 */
 	public Wiser()
 	{
-		Collection<SimpleMessageListener> listeners = new ArrayList<SimpleMessageListener>(1);
-		listeners.add(this);
-		
-		this.server = new SMTPServer(listeners);
+		this.server = new SMTPServer(new SimpleMessageListenerAdapter(this));
 		this.server.setPort(25);
-		((SimpleMessageListenerAdapter)server.getMessageHandlerFactory())
-			.setAuthenticationHandlerFactory(new AuthHandlerFactory());
+
+		// All this sets up an authentication factory that simply logs username/pw
+		// requests and accepts them all.
+		UsernamePasswordValidator validator = new UsernamePasswordValidator()
+		{
+			public void login(String username, String password) throws LoginFailedException
+			{
+				log.info("Username=" + username);
+				log.info("Password=" + password);
+			}
+		};
+		
+		List<AuthenticationHandlerFactory> factoryList = new ArrayList<AuthenticationHandlerFactory>();
+		factoryList.add(new PlainAuthenticationHandlerFactory(validator));
+		factoryList.add(new LoginAuthenticationHandlerFactory(validator));
+		
+		MultipleAuthenticationHandlerFactory masterAuthFactory = new MultipleAuthenticationHandlerFactory(factoryList);
+		this.server.setAuthenticationHandlerFactory(masterAuthFactory);
 	}
 
 	/**
@@ -140,31 +159,11 @@ public class Wiser implements SimpleMessageListener
 		return this.messages;
 	}
 
+	/**
+	 * @return the server implementation
+	 */
 	public SMTPServer getServer()
 	{
 		return this.server;
-	}
-
-	/**
-	 * Creates the AuthHandlerFactory which logs the user/pass.
-	 */
-	public class AuthHandlerFactory implements AuthenticationHandlerFactory
-	{
-		public AuthenticationHandler create()
-		{
-			PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
-			UsernamePasswordValidator validator = new UsernamePasswordValidator()
-			{
-				public void login(String username, String password)
-						throws LoginFailedException
-				{
-					log.info("Username=" + username);
-					log.info("Password=" + password);
-				}
-			};
-			ret.addPlugin(new PlainAuthenticationHandler(validator));
-			ret.addPlugin(new LoginAuthenticationHandler(validator));
-			return ret;
-		}
 	}
 }

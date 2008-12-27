@@ -2,10 +2,10 @@ package org.subethamail.smtp.test.command;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
-import org.subethamail.smtp.auth.LoginAuthenticationHandler;
+import org.subethamail.smtp.auth.LoginAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.PlainAuthenticationHandler;
-import org.subethamail.smtp.auth.PluginAuthenticationHandler;
+import org.subethamail.smtp.auth.PlainAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.MultipleAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.test.ServerTestCase;
@@ -143,7 +143,7 @@ public class AuthTest extends ServerTestCase
 
 		public AuthenticationHandler create()
 		{
-			PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
+			MultipleAuthenticationHandlerFactory ret = new MultipleAuthenticationHandlerFactory();
 			UsernamePasswordValidator validator = new UsernamePasswordValidator()
 			{
 				public void login(String username, String password)
@@ -156,8 +156,8 @@ public class AuthTest extends ServerTestCase
 					}
 				}
 			};
-			ret.addPlugin(new PlainAuthenticationHandler(validator));
-			ret.addPlugin(new LoginAuthenticationHandler(validator));
+			ret.addPlugin(new PlainAuthenticationHandlerFactory(validator));
+			ret.addPlugin(new LoginAuthenticationHandlerFactory(validator));
 			return ret;
 		}
 	}
