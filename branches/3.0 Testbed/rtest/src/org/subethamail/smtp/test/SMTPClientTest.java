@@ -113,7 +113,7 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public void testUtf8EightBitMessage() throws Exception
 	{
-		String body = "â‚¬uro Ã¤Ã¤Ã¤";
+		String body = "Ûuro ŠŠŠ";
 		testEightBitMessage(body, "UTF-8");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
@@ -131,7 +131,7 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public void testIso88591EightBitMessage() throws Exception
 	{
-		String body = "Ã¤Ã¤Ã¤";
+		String body = "ŠŠŠ";
 		testEightBitMessage(body, "ISO-8859-1");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
@@ -140,7 +140,7 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public void testIso885915EightBitMessage() throws Exception
 	{
-		String body = "â‚¬uro Ã¤Ã¤Ã¤";
+		String body = "Ûuro ŠŠŠ";
 		testEightBitMessage(body, "ISO-8859-15");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
