@@ -85,7 +85,7 @@ public class LastActiveInputStream extends FilterInputStream
 	 * @return true if the input stream is waiting for client data longer than the 
 	 *  specified number of milliseconds.
 	 */
-	public synchronized boolean isWaitingMoreThan(long millis)
+	public synchronized boolean isWaitingLongerThan(int millis)
 	{
 		if (waitStartTime == 0)
 			return false;

@@ -467,19 +467,7 @@ public class SMTPServer implements Runnable
 					Session aThread = ((Session)groupThreads[i]);
 					if (aThread != null)
 					{
-						// one minute timeout
-						long lastActiveTime = aThread.getLastActiveTime() + (this.server.connectionTimeout);
-						if (lastActiveTime < System.currentTimeMillis())
-						{
-							try
-							{
-								aThread.timeout();
-							}
-							catch (IOException ioe)
-							{
-								log.debug("Lost connection to client during timeout");
-							}
-						}
+						aThread.checkForIdle();
 					}
 				}
 				try

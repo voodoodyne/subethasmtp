@@ -76,21 +76,6 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
-	 * Called by the watchdog to shut down this session. 
-	 */
-	public void timeout() throws IOException
-	{
-		try
-		{
-			this.sendResponse("421 Timeout waiting for data from client.");
-		}
-		finally
-		{
-			closeConnection();
-		}
-	}
-
-	/**
 	 * The thread for each session runs on this and shuts down when the shutdown member goes true.
 	 */
 	public void run()
@@ -210,6 +195,7 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
+	 * This method is only used by the start tls command
 	 * @return the current socket to the client
 	 */
 	public Socket getSocket()
@@ -341,5 +327,31 @@ public class Session extends Thread implements MessageContext
 	public void quit()
 	{
 		this.shutdown = true;
+	}
+	
+	/**
+	 * Call this from any thread (ie, the watchdog) to see if the connection is idle.
+	 * If so, the connection will be shut down.
+	 */
+	public void checkForIdle()
+	{
+		if (this.input.isWaitingLongerThan(this.server.getConnectionTimeout()))
+		{
+			try
+			{
+				try
+				{
+					this.sendResponse("421 Timeout waiting for data from client.");
+				}
+				finally
+				{
+					closeConnection();
+				}
+			}
+			catch (IOException ioe)
+			{
+				log.debug("Lost connection to client during timeout");
+			}
+		}
 	}
 }
