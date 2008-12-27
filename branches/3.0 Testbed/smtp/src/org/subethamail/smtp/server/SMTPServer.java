@@ -207,10 +207,7 @@ public class SMTPServer implements Runnable
 		// Now call the serverThread.run() method
 		this.serverThread.start();
 
-		this.watchdog = new Watchdog(this);
-		// We do not want the watchdog to keep the program from quitting
-		this.watchdog.setDaemon(true);
-
+		this.watchdog = new Watchdog();
 		this.watchdog.start();
 	}
 
@@ -439,13 +436,15 @@ public class SMTPServer implements Runnable
 	 */
 	private class Watchdog extends Thread
 	{
-		private SMTPServer server;
 		private boolean run = true;
 
-		public Watchdog(SMTPServer server)
+		public Watchdog()
 		{
 			super(Watchdog.class.getName());
-			this.server = server;
+			
+			// We do not want the watchdog to keep the program from quitting
+			setDaemon(true);
+			
 			setPriority(Thread.MAX_PRIORITY / 3);
 		}
 
@@ -459,7 +458,7 @@ public class SMTPServer implements Runnable
 			while (this.run)
 			{
 				Thread[] groupThreads = new Thread[maxConnections];
-				ThreadGroup connectionGroup = this.server.getConnectionGroup();
+				ThreadGroup connectionGroup = getConnectionGroup();	// from parent class
 				connectionGroup.enumerate(groupThreads);
 
 				for (int i=0; i<connectionGroup.activeCount(); i++)
