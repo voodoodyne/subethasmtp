@@ -17,7 +17,7 @@ public class MailTest extends ServerTestCase
 		expect("220");
 
 		send("MAIL FROM: test@example.com");
-		expect("503 Error: send HELO/EHLO first");
+		expect("250");
 	}
 
 	public void testAlreadySpecified() throws Exception
