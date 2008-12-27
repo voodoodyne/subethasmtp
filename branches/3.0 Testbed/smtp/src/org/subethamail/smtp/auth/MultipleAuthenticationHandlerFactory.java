@@ -62,7 +62,7 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 		/** */
 		public String auth(String clientInput) throws RejectException
 		{
-			if (this.active != null)
+			if (this.active == null)
 			{
 				StringTokenizer stk = new StringTokenizer(clientInput);
 				String auth = stk.nextToken();
