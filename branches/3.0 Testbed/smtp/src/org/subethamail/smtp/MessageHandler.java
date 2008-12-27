@@ -9,11 +9,21 @@ import java.io.InputStream;
 
 /**
  * The interface that defines the conversational exchange of a single message
- * on an SMTP connection.
+ * on an SMTP connection.  The methods will be called in the following order:
+ * 
+ * <ol>
+ * <li><code>from()</code></li>
+ * <li><code>recipient()</code> (possibly more than once)</li>
+ * <li><code>data()</code></li>
+ * </ol>
+ * 
+ * If multiple messages are delivered on a single connection (ie, using the RSET command)
+ * then multiple message handlers will be instantiated.  Each handler services one
+ * and only one message.
  *
  * @author Jeff Schnitzer
  */
-public interface MessageHandler extends AuthenticationHandler
+public interface MessageHandler
 {
 	/**
 	 * Called first, after the MAIL FROM during a SMTP exchange.
@@ -47,10 +57,4 @@ public interface MessageHandler extends AuthenticationHandler
 	 * @throws IOException if there is an IO error reading the input data.
 	 */
 	public void data(InputStream data) throws RejectException, TooMuchDataException, IOException;
-	
-	/**
-	 * This method is called whenever a RSET command is sent. It should
-	 * be used to clean up any pending deliveries.
-	 */
-	public void resetMessageState();	
 }

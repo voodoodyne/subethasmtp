@@ -17,7 +17,6 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.server.AbstractMessageHandler;
 import org.subethamail.smtp.server.io.DeferredFileOutputStream;
 
 /**

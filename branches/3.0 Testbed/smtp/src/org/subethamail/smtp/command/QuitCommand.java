@@ -8,6 +8,7 @@ import org.subethamail.smtp.server.ConnectionHandler;
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 public class QuitCommand extends BaseCommand
 {
@@ -17,9 +18,9 @@ public class QuitCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
-		context.sendResponse("221 Bye");
-		context.getSession().quit();
+		sess.sendResponse("221 Bye");
+		sess.quit();
 	}
 }

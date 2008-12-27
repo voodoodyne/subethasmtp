@@ -5,7 +5,6 @@ import java.io.IOException;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionHandler;
-import org.subethamail.smtp.server.Session;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -22,24 +21,23 @@ public class ReceiptCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
-		Session session = context.getSession();
-		if (!session.getHasSender())
+		if (!sess.getHasMailFrom())
 		{
-			context.sendResponse("503 Error: need MAIL command");
+			sess.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (session.getRecipientCount() >= context.getServer().getMaxRecipients())
+		else if (sess.getRecipientCount() >= sess.getServer().getMaxRecipients())
 		{
-			context.sendResponse("452 Error: too many recipients");
+			sess.sendResponse("452 Error: too many recipients");
 			return;
 		}
 
 		String args = getArgPredicate(commandString);
 		if (!args.toUpperCase().startsWith("TO:"))
 		{
-			context.sendResponse(
+			sess.sendResponse(
 					"501 Syntax: RCPT TO: <address>  Error in parameters: \""
 					+ args + "\"");
 			return;
@@ -49,13 +47,13 @@ public class ReceiptCommand extends BaseCommand
 			String recipientAddress = extractEmailAddress(args, 3);
 			try
 			{
-				session.getMessageHandler().recipient(recipientAddress);
-				session.addRecipient();
-				context.sendResponse("250 Ok");
+				sess.getMessageHandler().recipient(recipientAddress);
+				sess.addRecipient();
+				sess.sendResponse("250 Ok");
 			}
 			catch (RejectException ex)
 			{
-				context.sendResponse(ex.getMessage());
+				sess.sendResponse(ex.getMessage());
 			}
 		}
 	}

@@ -8,6 +8,7 @@ import org.subethamail.smtp.server.ConnectionHandler;
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 public class NoopCommand extends BaseCommand
 {
@@ -17,8 +18,8 @@ public class NoopCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
-		context.sendResponse("250 Ok");
+		sess.sendResponse("250 Ok");
 	}
 }

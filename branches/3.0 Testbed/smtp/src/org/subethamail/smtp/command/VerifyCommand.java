@@ -17,8 +17,8 @@ public class VerifyCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
-		context.sendResponse("502 VRFY command is disabled");
+		sess.sendResponse("502 VRFY command is disabled");
 	}
 }

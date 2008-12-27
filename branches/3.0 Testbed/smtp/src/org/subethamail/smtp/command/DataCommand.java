@@ -7,7 +7,6 @@ import java.io.InputStream;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.ConnectionHandler;
-import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.io.CharTerminatedInputStream;
 import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
 
@@ -28,38 +27,36 @@ public class DataCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
-		Session session = context.getSession();
-
-		if (!session.getHasSender())
+		if (!sess.getHasMailFrom())
 		{
-			context.sendResponse("503 Error: need MAIL command");
+			sess.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (session.getRecipientCount() == 0)
+		else if (sess.getRecipientCount() == 0)
 		{
-			context.sendResponse("503 Error: need RCPT command");
+			sess.sendResponse("503 Error: need RCPT command");
 			return;
 		}
 
-		context.sendResponse("354 End data with <CR><LF>.<CR><LF>");
+		sess.sendResponse("354 End data with <CR><LF>.<CR><LF>");
 
-		InputStream stream = context.getConnection().getRawInput();
+		InputStream stream = sess.getRawInput();
 		stream = new BufferedInputStream(stream);
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
 
 		try
 		{
-			session.getMessageHandler().data(stream);
-			context.sendResponse("250 Ok");
+			sess.getMessageHandler().data(stream);
+			sess.sendResponse("250 Ok");
 		}
 		catch (RejectException ex)
 		{
-			context.sendResponse(ex.getMessage());
+			sess.sendResponse(ex.getMessage());
 		}
 
-		session.reset(true); // reset session, but don't require new HELO/EHLO
+		sess.resetMessageState(); // reset session, but don't require new HELO/EHLO
 	}
 }

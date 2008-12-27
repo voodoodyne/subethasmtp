@@ -4,7 +4,6 @@
  */
 package org.subethamail.smtp;
 
-import java.util.List;
 
 
 /**

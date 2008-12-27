@@ -14,6 +14,7 @@ import org.subethamail.smtp.server.ConnectionHandler;
 
 /**
  * @author Michael Wildpaner &lt;mike@wildpaner.com&gt;
+ * @author Jeff Schnitzer
  */
 public class StartTLSCommand extends BaseCommand
 {
@@ -25,24 +26,24 @@ public class StartTLSCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionHandler context) throws IOException
+	public void execute(String commandString, ConnectionHandler sess) throws IOException
 	{
 		if (!commandString.trim().toUpperCase().equals(this.getName()))
 		{
-			context.sendResponse("501 Syntax error (no parameters allowed)");
+			sess.sendResponse("501 Syntax error (no parameters allowed)");
 			return;
 		}
 
 		try
 		{
-			Socket socket = context.getConnection().getSocket();
+			Socket socket = sess.getSocket();
 			if (socket instanceof SSLSocket)
 			{
-				context.sendResponse("454 TLS not available due to temporary reason: TLS already active");
+				sess.sendResponse("454 TLS not available due to temporary reason: TLS already active");
 				return;
 			}
 
-			context.sendResponse("220 Ready to start TLS");
+			sess.sendResponse("220 Ready to start TLS");
 
 			InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
 			SSLSocketFactory sf = ((SSLSocketFactory) SSLSocketFactory.getDefault());
@@ -56,8 +57,8 @@ public class StartTLSCommand extends BaseCommand
 			
 			s.startHandshake();
 
-			context.getConnection().setSocket(s);
-			context.getSession().reset(); // clean slate
+			sess.setSocket(s);
+			sess.resetMessageState(); // clean slate
 		}
 		catch (IOException e)
 		{

@@ -334,4 +334,12 @@ public class ConnectionHandler extends Thread implements MessageContext
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
 	}
+	
+	/**
+	 * Triggers the shutdown of the thread and the closing of the connection.
+	 */
+	public void quit()
+	{
+		this.shutdown = true;
+	}
 }
