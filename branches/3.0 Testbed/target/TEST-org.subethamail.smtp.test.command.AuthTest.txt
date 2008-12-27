@@ -1,9 +1,0 @@
-Testsuite: org.subethamail.smtp.test.command.AuthTest
-Tests run: 2, Failures: 0, Errors: 0, Time elapsed: 0.072 sec
-------------- Standard Error -----------------
-78 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
-91 [org.subethamail.smtp.server.SMTPServer] INFO org.subethamail.smtp.server.SMTPServer - SMTP Server socket shut down.
-------------- ---------------- ---------------
-
-Testcase: testAuthPlain took 0.049 sec
-Testcase: testAuthLogin took 0.012 sec
