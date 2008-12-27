@@ -50,7 +50,7 @@ public class MailCommand extends BaseCommand
 				return;
 			}
 			
-			String emailAddress = extractEmailAddress(args, 5);
+			String emailAddress = EmailUtils.extractEmailAddress(args, 5);
 			if (EmailUtils.isValidEmailAddress(emailAddress))
 			{
 				try

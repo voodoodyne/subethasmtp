@@ -70,14 +70,5 @@ abstract public class BaseCommand implements Command
 		}
 		
 		return strings.toArray(new String[strings.size()]);
-	}
-	
-	protected String extractEmailAddress(String args, int subcommandOffset)
-	{
-		String address = args.substring(subcommandOffset).trim();
-		if (address.indexOf('<') == 0)
-			address = address.substring(1, address.indexOf('>'));
-		
-		return address;
-	}
+	}	
 }

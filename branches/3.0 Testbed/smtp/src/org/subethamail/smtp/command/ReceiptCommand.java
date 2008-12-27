@@ -5,6 +5,7 @@ import java.io.IOException;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.util.EmailUtils;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -44,7 +45,7 @@ public class ReceiptCommand extends BaseCommand
 		}
 		else
 		{
-			String recipientAddress = extractEmailAddress(args, 3);
+			String recipientAddress = EmailUtils.extractEmailAddress(args, 3);
 			try
 			{
 				sess.getMessageHandler().recipient(recipientAddress);
