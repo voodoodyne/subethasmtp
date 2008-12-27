@@ -6,8 +6,8 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.UnknownHostException;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.Version;
@@ -40,10 +40,9 @@ import org.subethamail.smtp.Version;
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jeff Schnitzer
  */
-@SuppressWarnings("serial")
 public class SMTPServer implements Runnable
 {
-	private static Log log = LogFactory.getLog(SMTPServer.class);
+	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
 	private InetAddress bindAddress = null;	// default to all interfaces
 	private int port = 25;	// default to 25

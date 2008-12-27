@@ -6,8 +6,8 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketAddress;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
@@ -23,7 +23,7 @@ import org.subethamail.smtp.server.io.LastActiveInputStream;
  */
 public class Session extends Thread implements MessageContext
 {
-	private static Log log = LogFactory.getLog(Session.class);
+	private final static Logger log = LoggerFactory.getLogger(Session.class);
 
 	/** A link to our parent server */
 	private SMTPServer server;
@@ -150,7 +150,7 @@ public class Session extends Thread implements MessageContext
 			}
 			
 			if (log.isDebugEnabled())
-				log.debug(e1);
+				log.debug(e1.toString());
 		}
 		finally
 		{
@@ -177,7 +177,7 @@ public class Session extends Thread implements MessageContext
 		}
 		catch (IOException e)
 		{
-			log.info(e);
+			log.info(e.toString());
 		}
 	}
 

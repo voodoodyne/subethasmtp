@@ -5,8 +5,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.StringTokenizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -17,7 +17,7 @@ import org.apache.commons.logging.LogFactory;
 abstract public class BaseCommand implements Command
 {
 	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(BaseCommand.class);
+	private final static Logger log = LoggerFactory.getLogger(BaseCommand.class);
 		
 	/** Name of the command, ie HELO */
 	private String name;

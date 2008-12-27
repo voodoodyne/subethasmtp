@@ -7,8 +7,8 @@ import java.net.Socket;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
 
@@ -18,7 +18,7 @@ import org.subethamail.smtp.server.Session;
  */
 public class StartTLSCommand extends BaseCommand
 {
-	private static Log log = LogFactory.getLog(StartTLSCommand.class);
+	private final static Logger log = LoggerFactory.getLogger(StartTLSCommand.class);
 
 	public StartTLSCommand()
 	{

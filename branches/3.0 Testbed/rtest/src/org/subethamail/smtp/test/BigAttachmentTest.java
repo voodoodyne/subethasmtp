@@ -40,6 +40,7 @@ import com.sun.mail.smtp.SMTPTransport;
 public class BigAttachmentTest extends TestCase
 {
 	private final static Logger log = LoggerFactory.getLogger(BigAttachmentTest.class);
+	
 	private final static int SMTP_PORT = 1081;
 	private final static String TO_CHANGE = "<path>/<your_bigfile.ext>";
 	private final static int BUFFER_SIZE = 32768;
@@ -59,7 +60,6 @@ public class BigAttachmentTest extends TestCase
 		super.setUp();
 		server = new Wiser();
 		server.setPort(SMTP_PORT);
-		server.setReceiveBufferSize(BUFFER_SIZE);
 		server.start();		
 	}
 
@@ -135,7 +135,6 @@ public class BigAttachmentTest extends TestCase
 		assertTrue(checkIntegrity(new File(BIGFILE_PATH), compareFile));
 		log.debug("Checking integrity DONE");
 		compareFile.delete();
-		msg.dispose();
 	}
 	
 	private boolean checkIntegrity(File src, File dest) throws IOException, NoSuchAlgorithmException

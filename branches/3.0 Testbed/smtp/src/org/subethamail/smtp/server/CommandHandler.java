@@ -8,8 +8,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  * This class manages execution of a SMTP command.
@@ -19,8 +19,9 @@ import org.apache.commons.logging.LogFactory;
  */
 public class CommandHandler
 {
+	private final static Logger log = LoggerFactory.getLogger(CommandHandler.class);
+	
 	private Map<String, Command> commandMap = new HashMap<String, Command>();
-	private static Log log = LogFactory.getLog(CommandHandler.class);
 	
 	/** */
 	public CommandHandler()

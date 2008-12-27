@@ -16,8 +16,8 @@ import java.util.Properties;
 
 import javax.mail.Session;
 
-import org.apache.commons.logging.Log;
-import org.apache.commons.logging.LogFactory;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.auth.LoginAuthenticationHandlerFactory;
@@ -45,8 +45,7 @@ import org.subethamail.smtp.server.SMTPServer;
 public class Wiser implements SimpleMessageListener
 {
 	/** */
-	@SuppressWarnings("unused")
-	private static Log log = LogFactory.getLog(Wiser.class);
+	private final static Logger log = LoggerFactory.getLogger(Wiser.class);
 	
 	/** */
 	SMTPServer server;
