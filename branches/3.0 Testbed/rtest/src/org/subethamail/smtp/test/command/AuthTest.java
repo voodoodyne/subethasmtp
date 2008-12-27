@@ -1,13 +1,7 @@
 package org.subethamail.smtp.test.command;
 
-import java.util.ArrayList;
-import java.util.List;
-
-import org.subethamail.smtp.AuthenticationHandlerFactory;
-import org.subethamail.smtp.auth.LoginAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.MultipleAuthenticationHandlerFactory;
-import org.subethamail.smtp.auth.PlainAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.CommonAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.test.ServerTestCase;
 import org.subethamail.smtp.test.util.Client;
@@ -52,12 +46,8 @@ public class AuthTest extends ServerTestCase
 		
 		UsernamePasswordValidator validator = new RequiredUsernamePasswordValidator();
 		
-		List<AuthenticationHandlerFactory> factoryList = new ArrayList<AuthenticationHandlerFactory>();
-		factoryList.add(new PlainAuthenticationHandlerFactory(validator));
-		factoryList.add(new LoginAuthenticationHandlerFactory(validator));
-		
-		MultipleAuthenticationHandlerFactory masterAuthFactory = new MultipleAuthenticationHandlerFactory(factoryList);
-		this.wiser.getServer().setAuthenticationHandlerFactory(masterAuthFactory);
+		CommonAuthenticationHandlerFactory fact = new CommonAuthenticationHandlerFactory(validator);
+		this.wiser.getServer().setAuthenticationHandlerFactory(fact);
 		
 		this.wiser.start();
 		this.c = new Client("localhost", PORT);

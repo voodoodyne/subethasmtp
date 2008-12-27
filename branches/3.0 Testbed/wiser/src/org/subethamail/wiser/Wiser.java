@@ -18,12 +18,9 @@ import javax.mail.Session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.auth.LoginAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.MultipleAuthenticationHandlerFactory;
-import org.subethamail.smtp.auth.PlainAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.CommonAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.helper.SimpleMessageListener;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
@@ -74,11 +71,7 @@ public class Wiser implements SimpleMessageListener
 			}
 		};
 		
-		List<AuthenticationHandlerFactory> factoryList = new ArrayList<AuthenticationHandlerFactory>();
-		factoryList.add(new PlainAuthenticationHandlerFactory(validator));
-		factoryList.add(new LoginAuthenticationHandlerFactory(validator));
-		
-		MultipleAuthenticationHandlerFactory masterAuthFactory = new MultipleAuthenticationHandlerFactory(factoryList);
+		CommonAuthenticationHandlerFactory masterAuthFactory = new CommonAuthenticationHandlerFactory(validator);
 		this.server.setAuthenticationHandlerFactory(masterAuthFactory);
 	}
 

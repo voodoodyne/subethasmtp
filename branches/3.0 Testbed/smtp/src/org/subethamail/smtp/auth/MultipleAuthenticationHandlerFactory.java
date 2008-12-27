@@ -25,18 +25,30 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 	List<String> mechanisms = new ArrayList<String>();
 
 	/** */
+	public MultipleAuthenticationHandlerFactory()
+	{
+		// Starting with an empty list is ok, let the user add them all
+	}
+	
+	/** */
 	public MultipleAuthenticationHandlerFactory(Collection<AuthenticationHandlerFactory> factories)
 	{
 		for (AuthenticationHandlerFactory fact: factories)
 		{
-			List<String> partialMechanisms = fact.getAuthenticationMechanisms();
-			for (String mechanism: partialMechanisms)
+			this.addFactory(fact);
+		}
+	}
+	
+	/** */
+	public void addFactory(AuthenticationHandlerFactory fact)
+	{
+		List<String> partialMechanisms = fact.getAuthenticationMechanisms();
+		for (String mechanism: partialMechanisms)
+		{
+			if (!this.mechanisms.contains(mechanism))
 			{
-				if (!this.mechanisms.contains(mechanism))
-				{
-					this.mechanisms.add(mechanism);
-					this.plugins.put(mechanism, fact);
-				}
+				this.mechanisms.add(mechanism);
+				this.plugins.put(mechanism, fact);
 			}
 		}
 	}
