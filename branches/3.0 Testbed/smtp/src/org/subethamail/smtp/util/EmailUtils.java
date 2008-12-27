@@ -1,8 +1,5 @@
 package org.subethamail.smtp.util;
 
-import java.util.Collection;
-import java.util.Iterator;
-
 import javax.mail.internet.AddressException;
 import javax.mail.internet.InternetAddress;
 

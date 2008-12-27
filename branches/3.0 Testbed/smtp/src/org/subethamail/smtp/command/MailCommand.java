@@ -10,6 +10,7 @@ import org.subethamail.smtp.util.EmailUtils;
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Scott Hernandez
  * @author Jeff Schnitzer
  */
 public class MailCommand extends BaseCommand
