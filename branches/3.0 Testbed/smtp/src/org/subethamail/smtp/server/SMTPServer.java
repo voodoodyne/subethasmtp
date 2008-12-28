@@ -64,6 +64,9 @@ public class SMTPServer implements Runnable
 
 	private ThreadGroup connectionHanderGroup;
 	
+	/** If true, TLS is not announced */
+	private boolean hideTLS = false;
+	
 	/** 
 	 * set a hard limit on the maximum number of connections this server will accept 
 	 * once we reach this limit, the server will gracefully reject new connections.
@@ -442,6 +445,21 @@ public class SMTPServer implements Runnable
 	public void setMaxRecipients(int maxRecipients)
 	{
 		this.maxRecipients = maxRecipients;
+	}
+	
+	/** */
+	public boolean getHideTLS()
+	{
+		return this.hideTLS;
+	}
+	
+	/**
+	 * If set to true, TLS will not be advertised in the EHLO string.
+	 * Default is false.
+	 */
+	public void setHideTLS(boolean value)
+	{
+		this.hideTLS = value;
 	}
 
 	/**

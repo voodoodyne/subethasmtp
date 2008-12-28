@@ -40,19 +40,24 @@ public class EhloCommand extends BaseCommand
 		// Postfix doesn't care, so we won't either.  If you want more, read:
 		// http://homepages.tesco.net/J.deBoynePollard/FGA/smtp-avoid-helo.html
 		
-		String response = "250-" + sess.getServer().getHostName() + "\r\n" + "250-8BITMIME";
+		StringBuilder response = new StringBuilder();
+		
+		response.append("250-");
+		response.append(sess.getServer().getHostName());
+		response.append("\r\n" + "250-8BITMIME");
 
-		if (sess.getServer().getCommandHandler().containsCommand("STARTTLS"))
+		if (!sess.getServer().getHideTLS() && sess.getServer().getCommandHandler().containsCommand("STARTTLS"))
 		{
-			response = response + "\r\n" + "250-STARTTLS";
+			response.append("\r\n" + "250-STARTTLS");
 		}
 
 		if (sess.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
 		{
-			response = response + AuthCommand.getEhloString(sess.getServer().getAuthenticationHandlerFactory());
+			response.append(AuthCommand.getEhloString(sess.getServer().getAuthenticationHandlerFactory()));
 		}
 		
-		response = response + "\r\n" + "250 Ok";
-		sess.sendResponse(response);
+		response.append("\r\n" + "250 Ok");
+		
+		sess.sendResponse(response.toString());
 	}
 }
