@@ -26,15 +26,14 @@ import org.subethamail.smtp.Version;
  * This class also manages a watchdog thread which will timeout 
  * stale connections.
  *
- * There are two ways of using this server.  The first is to
- * construct with a MessageHandlerFactory.  This provides the
- * lowest-level and most flexible access.  The second way is
- * to construct with a collection of MessageListeners.  This
- * is a higher, and sometimes more convenient level of abstraction.
+ * To use this class, construct a server with your implementation
+ * of the MessageHandlerFactory.  This provides low-level callbacks
+ * at various phases of the SMTP exchange.  For a higher-level
+ * but more limited interface, you can pass in a
+ * org.subethamail.smtp.helper.SimpleMessageListenerAdapter.
  * 
- * In neither case is the SMTP server (this library) responsible
- * for deciding what recipients to accept or what to do with the
- * incoming data.  That is left to you.
+ * By default, no authentication methods are offered.  To use
+ * authentication, set an AuthenticationHandlerFactory.
  * 
  * @author Jon Stevens
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -43,6 +42,9 @@ import org.subethamail.smtp.Version;
 public class SMTPServer implements Runnable
 {
 	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
+	
+	/** Hostame used if we can't find one */
+	private final static String UNKNOWN_HOSTNAME = "localhost";
 
 	private InetAddress bindAddress = null;	// default to all interfaces
 	private int port = 25;	// default to 25
@@ -101,7 +103,7 @@ public class SMTPServer implements Runnable
 		}
 		catch (UnknownHostException e)
 		{
-			this.hostName = "localhost";
+			this.hostName = UNKNOWN_HOSTNAME;
 		}
 
 		this.commandHandler = new CommandHandler();		
@@ -112,7 +114,10 @@ public class SMTPServer implements Runnable
 	/** @return the host name that will be reported to SMTP clients */
 	public String getHostName()
 	{
-		return this.hostName;
+		if (this.hostName == null)
+			return UNKNOWN_HOSTNAME;
+		else
+			return this.hostName;
 	}
 
 	/** The host name that will be reported to SMTP clients */
@@ -229,7 +234,7 @@ public class SMTPServer implements Runnable
 		}
 
 		// Shut down any open connections.
-		shutDownOpenConnections();
+		this.shutDownOpenConnections();
 		
 		// if the serverSocket is not null, force a socket close for good measure
 		try
@@ -388,7 +393,10 @@ public class SMTPServer implements Runnable
 	
 	public boolean hasTooManyConnections()
 	{
-		return (getNumberOfConnections() >= maxConnections);
+		if (maxConnections < 0)
+			return false;
+		else
+			return (getNumberOfConnections() >= maxConnections);
 	}
 	
 	public int getMaxConnections()
@@ -398,7 +406,7 @@ public class SMTPServer implements Runnable
 
 	/**
 	 * Set's the maximum number of connections this server instance will
-	 * accept. 
+	 * accept. A value of -1 means "unlimited".
 	 * 
 	 * @param maxConnections
 	 */
@@ -412,6 +420,11 @@ public class SMTPServer implements Runnable
 		return this.connectionTimeout;
 	}
 
+	/**
+	 * Set the number of milliseconds that the server will wait for
+	 * client input.  Sometime after this period expires, an client will
+	 * be rejected and the connection closed.
+	 */
 	public void setConnectionTimeout(int connectionTimeout)
 	{
 		this.connectionTimeout = connectionTimeout;
@@ -422,11 +435,14 @@ public class SMTPServer implements Runnable
 		return this.maxRecipients;
 	}
 
+	/**
+	 * Set the maximum number of recipients allowed for each message.
+	 * A value of -1 means "unlimited".
+	 */
 	public void setMaxRecipients(int maxRecipients)
 	{
 		this.maxRecipients = maxRecipients;
 	}
-
 
 	/**
 	 * A watchdog thread that makes sure that connections don't go stale. It

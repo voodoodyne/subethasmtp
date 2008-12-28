@@ -29,7 +29,8 @@ public class ReceiptCommand extends BaseCommand
 			sess.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (sess.getRecipientCount() >= sess.getServer().getMaxRecipients())
+		else if (sess.getServer().getMaxRecipients() >= 0 &&
+				sess.getRecipientCount() >= sess.getServer().getMaxRecipients())
 		{
 			sess.sendResponse("452 Error: too many recipients");
 			return;
