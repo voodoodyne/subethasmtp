@@ -18,6 +18,7 @@ import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
 public class DataCommand extends BaseCommand
 {
     private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
+    private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
 
     public DataCommand()
 	{
@@ -43,7 +44,7 @@ public class DataCommand extends BaseCommand
 		sess.sendResponse("354 End data with <CR><LF>.<CR><LF>");
 
 		InputStream stream = sess.getRawInput();
-		stream = new BufferedInputStream(stream);
+		stream = new BufferedInputStream(stream, BUFFER_SIZE);
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
 
