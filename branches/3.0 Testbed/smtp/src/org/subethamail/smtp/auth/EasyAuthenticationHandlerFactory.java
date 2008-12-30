@@ -10,13 +10,13 @@ package org.subethamail.smtp.auth;
  *
  * @author Jeff Schnitzer
  */
-public class CommonAuthenticationHandlerFactory extends MultipleAuthenticationHandlerFactory
+public class EasyAuthenticationHandlerFactory extends MultipleAuthenticationHandlerFactory
 {
 	/** Just hold on to this so that the caller can get it later, if necessary */
 	UsernamePasswordValidator validator;
 	
 	/** */
-	public CommonAuthenticationHandlerFactory(UsernamePasswordValidator validator)
+	public EasyAuthenticationHandlerFactory(UsernamePasswordValidator validator)
 	{
 		this.validator = validator;
 		

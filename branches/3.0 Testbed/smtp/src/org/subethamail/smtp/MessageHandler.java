@@ -46,10 +46,11 @@ public interface MessageHandler
 	public void recipient(String recipient) throws RejectException;
 	
 	/**
-	 * Called when the DATA part of the SMTP exchange begins.  Will
-	 * only be called if at least one recipient was accepted.
+	 * Called when the DATA part of the SMTP exchange begins.  This
+	 * will occur after all recipient() calls are complete.
 	 *
-	 * @param data will be the smtp data stream, stripped of any extra '.' chars
+	 * @param data will be the smtp data stream, stripped of any extra '.' chars.  The
+	 * 			data stream will be valid only for the duration of the call.
 	 *
 	 * @throws RejectException if at any point the data should be rejected.
 	 * @throws TooMuchDataException if the listener can't handle that much data.

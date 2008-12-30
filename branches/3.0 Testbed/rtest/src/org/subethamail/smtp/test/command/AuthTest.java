@@ -1,7 +1,7 @@
 package org.subethamail.smtp.test.command;
 
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.CommonAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.test.ServerTestCase;
 import org.subethamail.smtp.test.util.Client;
@@ -46,7 +46,7 @@ public class AuthTest extends ServerTestCase
 		
 		UsernamePasswordValidator validator = new RequiredUsernamePasswordValidator();
 		
-		CommonAuthenticationHandlerFactory fact = new CommonAuthenticationHandlerFactory(validator);
+		EasyAuthenticationHandlerFactory fact = new EasyAuthenticationHandlerFactory(validator);
 		this.wiser.getServer().setAuthenticationHandlerFactory(fact);
 		
 		this.wiser.start();

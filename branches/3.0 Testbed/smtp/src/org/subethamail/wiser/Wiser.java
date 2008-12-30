@@ -20,7 +20,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.TooMuchDataException;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.CommonAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.helper.SimpleMessageListener;
 import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
@@ -71,7 +71,7 @@ public class Wiser implements SimpleMessageListener
 			}
 		};
 		
-		CommonAuthenticationHandlerFactory masterAuthFactory = new CommonAuthenticationHandlerFactory(validator);
+		EasyAuthenticationHandlerFactory masterAuthFactory = new EasyAuthenticationHandlerFactory(validator);
 		this.server.setAuthenticationHandlerFactory(masterAuthFactory);
 	}
 
