@@ -14,16 +14,16 @@ import org.subethamail.smtp.Version;
 
 /**
  * Main SMTPServer class.  Construct this object, set the
- * hostName, port, and bind address if you wish to override the 
- * defaults, and call start(). 
- * 
+ * hostName, port, and bind address if you wish to override the
+ * defaults, and call start().
+ *
  * This class starts opens a ServerSocket and creates a new
  * instance of the ConnectionHandler class when a new connection
  * comes in.  The ConnectionHandler then parses the incoming SMTP
  * stream and hands off the processing to the CommandHandler which
  * will execute the appropriate SMTP command class.
- *  
- * This class also manages a watchdog thread which will timeout 
+ *
+ * This class also manages a watchdog thread which will timeout
  * stale connections.
  *
  * To use this class, construct a server with your implementation
@@ -31,10 +31,10 @@ import org.subethamail.smtp.Version;
  * at various phases of the SMTP exchange.  For a higher-level
  * but more limited interface, you can pass in a
  * org.subethamail.smtp.helper.SimpleMessageListenerAdapter.
- * 
+ *
  * By default, no authentication methods are offered.  To use
  * authentication, set an AuthenticationHandlerFactory.
- * 
+ *
  * @author Jon Stevens
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jeff Schnitzer
@@ -42,7 +42,7 @@ import org.subethamail.smtp.Version;
 public class SMTPServer implements Runnable
 {
 	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
-	
+
 	/** Hostame used if we can't find one */
 	private final static String UNKNOWN_HOSTNAME = "localhost";
 
@@ -55,20 +55,20 @@ public class SMTPServer implements Runnable
 	private AuthenticationHandlerFactory authenticationHandlerFactory;
 
 	private CommandHandler commandHandler;
-	
+
 	private ServerSocket serverSocket;
 	private boolean go = false;
-	
+
 	private Thread serverThread;
 	private Watchdog watchdog;
 
 	private ThreadGroup connectionHanderGroup;
-	
+
 	/** If true, TLS is not announced */
 	private boolean hideTLS = false;
-	
-	/** 
-	 * set a hard limit on the maximum number of connections this server will accept 
+
+	/**
+	 * set a hard limit on the maximum number of connections this server will accept
 	 * once we reach this limit, the server will gracefully reject new connections.
 	 * Default is 1000.
 	 */
@@ -83,7 +83,7 @@ public class SMTPServer implements Runnable
 	 * The maximal number of recipients that this server accepts per message delivery request.
 	 */
 	private int maxRecipients = 1000;
-	
+
 	/**
 	 * The primary constructor.
 	 */
@@ -91,7 +91,7 @@ public class SMTPServer implements Runnable
 	{
 		this(handlerFactory, null);
 	}
-	
+
 	/**
 	 * The primary constructor.
 	 */
@@ -99,7 +99,7 @@ public class SMTPServer implements Runnable
 	{
 		this.messageHandlerFactory = msgHandlerFact;
 		this.authenticationHandlerFactory = authHandlerFact;
-		
+
 		try
 		{
 			this.hostName = InetAddress.getLocalHost().getCanonicalHostName();
@@ -109,7 +109,7 @@ public class SMTPServer implements Runnable
 			this.hostName = UNKNOWN_HOSTNAME;
 		}
 
-		this.commandHandler = new CommandHandler();		
+		this.commandHandler = new CommandHandler();
 
 		this.connectionHanderGroup = new ThreadGroup(SMTPServer.class.getName() + " ConnectionHandler Group");
 	}
@@ -162,10 +162,10 @@ public class SMTPServer implements Runnable
 
 	/**
 	 * The backlog is the Socket backlog.
-	 * 
-	 * The backlog argument must be a positive value greater than 0. 
+	 *
+	 * The backlog argument must be a positive value greater than 0.
 	 * If the value passed if equal or less than 0, then the default value will be assumed.
-	 * 
+	 *
 	 * @return the backlog
 	 */
 	public int getBacklog()
@@ -175,9 +175,9 @@ public class SMTPServer implements Runnable
 
 	/**
 	 * The backlog is the Socket backlog.
-	 * 
-	 * The backlog argument must be a positive value greater than 0. 
-	 * If the value passed if equal or less than 0, then the default value will be assumed. 
+	 *
+	 * The backlog argument must be a positive value greater than 0.
+	 * If the value passed if equal or less than 0, then the default value will be assumed.
 	 */
 	public void setBacklog(int backlog)
 	{
@@ -192,11 +192,11 @@ public class SMTPServer implements Runnable
 	{
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
-		
+
 		// Create our server socket here.
 		try
 		{
-			this.serverSocket = createServerSocket();
+			this.serverSocket = this.createServerSocket();
 		}
 		catch (Exception e)
 		{
@@ -206,7 +206,7 @@ public class SMTPServer implements Runnable
 		this.go = true;
 
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
-		// daemon threads do not keep the program from quitting; 
+		// daemon threads do not keep the program from quitting;
 		// user threads keep the program from quitting.
 		// We want the serverThread to keep the program from quitting
 		// this.serverThread.setDaemon(true);
@@ -225,7 +225,7 @@ public class SMTPServer implements Runnable
 	{
 		// don't accept any more connections
 		this.go = false;
-		
+
 		// kill the listening thread
 		this.serverThread = null;
 
@@ -238,11 +238,11 @@ public class SMTPServer implements Runnable
 
 		// Shut down any open connections.
 		this.shutDownOpenConnections();
-		
+
 		// if the serverSocket is not null, force a socket close for good measure
 		try
 		{
-			if (this.serverSocket != null && !this.serverSocket.isClosed())
+			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
 				this.serverSocket.close();
 		}
 		catch (IOException e)
@@ -251,13 +251,13 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * Grabs all ThreadGroup instances of ConnectionHander's and attempts to close the 
+	 * Grabs all ThreadGroup instances of ConnectionHander's and attempts to close the
 	 * socket if it is still open.
 	 */
 	protected void shutDownOpenConnections()
 	{
-		Thread[] groupThreads = new Thread[maxConnections];
-		ThreadGroup connectionGroup = getConnectionGroup();
+		Thread[] groupThreads = new Thread[this.maxConnections];
+		ThreadGroup connectionGroup = this.getConnectionGroup();
 
 		connectionGroup.enumerate(groupThreads);
 		for (int i=0; i<connectionGroup.activeCount(); i++)
@@ -279,7 +279,7 @@ public class SMTPServer implements Runnable
 	/**
 	 * Override this method if you want to create your own server sockets.
 	 * You must return a bound ServerSocket instance
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	protected ServerSocket createServerSocket()
@@ -296,7 +296,7 @@ public class SMTPServer implements Runnable
 			isa = new InetSocketAddress(this.bindAddress, this.port);
 		}
 
-		ServerSocket serverSocket = new ServerSocket();			
+		ServerSocket serverSocket = new ServerSocket();
 		// http://java.sun.com/j2se/1.5.0/docs/api/java/net/ServerSocket.html#setReuseAddress(boolean)
 		serverSocket.setReuseAddress(true);
 		serverSocket.bind(isa, this.backlog);
@@ -325,9 +325,9 @@ public class SMTPServer implements Runnable
 
 		try
 		{
-			if (this.serverSocket != null && !this.serverSocket.isClosed())
+			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
 				this.serverSocket.close();
-			
+
 			log.info("SMTP Server socket shut down.");
 		}
 		catch (IOException e)
@@ -344,7 +344,7 @@ public class SMTPServer implements Runnable
 
 	public String getNameVersion()
 	{
-		return getName() + " " + Version.getSpecification();
+		return this.getName() + " " + Version.getSpecification();
 	}
 
 	/**
@@ -354,12 +354,12 @@ public class SMTPServer implements Runnable
 	{
 		return this.messageHandlerFactory;
 	}
-	
+
 	public void setMessageHandlerFactory(MessageHandlerFactory fact)
 	{
 		this.messageHandlerFactory = fact;
 	}
-	
+
 	/**
 	 * @return the factory for auth handlers, or null if no such factory has been set.
 	 */
@@ -367,7 +367,7 @@ public class SMTPServer implements Runnable
 	{
 		return this.authenticationHandlerFactory;
 	}
-	
+
 	public void setAuthenticationHandlerFactory(AuthenticationHandlerFactory fact)
 	{
 		this.authenticationHandlerFactory = fact;
@@ -376,7 +376,7 @@ public class SMTPServer implements Runnable
 	/**
 	 * The CommandHandler manages handling the SMTP commands
 	 * such as QUIT, MAIL, RCPT, DATA, etc.
-	 * 
+	 *
 	 * @return An instance of CommandHandler
 	 */
 	public CommandHandler getCommandHandler()
@@ -393,15 +393,15 @@ public class SMTPServer implements Runnable
 	{
 		return this.connectionHanderGroup.activeCount();
 	}
-	
+
 	public boolean hasTooManyConnections()
 	{
-		if (maxConnections < 0)
+		if (this.maxConnections < 0)
 			return false;
 		else
-			return (getNumberOfConnections() >= maxConnections);
+			return (this.getNumberOfConnections() >= this.maxConnections);
 	}
-	
+
 	public int getMaxConnections()
 	{
 		return this.maxConnections;
@@ -410,11 +410,14 @@ public class SMTPServer implements Runnable
 	/**
 	 * Set's the maximum number of connections this server instance will
 	 * accept. A value of -1 means "unlimited".
-	 * 
+	 *
 	 * @param maxConnections
 	 */
 	public void setMaxConnections(int maxConnections)
 	{
+		if (this.isRunning())
+			throw new RuntimeException("Server is already running. It isn't possible to set the maxConnections. Please stop the server first.");
+
 		this.maxConnections = maxConnections;
 	}
 
@@ -446,13 +449,13 @@ public class SMTPServer implements Runnable
 	{
 		this.maxRecipients = maxRecipients;
 	}
-	
+
 	/** */
 	public boolean getHideTLS()
 	{
 		return this.hideTLS;
 	}
-	
+
 	/**
 	 * If set to true, TLS will not be advertised in the EHLO string.
 	 * Default is false.
@@ -474,11 +477,11 @@ public class SMTPServer implements Runnable
 		public Watchdog()
 		{
 			super(Watchdog.class.getName());
-			
+
 			// We do not want the watchdog to keep the program from quitting
-			setDaemon(true);
-			
-			setPriority(Thread.MAX_PRIORITY / 3);
+			this.setDaemon(true);
+
+			this.setPriority(Thread.MAX_PRIORITY / 3);
 		}
 
 		public void quit()
@@ -486,12 +489,13 @@ public class SMTPServer implements Runnable
 			this.run = false;
 		}
 
+		@Override
 		public void run()
 		{
 			while (this.run)
 			{
-				Thread[] groupThreads = new Thread[maxConnections];
-				ThreadGroup connectionGroup = getConnectionGroup();	// from parent class
+				Thread[] groupThreads = new Thread[SMTPServer.this.maxConnections];
+				ThreadGroup connectionGroup = SMTPServer.this.getConnectionGroup();	// from parent class
 				connectionGroup.enumerate(groupThreads);
 
 				for (int i=0; i<connectionGroup.activeCount(); i++)
