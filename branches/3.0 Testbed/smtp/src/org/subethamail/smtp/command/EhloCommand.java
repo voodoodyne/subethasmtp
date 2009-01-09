@@ -1,9 +1,12 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
+import java.util.List;
 
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.util.TextUtils;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -21,13 +24,13 @@ public class EhloCommand extends BaseCommand
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
-		String[] args = getArgs(commandString);
+		String[] args = this.getArgs(commandString);
 		if (args.length < 2)
 		{
 			sess.sendResponse("501 Syntax: EHLO hostname");
 			return;
 		}
-		
+
 //		postfix returns...
 //		250-server.host.name
 //		250-PIPELINING
@@ -39,25 +42,33 @@ public class EhloCommand extends BaseCommand
 		// already and gave an error msg.  However, this is stupid and pointless.
 		// Postfix doesn't care, so we won't either.  If you want more, read:
 		// http://homepages.tesco.net/J.deBoynePollard/FGA/smtp-avoid-helo.html
-		
+
 		StringBuilder response = new StringBuilder();
-		
+
 		response.append("250-");
 		response.append(sess.getServer().getHostName());
 		response.append("\r\n" + "250-8BITMIME");
 
-		if (!sess.getServer().getHideTLS() && sess.getServer().getCommandHandler().containsCommand("STARTTLS"))
+		// Hiding TLS is a server setting
+		if (!sess.getServer().getHideTLS())
 		{
 			response.append("\r\n" + "250-STARTTLS");
 		}
 
-		if (sess.getServer().getCommandHandler().containsCommand(AuthCommand.VERB))
+		// Check to see if we support authentication
+		AuthenticationHandlerFactory authFact = sess.getServer().getAuthenticationHandlerFactory();
+		if (authFact != null)
 		{
-			response.append(AuthCommand.getEhloString(sess.getServer().getAuthenticationHandlerFactory()));
+			List<String> supportedMechanisms = authFact.getAuthenticationMechanisms();
+			if (!supportedMechanisms.isEmpty())
+			{
+				response.append("\r\n" + "250-" + AuthCommand.VERB + " ");
+				response.append(TextUtils.joinTogether(supportedMechanisms, " "));
+			}
 		}
-		
+
 		response.append("\r\n" + "250 Ok");
-		
+
 		sess.sendResponse(response.toString());
 	}
 }

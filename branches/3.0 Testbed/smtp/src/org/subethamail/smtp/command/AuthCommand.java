@@ -1,7 +1,6 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
-import java.util.List;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
@@ -9,7 +8,6 @@ import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
-import org.subethamail.smtp.util.TextUtils;
 
 /**
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
@@ -21,19 +19,6 @@ public class AuthCommand extends BaseCommand
 
 	public static final String VERB = "AUTH";
 	public static final String AUTH_CANCEL_COMMAND = "*";
-
-	static String getEhloString(AuthenticationHandlerFactory authFact)
-	{
-		List<String> supportedMechanisms = authFact.getAuthenticationMechanisms();
-		if (supportedMechanisms.isEmpty())
-		{
-			return "";
-		}
-		else
-		{
-			return "\r\n" + "250-" + VERB + " " + TextUtils.joinTogether(supportedMechanisms, " ");
-		}
-	}
 
 	/** Creates a new instance of AuthCommand */
 	public AuthCommand()
@@ -56,18 +41,25 @@ public class AuthCommand extends BaseCommand
 			sess.sendResponse("503 Refusing any other AUTH command.");
 			return;
 		}
-		
-		AuthenticationHandlerFactory authFactory = sess.getServer().getAuthenticationHandlerFactory(); 
+
+		AuthenticationHandlerFactory authFactory = sess.getServer().getAuthenticationHandlerFactory();
+
+		if (authFactory == null)
+		{
+			sess.sendResponse("502 Authentication not supported");
+			return;
+		}
+
 		AuthenticationHandler authHandler = authFactory.create();
-		
-		String[] args = getArgs(commandString);
+
+		String[] args = this.getArgs(commandString);
 		// Let's check the command syntax
 		if (args.length < 2)
 		{
 			sess.sendResponse("501 Syntax: " + VERB + " mechanism [initial-response]");
 			return;
 		}
-		
+
 		// Let's check if we support the required authentication mechanism
 		String mechanism = args[1];
 		if (!authFactory.getAuthenticationMechanisms().contains(mechanism.toUpperCase()))
@@ -80,14 +72,14 @@ public class AuthCommand extends BaseCommand
 		{
 			// The authentication process may require a series of challenge-responses
 			CRLFTerminatedReader reader = sess.getReader();
-			
+
 			String response = authHandler.auth(commandString);
 			if (response != null)
 			{
 				// challenge-response iteration
 				sess.sendResponse(response);
 			}
-			
+
 			while (response != null)
 			{
 				String clientInput = reader.readLine();
@@ -107,7 +99,7 @@ public class AuthCommand extends BaseCommand
 					}
 				}
 			}
-			
+
 			sess.sendResponse("235 Authentication successful.");
 			sess.setAuthenticationHandler(authHandler);
 		}
