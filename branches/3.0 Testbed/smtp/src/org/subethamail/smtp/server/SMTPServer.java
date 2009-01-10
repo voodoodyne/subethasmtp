@@ -260,11 +260,11 @@ public class SMTPServer implements Runnable
 		ThreadGroup connectionGroup = this.getConnectionGroup();
 
 		connectionGroup.enumerate(groupThreads);
-		for (int i=0; i<connectionGroup.activeCount(); i++)
+		for (Thread thread : groupThreads)
 		{
-			Session handler = ((Session)groupThreads[i]);
-			if (handler != null)
+			if (thread instanceof Session)
 			{
+				Session handler = (Session)thread;
 				try
 				{
 					handler.closeSocket();
@@ -498,14 +498,15 @@ public class SMTPServer implements Runnable
 				ThreadGroup connectionGroup = SMTPServer.this.getConnectionGroup();	// from parent class
 				connectionGroup.enumerate(groupThreads);
 
-				for (int i=0; i<connectionGroup.activeCount(); i++)
+				for (Thread thread : groupThreads)
 				{
-					Session aThread = ((Session)groupThreads[i]);
-					if (aThread != null)
+					if ((thread instanceof Session) && thread.isAlive())
 					{
+						Session aThread = ((Session)thread);
 						aThread.checkForIdle();
 					}
 				}
+
 				try
 				{
 					// go to sleep for 10 seconds.
