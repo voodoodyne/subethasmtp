@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 
+import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
@@ -54,15 +55,23 @@ public class StartTLSCommand extends BaseCommand
 
 			// allow all supported cipher suites
 			s.setEnabledCipherSuites(s.getSupportedCipherSuites());
-			
+
 			s.startHandshake();
 
 			sess.setSocket(s);
 			sess.resetMessageState(); // clean slate
 		}
-		catch (IOException e)
+		catch (SSLHandshakeException ex)
 		{
-			log.warn("startTLS() failed: " + e.getMessage(), e);
+			// "no cipher suites in common" is common and puts a lot of crap in the logs.
+			// This will at least limit it to a single WARN line and not a whole stacktrace.
+			// Unfortunately it might catch some other types of SSLHandshakeException (if
+			// in fact other types exist), but oh well.
+			log.warn("startTLS() failed: " + ex);
+		}
+		catch (IOException ex)
+		{
+			log.warn("startTLS() failed: " + ex.getMessage(), ex);
 		}
 	}
 }
