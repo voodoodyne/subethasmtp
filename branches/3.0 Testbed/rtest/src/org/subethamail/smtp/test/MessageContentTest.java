@@ -33,11 +33,11 @@ import org.subethamail.wiser.Wiser;
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  * @author Ville Skyttä (contributed some encoding tests)
  */
-public class SMTPClientTest extends TestCase
+public class MessageContentTest extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(SMTPClientTest.class);
+	private static Logger log = LoggerFactory.getLogger(MessageContentTest.class);
 	
 	/** */
 	public static final int PORT = 2566;
@@ -47,7 +47,7 @@ public class SMTPClientTest extends TestCase
 	protected Session session;
 	
 	/** */
-	public SMTPClientTest(String name) { super(name); }
+	public MessageContentTest(String name) { super(name); }
 	
 	/** */
 	protected void setUp() throws Exception
@@ -210,6 +210,6 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public static Test suite()
 	{
-		return new TestSuite(SMTPClientTest.class);
+		return new TestSuite(MessageContentTest.class);
 	}
 }

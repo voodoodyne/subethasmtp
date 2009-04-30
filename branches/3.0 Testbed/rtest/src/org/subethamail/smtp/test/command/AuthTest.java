@@ -3,8 +3,8 @@ package org.subethamail.smtp.test.command;
 import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
-import org.subethamail.smtp.test.ServerTestCase;
 import org.subethamail.smtp.test.util.Client;
+import org.subethamail.smtp.test.util.ServerTestCase;
 import org.subethamail.smtp.util.Base64;
 
 /**

@@ -1,10 +1,9 @@
-package org.subethamail.smtp.test;
+package org.subethamail.smtp.test.util;
 
 import junit.framework.TestCase;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.subethamail.smtp.test.util.Client;
 import org.subethamail.wiser.Wiser;
 
 /**

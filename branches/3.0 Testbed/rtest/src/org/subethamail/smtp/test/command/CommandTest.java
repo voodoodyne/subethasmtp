@@ -1,6 +1,6 @@
 package org.subethamail.smtp.test.command;
 
-import org.subethamail.smtp.test.ServerTestCase;
+import org.subethamail.smtp.test.util.ServerTestCase;
 
 /**
  * @author Jon Stevens
