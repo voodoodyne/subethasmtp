@@ -1,10 +1,14 @@
 package org.subethamail.smtp.command;
 
+import java.io.BufferedInputStream;
 import java.io.IOException;
+import java.io.InputStream;
 
+import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.server.io.CharTerminatedInputStream;
+import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -13,28 +17,47 @@ import org.subethamail.smtp.server.Session;
  */
 public class DataCommand extends BaseCommand
 {
-	public DataCommand()
+    private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
+    private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
+
+    public DataCommand()
 	{
-		super("DATA", "Following text is collected as the message.\nEnd data with <CR><LF>.<CR><LF>");
+		super("DATA",
+				"Following text is collected as the message.\n"
+				+ "End data with <CR><LF>.<CR><LF>");
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, Session sess) throws IOException
 	{
-		Session session = context.getSession();
-
-		if (!session.getHasSender())
+		if (!sess.getHasMailFrom())
 		{
-			context.sendResponse("503 Error: need MAIL command");
+			sess.sendResponse("503 Error: need MAIL command");
 			return;
 		}
-		else if (session.getRecipientCount() == 0)
+		else if (sess.getRecipientCount() == 0)
 		{
-			context.sendResponse("503 Error: need RCPT command");
+			sess.sendResponse("503 Error: need RCPT command");
 			return;
 		}
 
-		session.setDataMode(true);
-		context.sendResponse("354 End data with <CR><LF>.<CR><LF>");		
+		sess.sendResponse("354 End data with <CR><LF>.<CR><LF>");
+
+		InputStream stream = sess.getRawInput();
+		stream = new BufferedInputStream(stream, BUFFER_SIZE);
+		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
+		stream = new DotUnstuffingInputStream(stream);
+
+		try
+		{
+			sess.getMessageHandler().data(stream);
+			sess.sendResponse("250 Ok");
+		}
+		catch (RejectException ex)
+		{
+			sess.sendResponse(ex.getMessage());
+		}
+
+		sess.resetMessageState(); // reset session, but don't require new HELO/EHLO
 	}
 }

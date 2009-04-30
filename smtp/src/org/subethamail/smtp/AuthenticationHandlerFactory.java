@@ -1,10 +1,26 @@
 package org.subethamail.smtp;
 
+import java.util.List;
+
 /**
  *
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
+ * @author Jeff Schnitzer
  */
 public interface AuthenticationHandlerFactory
 {
+	/**
+	 * If your handler supports RFC 2554 at some degree, then it must return all the supported mechanisms here. <br>
+	 * The order you use to populate the list will be preserved in the output of the EHLO command. <br>
+	 *
+	 * @return the supported authentication mechanisms as List.
+	 */
+	public List<String> getAuthenticationMechanisms();
+	
+	/**
+	 * 
+	 * @return
+	 */
 	public AuthenticationHandler create();
+	
 }

@@ -1,8 +1,5 @@
 package org.subethamail.smtp;
 
-import java.util.List;
-
-import org.subethamail.smtp.server.ConnectionContext;
 
 /**
  * The interface that enables challenge-response communication necessary for SMTP AUTH.<p>
@@ -10,39 +7,31 @@ import org.subethamail.smtp.server.ConnectionContext;
  * Do not share a single instance of this interface if you don't explicitly need to do so.
  *
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
+ * @author Jeff Schnitzer
+ * @author Scott Hernandez
  */
 public interface AuthenticationHandler
 {
 	
 	/**
-	 * If your handler supports RFC 2554 at some degree, then it must return all the supported mechanisms here. <br>
-	 * The order you use to populate the list will be preserved in the output of the EHLO command. <br>
-	 * If your handler does not support RFC 2554 at all, return an empty list.
-	 *
-	 * @return the supported authentication mechanisms as List.
-	 */
-	public List<String> getAuthenticationMechanisms();
-	
-	/**
 	 * Initially called using an input string in the RFC2554 form: "AUTH <mechanism> [initial-response]". <br>
-	 * This method must provide the correct reply (by filling the <code>response</code> parameter) at each <code>clientInput</code>.
+	 * This method must return text which will be delivered to the client, or null if the exchange
+	 * has been completed successfully.  If a response is provided to the client, this continues
+	 * the exchange - there will be another auth() call with the client's response.
 	 * <p>
 	 * Depending on the authentication mechanism, the handshaking process may require
-	 * many request-response passes. This method will return <code>true</code> only when the authentication process is finished <br>
+	 * many request-response passes. This method will return <code>null</code> only when the authentication process is finished.
+	 * <p>
+	 * AuthenticationHandlers are associated with a single authentication exchange.  If the exchange is stopped
+	 * (ie fails) and is restarted, a new AuthenticationHandler is created.  Upon successful authentication, your
+	 * implementation of this object becomes part of the MessageContext.  Your MessageHandler may upcast your
+	 * AuthenticationHandler to obtain further information, such as identity.
+	 * <p>
+	 * AuthenticationHandlers do not need to handle the "*" cancel response; this is handled by the framework.
 	 *
-	 * @return <code>true</code> if the authentication process is finished, <code>false</code> otherwise.
-	 * @param clientInput The client's input.
-	 * @param response a buffer filled with your response to the client input.
-	 * @param ctx the connection context filled with the credential of the user if authentication succeeds.
+	 * @return <code>null</code> if the authentication process is finished, otherwise a string to hand back to the client.
+	 * @param clientInput The client's input, eg "AUTH PLAIN dGVzdAB0ZXN0ADEyMzQ=" 
 	 * @throws org.subethamail.smtp.RejectException if authentication fails.
 	 */
-	public boolean auth(String clientInput, StringBuilder response, ConnectionContext ctx) throws RejectException;
-	
-	/**
-	 * Since a so-designed handler has its own state, it seems reasonable to enable resetting
-	 * its state. This can be done, for example, after a "*" client response during the AUTH command
-	 * processing.
-	 */
-	public void resetState();
-	
+	public String auth(String clientInput) throws RejectException;
 }

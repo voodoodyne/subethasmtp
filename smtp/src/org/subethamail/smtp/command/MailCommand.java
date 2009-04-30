@@ -4,65 +4,65 @@ import java.io.IOException;
 
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.util.EmailUtils;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Scott Hernandez
+ * @author Jeff Schnitzer
  */
 public class MailCommand extends BaseCommand
 {
 	public MailCommand()
 	{
-		super("MAIL", "Specifies the sender.", "FROM: <sender> [ <parameters> ]");
+		super("MAIL", 
+				"Specifies the sender.",
+				"FROM: <sender> [ <parameters> ]");
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, Session sess) throws IOException
 	{
-		Session session = context.getSession();
-		if (!session.getHasSeenHelo())
+		if (sess.getHasMailFrom())
 		{
-			context.sendResponse("503 Error: send HELO/EHLO first");
-		}
-		else if (session.getHasSender())
-		{
-			context.sendResponse("503 Sender already specified.");
+			sess.sendResponse("503 Sender already specified.");
 		}
 		else
 		{
 			if (commandString.trim().equals("MAIL FROM:"))
 			{
-				context.sendResponse("501 Syntax: MAIL FROM: <address>");
+				sess.sendResponse("501 Syntax: MAIL FROM: <address>");
 				return;
 			}
 
 			String args = getArgPredicate(commandString);
 			if (!args.toUpperCase().startsWith("FROM:"))
 			{
-				context.sendResponse("501 Syntax: MAIL FROM: <address>  Error in parameters: \""
-								+ getArgPredicate(commandString) + "\"");
+				sess.sendResponse(
+						"501 Syntax: MAIL FROM: <address>  Error in parameters: \"" +
+						getArgPredicate(commandString) + "\"");
 				return;
 			}
-
-			String emailAddress = extractEmailAddress(args, 5);
-			if (isValidEmailAddress(emailAddress))
+			
+			String emailAddress = EmailUtils.extractEmailAddress(args, 5);
+			if (EmailUtils.isValidEmailAddress(emailAddress))
 			{
 				try
 				{
-					session.getMessageHandler().from(emailAddress);
-					session.setHasSender(true);
-					context.sendResponse("250 Ok");
+					sess.getMessageHandler().from(emailAddress);
+					sess.setHasMailFrom(true);
+					sess.sendResponse("250 Ok");
 				}
 				catch (RejectException ex)
 				{
-					context.sendResponse(ex.getMessage());
+					sess.sendResponse(ex.getMessage());
 				}
 			}
 			else
 			{
-				context.sendResponse("553 <" + emailAddress + "> Invalid email address.");
+				sess.sendResponse("553 <" + emailAddress + "> Invalid email address.");
 			}
 		}
 	}

@@ -1,109 +1,74 @@
 package org.subethamail.smtp.server;
 
-import java.lang.management.ManagementFactory;
+import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
+import java.net.ServerSocket;
 import java.net.UnknownHostException;
-import java.nio.charset.Charset;
-import java.util.Collection;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.ThreadFactory;
 
-import javax.management.InstanceAlreadyExistsException;
-import javax.management.InstanceNotFoundException;
-import javax.management.MBeanRegistrationException;
-import javax.management.MBeanServer;
-import javax.management.NotCompliantMBeanException;
-import javax.management.ObjectName;
-
-import org.apache.mina.common.ByteBuffer;
-import org.apache.mina.common.DefaultIoFilterChainBuilder;
-import org.apache.mina.common.SimpleByteBufferAllocator;
-import org.apache.mina.common.ThreadModel;
-import org.apache.mina.filter.LoggingFilter;
-import org.apache.mina.filter.codec.ProtocolCodecFilter;
-import org.apache.mina.filter.executor.ExecutorFilter;
-import org.apache.mina.integration.jmx.IoServiceManager;
-import org.apache.mina.transport.socket.nio.SocketAcceptor;
-import org.apache.mina.transport.socket.nio.SocketAcceptorConfig;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
-import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.Version;
 
 /**
  * Main SMTPServer class.  Construct this object, set the
- * hostName, port, and bind address if you wish to override the 
- * defaults, and call start(). 
- * 
- * This class starts opens a <a href="http://mina.apache.org/">Mina</a> 
- * based listener and creates a new
+ * hostName, port, and bind address if you wish to override the
+ * defaults, and call start().
+ *
+ * This class starts opens a ServerSocket and creates a new
  * instance of the ConnectionHandler class when a new connection
  * comes in.  The ConnectionHandler then parses the incoming SMTP
  * stream and hands off the processing to the CommandHandler which
  * will execute the appropriate SMTP command class.
- *  
- * There are two ways of using this server.  The first is to
- * construct with a MessageHandlerFactory.  This provides the
- * lowest-level and most flexible access.  The second way is
- * to construct with a collection of MessageListeners.  This
- * is a higher, and sometimes more convenient level of abstraction.
- * 
- * In neither case is the SMTP server (this library) responsible
- * for deciding what recipients to accept or what to do with the
- * incoming data.  That is left to you.
- * 
+ *
+ * This class also manages a watchdog thread which will timeout
+ * stale connections.
+ *
+ * To use this class, construct a server with your implementation
+ * of the MessageHandlerFactory.  This provides low-level callbacks
+ * at various phases of the SMTP exchange.  For a higher-level
+ * but more limited interface, you can pass in a
+ * org.subethamail.smtp.helper.SimpleMessageListenerAdapter.
+ *
+ * By default, no authentication methods are offered.  To use
+ * authentication, set an AuthenticationHandlerFactory.
+ *
  * @author Jon Stevens
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jeff Schnitzer
- * 
- * This file has been used and differs from the original
- * by the use of MINA NIO framework.
- * 
- * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
-public class SMTPServer
+public class SMTPServer implements Runnable
 {
-	private static Logger log = LoggerFactory.getLogger(SMTPServer.class);
+	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
-	public final static Charset DEFAULT_CHARSET = Charset.forName("ISO-8859-1");
+	/** Hostame used if we can't find one */
+	private final static String UNKNOWN_HOSTNAME = "localhost";
 
-	/**
-	 * default to all interfaces
-	 */
-	private InetAddress bindAddress = null;
+	private InetAddress bindAddress = null;	// default to all interfaces
+	private int port = 25;	// default to 25
+	private String hostName;	// defaults to a lookup of the local address
+	private int backlog = 50;
 
-	/**
-	 * default to 25
-	 */
-	private int port = 25;
-
-	/**
-	 * defaults to a lookup of the local address
-	 */
-	private String hostName;
-
-	/**
-	 * defaults to 5000
-	 */
-	private int backlog = 5000;
-	
 	private MessageHandlerFactory messageHandlerFactory;
+	private AuthenticationHandlerFactory authenticationHandlerFactory;
+
 	private CommandHandler commandHandler;
-	private SocketAcceptor acceptor;
-	private ExecutorService executor;
-	private ExecutorService acceptorThreadPool;
-	private SocketAcceptorConfig config;
-	private IoServiceManager serviceManager;
-	private ObjectName jmxName;
-	private ConnectionHandler handler;
-	private SMTPCodecDecoder codecDecoder;
+
+	private ServerSocket serverSocket;
 	private boolean go = false;
 
-	/** 
-	 * set a hard limit on the maximum number of connections this server will accept 
+	private Thread serverThread;
+	private Watchdog watchdog;
+
+	private ThreadGroup sessionGroup;
+
+	/** If true, TLS is not announced */
+	private boolean hideTLS = false;
+
+	/**
+	 * set a hard limit on the maximum number of connections this server will accept
 	 * once we reach this limit, the server will gracefully reject new connections.
 	 * Default is 1000.
 	 */
@@ -118,23 +83,22 @@ public class SMTPServer
 	 * The maximal number of recipients that this server accepts per message delivery request.
 	 */
 	private int maxRecipients = 1000;
-	
-	/**
-	 * 4 megs by default. The server will buffer incoming messages to disk
-	 * when they hit this limit in the DATA received.
-	 */
-	protected final static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*4;
-	
-	private int dataDeferredSize = DEFAULT_DATA_DEFERRED_SIZE;
-	
-	private boolean announceTls = true;
 
 	/**
 	 * The primary constructor.
 	 */
 	public SMTPServer(MessageHandlerFactory handlerFactory)
 	{
-		this.messageHandlerFactory = handlerFactory;
+		this(handlerFactory, null);
+	}
+
+	/**
+	 * The primary constructor.
+	 */
+	public SMTPServer(MessageHandlerFactory msgHandlerFact, AuthenticationHandlerFactory authHandlerFact)
+	{
+		this.messageHandlerFactory = msgHandlerFact;
+		this.authenticationHandlerFactory = authHandlerFact;
 
 		try
 		{
@@ -142,196 +106,24 @@ public class SMTPServer
 		}
 		catch (UnknownHostException e)
 		{
-			this.hostName = "localhost";
+			this.hostName = UNKNOWN_HOSTNAME;
 		}
 
 		this.commandHandler = new CommandHandler();
-		initService();
+
+		this.sessionGroup = new ThreadGroup(SMTPServer.class.getName() + " Session Group");
 	}
 
-	/**
-	 * A convenience constructor that splits the smtp data among multiple listeners
-	 * (and multiple recipients).
-	 */
-	public SMTPServer(Collection<MessageListener> listeners)
-	{
-		this(new MessageListenerAdapter(listeners));
-	}
-
-	/**
-	 * Starts the JMX service with a polling interval default of 1000ms.
-	 * 
-	 * @throws InstanceAlreadyExistsException
-	 * @throws MBeanRegistrationException
-	 * @throws NotCompliantMBeanException
-	 */
-	public void startJMXService()
-		throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException
-	{
-		startJMXService(1000);
-	}
-
-	/**
-	 * Start the JMX service.
-	 * 
-	 * @param pollingInterval
-	 * @throws InstanceAlreadyExistsException
-	 * @throws MBeanRegistrationException
-	 * @throws NotCompliantMBeanException
-	 */
-	public void startJMXService(int pollingInterval)
-		throws InstanceAlreadyExistsException, MBeanRegistrationException, NotCompliantMBeanException
-	{
-		serviceManager.startCollectingStats(pollingInterval);
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		mbs.registerMBean(serviceManager, jmxName);
-	}
-
-	/**
-	 * Stop the JMX service.
-	 * 
-	 * @throws InstanceNotFoundException
-	 * @throws MBeanRegistrationException
-	 */
-	public void stopJMXService() throws InstanceNotFoundException, MBeanRegistrationException
-	{
-		serviceManager.stopCollectingStats();
-		MBeanServer mbs = ManagementFactory.getPlatformMBeanServer();
-		mbs.unregisterMBean(jmxName);
-	}
-
-	/**
-	 * Initializes the runtime service.
-	 */
-	private void initService()
-	{
-		try
-		{
-			ByteBuffer.setUseDirectBuffers(false);
-			ByteBuffer.setAllocator(new SimpleByteBufferAllocator());
-
-			acceptorThreadPool = Executors.newCachedThreadPool();
-			acceptor =
-				new SocketAcceptor(Runtime.getRuntime().availableProcessors() + 1, acceptorThreadPool);
-
-			// JMX instrumentation
-			serviceManager = new IoServiceManager(acceptor);
-			jmxName = new ObjectName("subethasmtp.mina.server:type=IoServiceManager");
-
-			config = new SocketAcceptorConfig();
-			config.setThreadModel(ThreadModel.MANUAL);
-			((SocketAcceptorConfig)config).setReuseAddress(true);
-
-			DefaultIoFilterChainBuilder chain = config.getFilterChain();
-
-			if (log.isTraceEnabled())
-				chain.addLast("logger", new LoggingFilter());
-
-			SMTPCodecFactory codecFactory = new SMTPCodecFactory(DEFAULT_CHARSET, getDataDeferredSize());
-			codecDecoder = (SMTPCodecDecoder) codecFactory.getDecoder();
-			chain.addLast("codec", new ProtocolCodecFilter(codecFactory));
-
-			executor = Executors.newCachedThreadPool(new ThreadFactory() {
-				int sequence;
-				
-				public Thread newThread(Runnable r) 
-				{					
-					sequence += 1;
-					return new Thread(r, "SubEthaSMTP Thread "+sequence);
-				}			
-			});
-			
-			chain.addLast("threadPool", new ExecutorFilter(executor));
-			
-			handler = new ConnectionHandler(this);
-		}
-		catch (Exception ex)
-		{
-			throw new RuntimeException(ex);
-		}
-	}
-
-	/**
-	 * Call this method to get things rolling after instantiating the
-	 * SMTPServer.
-	 */
-	public synchronized void start()
-	{
-		if (go == true)
-			throw new RuntimeException("SMTPServer is already started.");
-		
-		InetSocketAddress isa;
-
-		if (this.bindAddress == null)
-		{
-			isa = new InetSocketAddress(this.port);
-		}
-		else
-		{
-			isa = new InetSocketAddress(this.bindAddress, this.port);
-		}
-
-		((SocketAcceptorConfig)config).setBacklog(getBacklog());
-
-		try
-		{
-			acceptor.bind(isa, handler, config);
-			go = true;
-		}
-		catch (Exception e)
-		{
-			throw new RuntimeException(e);
-		}
-	}
-
-	/**
-	 * Shut things down gracefully.
-	 */
-	public synchronized void stop()
-	{
-		try
-		{
-			log.info("SMTP Server socket shut down.");
-			try { acceptor.unbindAll(); } catch (Exception e) { }
-			try { executor.shutdown(); } catch (Exception e) { }
-			try { acceptorThreadPool.shutdown(); } catch (Exception e) { }
-		}
-		finally
-		{
-			go = false;
-		}
-	}
-
-	/**
-	 * Tells the server to announce the TLS support. Defaults to true. 
-	 */
-	public void setAnnounceTLS(boolean announceTls)
-	{
-		this.announceTls = announceTls;
-	}
-	
-	/**
-	 * @return true if server is allowed to announce TLS support.
-	 */
-	public boolean announceTLS()
-	{
-		return announceTls;
-	}
-
-	/** 
-	 * @return the host name that will be reported to SMTP clients 
-	 */
+	/** @return the host name that will be reported to SMTP clients */
 	public String getHostName()
 	{
 		if (this.hostName == null)
-			return "localhost";
+			return UNKNOWN_HOSTNAME;
 		else
 			return this.hostName;
 	}
 
-	/** 
-	 * The host name that will be reported to SMTP clients 
-	 */
+	/** The host name that will be reported to SMTP clients */
 	public void setHostName(String hostName)
 	{
 		this.hostName = hostName;
@@ -343,26 +135,18 @@ public class SMTPServer
 		return this.bindAddress;
 	}
 
-	/**
-	 * null means all interfaces
-	 */
+	/** null means all interfaces */
 	public void setBindAddress(InetAddress bindAddress)
 	{
 		this.bindAddress = bindAddress;
 	}
 
-	/**
-	 * get the port the server is running on.
-	 */
+	/** */
 	public int getPort()
 	{
 		return this.port;
 	}
 
-	/**
-	 * set the port the server is running on.
-	 * @param port
-	 */
 	public void setPort(int port)
 	{
 		this.port = port;
@@ -371,17 +155,17 @@ public class SMTPServer
 	/**
 	 * Is the server running after start() has been called?
 	 */
-	public synchronized boolean isRunning()
+	public boolean isRunning()
 	{
 		return this.go;
 	}
 
 	/**
 	 * The backlog is the Socket backlog.
-	 * 
-	 * The backlog argument must be a positive value greater than 0. 
+	 *
+	 * The backlog argument must be a positive value greater than 0.
 	 * If the value passed if equal or less than 0, then the default value will be assumed.
-	 * 
+	 *
 	 * @return the backlog
 	 */
 	public int getBacklog()
@@ -391,9 +175,9 @@ public class SMTPServer
 
 	/**
 	 * The backlog is the Socket backlog.
-	 * 
-	 * The backlog argument must be a positive value greater than 0. 
-	 * If the value passed if equal or less than 0, then the default value will be assumed. 
+	 *
+	 * The backlog argument must be a positive value greater than 0.
+	 * If the value passed if equal or less than 0, then the default value will be assumed.
 	 */
 	public void setBacklog(int backlog)
 	{
@@ -401,33 +185,193 @@ public class SMTPServer
 	}
 
 	/**
-	 * The name of the server software.
+	 * Call this method to get things rolling after instantiating the
+	 * SMTPServer.
 	 */
+	public synchronized void start()
+	{
+		if (this.serverThread != null)
+			throw new IllegalStateException("SMTPServer already started");
+
+		// Create our server socket here.
+		try
+		{
+			this.serverSocket = this.createServerSocket();
+		}
+		catch (Exception e)
+		{
+			throw new RuntimeException(e);
+		}
+
+		this.go = true;
+
+		this.serverThread = new Thread(this, SMTPServer.class.getName());
+
+		// Now this.run() will be called
+		this.serverThread.start();
+
+		this.watchdog = new Watchdog();
+		this.watchdog.start();
+	}
+
+	/**
+	 * Shut things down gracefully.
+	 */
+	public synchronized void stop()
+	{
+		// don't accept any more connections
+		this.go = false;
+
+		// kill the listening thread
+		this.serverThread = null;
+
+		// stop the watchdog
+		if (this.watchdog != null)
+		{
+			this.watchdog.quit();
+			this.watchdog = null;
+		}
+
+		// Shut down any open connections.
+		this.shutDownOpenConnections();
+
+		// if the serverSocket is not null, force a socket close for good measure
+		try
+		{
+			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
+				this.serverSocket.close();
+		}
+		catch (IOException e)
+		{
+		}
+	}
+
+	/**
+	 * Grabs all ThreadGroup instances of ConnectionHander's and attempts to close the
+	 * socket if it is still open.
+	 */
+	protected void shutDownOpenConnections()
+	{
+		Thread[] groupThreads = new Thread[this.maxConnections];
+
+		this.getSessionGroup().enumerate(groupThreads);
+		for (Thread thread : groupThreads)
+		{
+			if (thread instanceof Session)
+			{
+				Session handler = (Session)thread;
+				try
+				{
+					handler.closeSocket();
+				}
+				catch (IOException e)
+				{
+				}
+			}
+		}
+	}
+
+	/**
+	 * Override this method if you want to create your own server sockets.
+	 * You must return a bound ServerSocket instance
+	 *
+	 * @throws IOException
+	 */
+	protected ServerSocket createServerSocket()
+		throws IOException
+	{
+		InetSocketAddress isa;
+
+		if (this.bindAddress == null)
+		{
+			isa = new InetSocketAddress(this.port);
+		}
+		else
+		{
+			isa = new InetSocketAddress(this.bindAddress, this.port);
+		}
+
+		ServerSocket serverSocket = new ServerSocket();
+		// http://java.sun.com/j2se/1.5.0/docs/api/java/net/ServerSocket.html#setReuseAddress(boolean)
+		serverSocket.setReuseAddress(true);
+		serverSocket.bind(isa, this.backlog);
+
+		return serverSocket;
+	}
+
+	/**
+	 * This method is called by this thread when it starts up.
+	 */
+	public void run()
+	{
+		while (this.go)
+		{
+			try
+			{
+				Session sess = new Session(this, this.serverSocket.accept());
+				sess.start();
+			}
+			catch (IOException ioe)
+			{
+				if (this.go)
+					log.error("Error accepting connections", ioe);
+			}
+		}
+
+		try
+		{
+			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
+				this.serverSocket.close();
+
+			log.info("SMTP Server socket shut down.");
+		}
+		catch (IOException e)
+		{
+			log.error("Failed to close server socket.", e);
+		}
+		this.serverSocket = null;
+	}
+
 	public String getName()
 	{
 		return "SubEthaSMTP";
 	}
 
-	/**
-	 * The name + version of the server software.
-	 */
 	public String getNameVersion()
 	{
-		return getName() + " " + Version.getSpecification();
+		return this.getName() + " " + Version.getSpecification();
 	}
 
 	/**
-	 * All smtp data is eventually routed through the handlers.
+	 * @return the factory for message handlers, cannot be null
 	 */
 	public MessageHandlerFactory getMessageHandlerFactory()
 	{
 		return this.messageHandlerFactory;
 	}
 
+	public void setMessageHandlerFactory(MessageHandlerFactory fact)
+	{
+		this.messageHandlerFactory = fact;
+	}
+
+	/**
+	 * @return the factory for auth handlers, or null if no such factory has been set.
+	 */
+	public AuthenticationHandlerFactory getAuthenticationHandlerFactory()
+	{
+		return this.authenticationHandlerFactory;
+	}
+
+	public void setAuthenticationHandlerFactory(AuthenticationHandlerFactory fact)
+	{
+		this.authenticationHandlerFactory = fact;
+	}
+
 	/**
 	 * The CommandHandler manages handling the SMTP commands
 	 * such as QUIT, MAIL, RCPT, DATA, etc.
-	 * 
+	 *
 	 * @return An instance of CommandHandler
 	 */
 	public CommandHandler getCommandHandler()
@@ -435,26 +379,24 @@ public class SMTPServer
 		return this.commandHandler;
 	}
 
-	/**
-	 * Number of connections in the handler.
-	 */
+	protected ThreadGroup getSessionGroup()
+	{
+		return this.sessionGroup;
+	}
+
 	public int getNumberOfConnections()
 	{
-		return handler.getNumberOfConnections();
+		return this.sessionGroup.activeCount();
 	}
 
-	/**
-	 * Are we over the maximum amount of connections ?
-	 */
 	public boolean hasTooManyConnections()
 	{
-		return (this.maxConnections > -1 && 
-				getNumberOfConnections() >= this.maxConnections);
+		if (this.maxConnections < 0)
+			return false;
+		else
+			return (this.getNumberOfConnections() >= this.maxConnections);
 	}
 
-	/**
-	 * What is the maximum amount of connections?
-	 */
 	public int getMaxConnections()
 	{
 		return this.maxConnections;
@@ -462,96 +404,114 @@ public class SMTPServer
 
 	/**
 	 * Set's the maximum number of connections this server instance will
-	 * accept. If set to -1 then limit is ignored.
-	 * 
+	 * accept. A value of -1 means "unlimited".
+	 *
 	 * @param maxConnections
 	 */
 	public void setMaxConnections(int maxConnections)
 	{
+		if (this.isRunning())
+			throw new RuntimeException("Server is already running. It isn't possible to set the maxConnections. Please stop the server first.");
+
 		this.maxConnections = maxConnections;
 	}
 
-	/**
-	 * What is the connection timeout?
-	 */
 	public int getConnectionTimeout()
 	{
 		return this.connectionTimeout;
 	}
 
 	/**
-	 * Set the connection timeout.
+	 * Set the number of milliseconds that the server will wait for
+	 * client input.  Sometime after this period expires, an client will
+	 * be rejected and the connection closed.
 	 */
 	public void setConnectionTimeout(int connectionTimeout)
 	{
 		this.connectionTimeout = connectionTimeout;
 	}
 
-	/**
-	 * What is the maximum number of recipients for a single message ?
-	 */
 	public int getMaxRecipients()
 	{
 		return this.maxRecipients;
 	}
 
 	/**
-	 * Set the maximum number of recipients for a single message.
-	 * If set to -1 then limit is ignored.
+	 * Set the maximum number of recipients allowed for each message.
+	 * A value of -1 means "unlimited".
 	 */
 	public void setMaxRecipients(int maxRecipients)
 	{
 		this.maxRecipients = maxRecipients;
 	}
 
-	/**
-	 * Get the maximum size in bytes of a single message before it is 
-	 * dumped to a temporary file.
-	 */	
-	public int getDataDeferredSize() 
+	/** */
+	public boolean getHideTLS()
 	{
-		return dataDeferredSize;
+		return this.hideTLS;
 	}
 
 	/**
-	 * Set the maximum size in bytes of a single message before it is 
-	 * dumped to a temporary file. Argument must be a positive power 
-	 * of two in order to follow the expanding algorithm of 
-	 * {@link org.apache.mina.common.ByteBuffer} to prevent unnecessary
-	 * memory consumption.
-	 */	
-	public void setDataDeferredSize(int dataDeferredSize) 
+	 * If set to true, TLS will not be advertised in the EHLO string.
+	 * Default is false.
+	 */
+	public void setHideTLS(boolean value)
 	{
-		if (isPowerOfTwo(dataDeferredSize))
-		{
-			this.dataDeferredSize = dataDeferredSize;
-			if (codecDecoder != null)
-				codecDecoder.setDataDeferredSize(dataDeferredSize);
-		}
-		else
-			throw new IllegalArgumentException(
-					"Argument dataDeferredSize must be a positive power of two");
+		this.hideTLS = value;
 	}
-	
+
 	/**
-	 * Sets the receive buffer size.
+	 * A watchdog thread that makes sure that connections don't go stale. It
+	 * prevents someone from opening up MAX_CONNECTIONS to the server and
+	 * holding onto them for more than 1 minute.
 	 */
-	public void setReceiveBufferSize(int receiveBufferSize)
+	private class Watchdog extends Thread
 	{
-		handler.setReceiveBufferSize(receiveBufferSize);
-	}	
-	
-	/**
-	 * Demonstration : if x is a power of 2, it can't share any bit with x-1. So 
-	 * x & (x-1) should be equal to 0. To get rid of negative values, we check
-	 * that x is higher than 1 (0 and 1 being of course unacceptable values 
-	 * for a buffer length). 
-	 * 
-	 * @param x the number to test
-	 * @return true if x is a power of two
-	 */
-	protected boolean isPowerOfTwo(int x)
-	{
-		return (x > 1) && (x & (x-1)) == 0;
+		private boolean run = true;
+
+		public Watchdog()
+		{
+			super(Watchdog.class.getName());
+
+			// We do not want the watchdog to keep the program from quitting
+			this.setDaemon(true);
+
+			this.setPriority(Thread.MAX_PRIORITY / 3);
+		}
+
+		public void quit()
+		{
+			this.run = false;
+		}
+
+		@Override
+		public void run()
+		{
+			while (this.run)
+			{
+				Thread[] groupThreads = new Thread[SMTPServer.this.maxConnections];
+				ThreadGroup connectionGroup = SMTPServer.this.getSessionGroup();	// from parent class
+				connectionGroup.enumerate(groupThreads);
+
+				for (Thread thread : groupThreads)
+				{
+					if ((thread instanceof Session) && thread.isAlive())
+					{
+						Session aThread = ((Session)thread);
+						aThread.checkForIdle();
+					}
+				}
+
+				try
+				{
+					// go to sleep for 10 seconds.
+					sleep(1000 * 10);
+				}
+				catch (InterruptedException e)
+				{
+					// ignore
+				}
+			}
+		}
 	}
 }

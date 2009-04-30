@@ -5,10 +5,11 @@
 
 package org.subethamail.wiser;
 
+import java.io.BufferedInputStream;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
@@ -17,26 +18,28 @@ import javax.mail.Session;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.subethamail.smtp.AuthenticationHandler;
-import org.subethamail.smtp.AuthenticationHandlerFactory;
-import org.subethamail.smtp.MessageListener;
 import org.subethamail.smtp.TooMuchDataException;
-import org.subethamail.smtp.auth.LoginAuthenticationHandler;
-import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.PlainAuthenticationHandler;
-import org.subethamail.smtp.auth.PluginAuthenticationHandler;
-import org.subethamail.smtp.auth.UsernamePasswordValidator;
+import org.subethamail.smtp.helper.SimpleMessageListener;
+import org.subethamail.smtp.helper.SimpleMessageListenerAdapter;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
- * Wiser is a smart mail testing application.
+ * Wiser is a tool for unit testing applications that send mail.  Your unit
+ * tests can start Wiser, run tests which generate emails, then examine the
+ * emails that Wiser received and verify their integrity.
+ *
+ * Wiser is not intended to be a "real" mail server and is not adequate
+ * for that purpose; it simply stores all mail in memory.  Use the
+ * MessageHandlerFactory interface (optionally with the SimpleMessageListenerAdapter)
+ * of SubEthaSMTP instead.
  *
  * @author Jon Stevens
- * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
+ * @author Jeff Schnitzer
  */
-public class Wiser implements MessageListener
+public class Wiser implements SimpleMessageListener
 {
 	/** */
+	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Wiser.class);
 
 	/** */
@@ -52,19 +55,16 @@ public class Wiser implements MessageListener
 	 */
 	public Wiser()
 	{
-		Collection<MessageListener> listeners = new ArrayList<MessageListener>(1);
-		listeners.add(this);
-
-		this.server = new SMTPServer(listeners);
+		this.server = new SMTPServer(new SimpleMessageListenerAdapter(this));
 		this.server.setPort(25);
+	}
 
-		// Set max connections much higher since we use NIO now.
-        this.server.setMaxConnections(30000);
+	/**
+	 *
+	 */
+	public Wiser(boolean acceptAuth)
+	{
 
-        // Removed in order that JUNIT tests could pass. They were incorrectly
-        // assuming that anonymous mode was always available.
-		/*((MessageListenerAdapter)server.getMessageHandlerFactory())
-			.setAuthenticationHandlerFactory(new AuthHandlerFactory());*/
 	}
 
 	/**
@@ -77,25 +77,6 @@ public class Wiser implements MessageListener
 	}
 
 	/**
-	 * Set the size at which the mail will be temporary
-	 * stored on disk.
-	 * @param dataDeferredSize
-	 */
-	public void setDataDeferredSize(int dataDeferredSize)
-	{
-		this.server.setDataDeferredSize(dataDeferredSize);
-	}
-
-	/**
-	 * Set the receive buffer size.
-	 * @param size
-	 */
-	public void setReceiveBufferSize(int size)
-	{
-		this.server.setReceiveBufferSize(size);
-	}
-
-	/**
 	 * The hostname that the server should listen on.
 	 * @param hostname
 	 */
@@ -104,59 +85,46 @@ public class Wiser implements MessageListener
 		this.server.setHostName(hostname);
 	}
 
-	/**
-	 * Starts the SMTP Server
-	 */
+	/** Starts the SMTP Server */
 	public void start()
 	{
 		this.server.start();
 	}
 
-	/**
-	 * Stops the SMTP Server
-	 */
+	/** Stops the SMTP Server */
 	public void stop()
 	{
 		this.server.stop();
 	}
 
-	/**
-	 * A main() for this class. Starts up the server.
-	 */
+	/** A main() for this class. Starts up the server. */
 	public static void main(String[] args) throws Exception
 	{
 		Wiser wiser = new Wiser();
 		wiser.start();
 	}
 
-	/**
-	 * Always accept everything
-	 */
+	/** Always accept everything */
 	public boolean accept(String from, String recipient)
 	{
 		return true;
 	}
 
-	/**
-	 * Cache the messages in memory. Now avoids unnecessary memory copying.
-	 */
+	/** Cache the messages in memory */
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException
 	{
-		log.debug("Delivering new message ...");
-		WiserMessage msg = new WiserMessage(this, from, recipient, data);
-		this.queueMessage(msg);
-	}
+		ByteArrayOutputStream out = new ByteArrayOutputStream();
+		data = new BufferedInputStream(data);
 
-	/**
-	 * deliver() calls queueMessage to store the message in an internal List&lt;WiserMessage&gt;
-	 * You can extend Wiser and override this method if you want to store it in a
-	 * different location instead
-	 *
-	 * @param message
-	 */
-	protected void queueMessage(WiserMessage message)
-	{
-		this.messages.add(message);
+		// read the data from the stream
+		int current;
+		while ((current = data.read()) >= 0)
+		{
+			out.write(current);
+		}
+
+		// create a new WiserMessage.
+		this.messages.add(new WiserMessage(this, from, recipient, out.toByteArray()));
 	}
 
 	/**
@@ -176,33 +144,10 @@ public class Wiser implements MessageListener
 	}
 
 	/**
-	 * @return an instance of the SMTPServer object
+	 * @return the server implementation
 	 */
 	public SMTPServer getServer()
 	{
 		return this.server;
-	}
-
-	/**
-	 * Creates the AuthHandlerFactory which logs the user/pass.
-	 */
-	public class AuthHandlerFactory implements AuthenticationHandlerFactory
-	{
-		public AuthenticationHandler create()
-		{
-			PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
-			UsernamePasswordValidator validator = new UsernamePasswordValidator()
-			{
-				public void login(String username, String password)
-						throws LoginFailedException
-				{
-					log.debug("Username=" + username);
-					log.debug("Password=" + password);
-				}
-			};
-			ret.addPlugin(new PlainAuthenticationHandler(validator));
-			ret.addPlugin(new LoginAuthenticationHandler(validator));
-			return ret;
-		}
 	}
 }

@@ -18,7 +18,7 @@ public abstract class ServerTestCase extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(ServerTestCase.class);
+	private final static Logger log = LoggerFactory.getLogger(ServerTestCase.class);
 	
 	/** */
 	public static final int PORT = 2566;

@@ -7,6 +7,5 @@ package org.subethamail.smtp.auth;
  */
 public interface UsernamePasswordValidator
 {
-	public void login(final String username, final String password)
-			throws LoginFailedException;
+	public void login(final String username, final String password) throws LoginFailedException;
 }

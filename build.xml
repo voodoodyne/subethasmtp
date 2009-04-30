@@ -24,7 +24,7 @@
 	<property name="build.deprecation" value="on" />
 	<property name="build.encoding" value="UTF-8" />
 
-	<property name="retroweaver.version" value="2.0.6" />
+	<property name="retroweaver.version" value="2.0.7" />
 	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
 
 	<path id="classpath">
@@ -87,8 +87,7 @@
 	</target>
 	
 	<target name="junit" depends="rtest-jar">
-		<junit printsummary="yes" showoutput="yes" fork="yes">
-
+		<junit printsummary="yes" showoutput="yes" fork="yes" maxmemory="512m">
 			<classpath refid="classpath" />
 			<classpath>
 				<fileset dir="${build.dir}/smtp/">
@@ -110,7 +109,7 @@
 	</target>
 
 	<target name="junit-special" depends="rtest-jar">
-		<junit printsummary="true" showoutput="true" fork="true">
+		<junit printsummary="true" showoutput="true" fork="true" maxmemory="512m">
 			
 			<classpath refid="classpath" />
 			<classpath>

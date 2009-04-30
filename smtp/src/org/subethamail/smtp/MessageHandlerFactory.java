@@ -5,6 +5,7 @@
 package org.subethamail.smtp;
 
 
+
 /**
  * The primary interface to be implemented by clients of the SMTP library.
  * This factory is called for every message to be exchanged in an SMTP
@@ -21,5 +22,4 @@ public interface MessageHandlerFactory
 	 * @param ctx provides information about the client.
 	 */
 	public MessageHandler create(MessageContext ctx);
-
 }

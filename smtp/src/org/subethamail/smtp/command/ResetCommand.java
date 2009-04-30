@@ -3,12 +3,12 @@ package org.subethamail.smtp.command;
 import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
 import org.subethamail.smtp.server.Session;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 public class ResetCommand extends BaseCommand
 {
@@ -18,11 +18,10 @@ public class ResetCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, Session sess) throws IOException
 	{
-		Session session = context.getSession();
-		session.reset(true);
+		sess.resetMessageState();
 
-		context.sendResponse("250 Ok");
+		sess.sendResponse("250 Ok");
 	}
 }

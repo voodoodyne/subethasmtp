@@ -2,10 +2,12 @@
  * $Id$
  * $URL$
  */
-package org.subethamail.smtp;
+package org.subethamail.smtp.helper;
 
 import java.io.IOException;
 import java.io.InputStream;
+
+import org.subethamail.smtp.TooMuchDataException;
 
 /**
  * This is an interface for processing the end-result messages that is
@@ -17,10 +19,11 @@ import java.io.InputStream;
  * 
  * @author Jeff Schnitzer
  */
-public interface MessageListener
+public interface SimpleMessageListener
 {
 	/**
-	 * Called once for every RCPT TO during a SMTP exchange.
+	 * Called once for every RCPT TO during a SMTP exchange.  Each accepted recipient
+	 * will result in a separate deliver() call later.
 	 * 
 	 * @param from is a rfc822-compliant email address.
 	 * @param recipient is a rfc822-compliant email address.
@@ -36,7 +39,8 @@ public interface MessageListener
 	 * 
 	 * @param from is the envelope sender in rfc822 form
 	 * @param recipient will be an accepted recipient in rfc822 form
-	 * @param data will be the smtp data stream, stripped of any extra '.' chars
+	 * @param data will be the smtp data stream, stripped of any extra '.' chars.  The
+	 * 			data stream is only valid for the duration of this call.
 	 * 
 	 * @throws TooMuchDataException if the listener can't handle that much data.
 	 *         An error will be reported to the client.

@@ -113,7 +113,9 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public void testUtf8EightBitMessage() throws Exception
 	{
-		String body = "€uro äää";
+		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
+		
+		String body = "\u00a4uro ma\u00f1ana";
 		testEightBitMessage(body, "UTF-8");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
@@ -131,7 +133,9 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public void testIso88591EightBitMessage() throws Exception
 	{
-		String body = "äää";
+		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
+
+		String body = "ma\u00f1ana";	// spanish ene (ie, n with diacritical tilde)
 		testEightBitMessage(body, "ISO-8859-1");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
@@ -140,9 +144,17 @@ public class SMTPClientTest extends TestCase
 	/** */
 	public void testIso885915EightBitMessage() throws Exception
 	{
-		String body = "€uro äää";
+		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
+
+		String body = "\u00a4uro";	// should be the euro symbol
 		testEightBitMessage(body, "ISO-8859-15");
 
+//		String content = (String)this.wiser.getMessages().get(0).getMimeMessage().getContent();
+//		for (int i=0; i<content.length(); i++)
+//		{
+//			log.info("Char is:  " + Integer.toString(content.codePointAt(i), 16));
+//		}
+		
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
 

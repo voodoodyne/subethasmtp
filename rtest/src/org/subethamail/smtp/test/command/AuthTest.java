@@ -1,23 +1,33 @@
 package org.subethamail.smtp.test.command;
 
-import org.subethamail.smtp.AuthenticationHandler;
-import org.subethamail.smtp.AuthenticationHandlerFactory;
-import org.subethamail.smtp.auth.LoginAuthenticationHandler;
 import org.subethamail.smtp.auth.LoginFailedException;
-import org.subethamail.smtp.auth.PlainAuthenticationHandler;
-import org.subethamail.smtp.auth.PluginAuthenticationHandler;
+import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
-import org.subethamail.smtp.server.MessageListenerAdapter;
 import org.subethamail.smtp.test.ServerTestCase;
 import org.subethamail.smtp.test.util.Client;
 import org.subethamail.smtp.util.Base64;
 
 /**
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
+ * @author Jeff Schnitzer
  */
 public class AuthTest extends ServerTestCase
 {
+	static final String REQUIRED_USERNAME = "myUserName";
+	static final String REQUIRED_PASSWORD = "mySecret01";
+	
+	class RequiredUsernamePasswordValidator implements UsernamePasswordValidator
+	{
+		public void login(String username, String password) throws LoginFailedException
+		{
+			if (!username.equals(REQUIRED_USERNAME) || !password.equals(REQUIRED_PASSWORD))
+			{
+				throw new LoginFailedException();
+			}
+		}
+	}
 
+	/** */
 	public AuthTest(String name)
 	{
 		super(name);
@@ -33,8 +43,11 @@ public class AuthTest extends ServerTestCase
 		this.wiser = new TestWiser();
 		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
-		((MessageListenerAdapter) wiser.getServer().getMessageHandlerFactory())
-			.setAuthenticationHandlerFactory(new AuthHandlerFactory());
+		
+		UsernamePasswordValidator validator = new RequiredUsernamePasswordValidator();
+		
+		EasyAuthenticationHandlerFactory fact = new EasyAuthenticationHandlerFactory(validator);
+		this.wiser.getServer().setAuthenticationHandlerFactory(fact);
 		
 		this.wiser.start();
 		this.c = new Client("localhost", PORT);
@@ -73,8 +86,8 @@ public class AuthTest extends ServerTestCase
 		send("AUTH PLAIN");
 		expect("334");
 		
-		String authString = new String(new byte[] {0}) + AuthHandlerFactory.REQUIRED_USERNAME
-						+ new String(new byte[] {0}) + AuthHandlerFactory.REQUIRED_PASSWORD;
+		String authString = new String(new byte[] {0}) + REQUIRED_USERNAME
+						+ new String(new byte[] {0}) + REQUIRED_PASSWORD;
 
 		String enc_authString = Base64.encodeToString(authString.getBytes(), false);
 		send(enc_authString);
@@ -111,8 +124,7 @@ public class AuthTest extends ServerTestCase
 		send("AUTH LOGIN");
 		expect("334");
 
-		String enc_username = Base64.encodeToString(
-				AuthHandlerFactory.REQUIRED_USERNAME.getBytes(), false);
+		String enc_username = Base64.encodeToString(REQUIRED_USERNAME.getBytes(), false);
 
 		send(enc_username);
 		expect("334");
@@ -126,39 +138,11 @@ public class AuthTest extends ServerTestCase
 		send(enc_username);
 		expect("334");
 
-		String enc_pwd = Base64.encodeToString(
-				AuthHandlerFactory.REQUIRED_PASSWORD.getBytes(), false);
+		String enc_pwd = Base64.encodeToString(REQUIRED_PASSWORD.getBytes(), false);
 		send(enc_pwd);
 		expect("235");
 
 		send("AUTH");
 		expect("503");
-	}
-
-	public class AuthHandlerFactory implements AuthenticationHandlerFactory
-	{
-		static final String REQUIRED_USERNAME = "myUserName";
-
-		static final String REQUIRED_PASSWORD = "mySecret01";
-
-		public AuthenticationHandler create()
-		{
-			PluginAuthenticationHandler ret = new PluginAuthenticationHandler();
-			UsernamePasswordValidator validator = new UsernamePasswordValidator()
-			{
-				public void login(String username, String password)
-						throws LoginFailedException
-				{
-					if (!username.equals(REQUIRED_USERNAME)
-							|| !password.equals(REQUIRED_PASSWORD))
-					{
-						throw new LoginFailedException();
-					}
-				}
-			};
-			ret.addPlugin(new PlainAuthenticationHandler(validator));
-			ret.addPlugin(new LoginAuthenticationHandler(validator));
-			return ret;
-		}
 	}
 }

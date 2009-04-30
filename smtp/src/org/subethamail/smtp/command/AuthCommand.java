@@ -1,126 +1,111 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
-import java.util.List;
 
-import org.subethamail.smtp.MessageHandler;
+import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 
 /**
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
- * 
- * Updated to comply with MINA integration.
- * 
- * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
+ * @author Jeff Schnitzer
+ * @author Scott Hernandez
  */
 public class AuthCommand extends BaseCommand
 {
-	public static final String VERB = "AUTH";
-	
-	public static final String AUTH_CANCEL_COMMAND = "*";
 
-	static String getEhloString(MessageHandler handler)
-	{
-		List<String> supportedMechanisms = handler.getAuthenticationMechanisms();
-		if (supportedMechanisms.isEmpty())
-		{
-			return "";
-		}
-		else
-		{
-            StringBuilder sb = new StringBuilder(30);
-            sb.append("\r\n");
-            sb.append("250-");
-            sb.append(VERB);
-            sb.append(' ');
-            getTokenizedString(sb, supportedMechanisms, " ");
-            
-			return sb.toString();
-		}
-	}
+	public static final String VERB = "AUTH";
+	public static final String AUTH_CANCEL_COMMAND = "*";
 
 	/** Creates a new instance of AuthCommand */
 	public AuthCommand()
 	{
-		super(VERB, "Authentication service", VERB + " <mechanism> [initial-response] \n"
+		super(
+				VERB,
+				"Authentication service",
+				VERB
+						+ " <mechanism> [initial-response] \n"
 						+ "\t mechanism = a string identifying a SASL authentication mechanism,\n"
 						+ "\t an optional base64-encoded response");
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, Session sess)
+			throws IOException
 	{
-		if (context.getSession().isAuthenticated())
+		if (sess.isAuthenticated())
 		{
-			context.sendResponse("503 Refusing any other AUTH command.");
+			sess.sendResponse("503 Refusing any other AUTH command.");
 			return;
 		}
 
-		MessageHandler msgHandler = getMessageHandler(context);
-		boolean authenticating = context.getSession().isAuthenticating();
-		
-		if (!authenticating)
+		AuthenticationHandlerFactory authFactory = sess.getServer().getAuthenticationHandlerFactory();
+
+		if (authFactory == null)
 		{
-			String[] args = getArgs(commandString);
-			
-			// Let's check the command syntax
-			if (args.length < 2)
-			{
-				context.sendResponse("501 Syntax: " + VERB
-						+ " mechanism [initial-response]");
-				return;
-			}
-			
-			// Let's check if we support the required authentication mechanism
-			String mechanism = args[1];
-			if (!msgHandler.getAuthenticationMechanisms().contains(
-					mechanism.toUpperCase()))
-			{
-				context
-						.sendResponse("504 The requested authentication mechanism is not supported");
-				return;
-			}
+			sess.sendResponse("502 Authentication not supported");
+			return;
 		}
-		
+
+		AuthenticationHandler authHandler = authFactory.create();
+
+		String[] args = this.getArgs(commandString);
+		// Let's check the command syntax
+		if (args.length < 2)
+		{
+			sess.sendResponse("501 Syntax: " + VERB + " mechanism [initial-response]");
+			return;
+		}
+
+		// Let's check if we support the required authentication mechanism
+		String mechanism = args[1];
+		if (!authFactory.getAuthenticationMechanisms().contains(mechanism.toUpperCase()))
+		{
+			sess.sendResponse("504 The requested authentication mechanism is not supported");
+			return;
+		}
 		// OK, let's go trough the authentication process.
-		// The authentication process may require a series of
-		// challenge-responses
 		try
-		{						
-			if (authenticating && commandString.trim().equals(AUTH_CANCEL_COMMAND))
-			{
-				// RFC 2554 explicitly states this:
-				context.sendResponse("501 Authentication canceled by client.");
-				return;
-			}
-			
-			StringBuilder response = new StringBuilder();
-			boolean finished = msgHandler.auth(commandString, response, context);
-			
-			context.getSession().setAuthenticating(!finished);
-			
-			if (!finished)
+		{
+			// The authentication process may require a series of challenge-responses
+			CRLFTerminatedReader reader = sess.getReader();
+
+			String response = authHandler.auth(commandString);
+			if (response != null)
 			{
 				// challenge-response iteration
-				context.sendResponse(response.toString());				
-				return;
+				sess.sendResponse(response);
 			}
 
-			context.sendResponse("235 Authentication successful.");
-			context.getSession().setAuthenticated(true);
+			while (response != null)
+			{
+				String clientInput = reader.readLine();
+				if (clientInput.trim().equals(AUTH_CANCEL_COMMAND))
+				{
+					// RFC 2554 explicitly states this:
+					sess.sendResponse("501 Authentication canceled by client.");
+					return;
+				}
+				else
+				{
+					response = authHandler.auth(clientInput);
+					if (response != null)
+					{
+						// challenge-response iteration
+						sess.sendResponse(response);
+					}
+				}
+			}
+
+			sess.sendResponse("235 Authentication successful.");
+			sess.setAuthenticationHandler(authHandler);
 		}
 		catch (RejectException authFailed)
 		{
-			context.sendResponse("535 Authentication failure.");
-			context.getSession().setAuthenticated(false);
-			context.getSession().setAuthenticating(false);
+			sess.sendResponse("535 Authentication failure.");
 		}
-	}
-
-	public MessageHandler getMessageHandler(ConnectionContext context)
-	{
-		return context.getSession().getMessageHandler();
 	}
 }

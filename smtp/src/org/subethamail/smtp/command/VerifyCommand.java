@@ -3,7 +3,7 @@ package org.subethamail.smtp.command;
 import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
-import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.Session;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -17,8 +17,8 @@ public class VerifyCommand extends BaseCommand
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, Session sess) throws IOException
 	{
-		context.sendResponse("502 VRFY command is disabled");
+		sess.sendResponse("502 VRFY command is disabled");
 	}
 }

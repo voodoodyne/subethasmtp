@@ -4,34 +4,38 @@ import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.CommandException;
-import org.subethamail.smtp.server.ConnectionContext;
+import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.SMTPServer;
 
 /**
+ * Provides a help <verb> system for people to interact with.
+ * 
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
- * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
+ * @author Scott Hernandez
  */
 public class HelpCommand extends BaseCommand
 {
 	public HelpCommand()
 	{
-		super("HELP", "The HELP command gives help info about the topic specified.\n"
-						+ "For a list of topics, type HELP by itself.", "[ <topic> ]");
+		super("HELP",
+				"The HELP command gives help info about the topic specified.\n"
+					+ "For a list of topics, type HELP by itself.",
+				"[ <topic> ]");
 	}
 
 	@Override
-	public void execute(String commandString, ConnectionContext context) throws IOException
+	public void execute(String commandString, Session context) throws IOException
 	{
 		String args = getArgPredicate(commandString);
 		if ("".equals(args))
 		{
-			context.sendResponse(getCommandMessage((SMTPServer)context.getSMTPServer()));
+			context.sendResponse(getCommandMessage((SMTPServer)context.getServer()));
 			return;
 		}
 		try
 		{
-			context.sendResponse(getHelp(args).toOutputString());
+			context.sendResponse(context.getServer().getCommandHandler().getHelp(args).toOutputString());
 		}
 		catch (CommandException e)
 		{
@@ -41,32 +45,29 @@ public class HelpCommand extends BaseCommand
 
 	private String getCommandMessage(SMTPServer server)
 	{
-		StringBuilder response = new StringBuilder();
-		response.append("214-This is the ");
-		response.append(server.getNameVersion());
-		response.append(" server running on ");
-		response.append(server.getHostName());
-		response.append("\r\n");
-		response.append("214-Topics:\r\n");
-		getFormattedTopicList(response);
-		response.append("214-For more info use \"HELP <topic>\".\r\n");
-		response.append("214-For more information about this server, visit:\r\n");
-		response.append("214-    http://subetha.tigris.org\r\n");
-		response.append("214-To report bugs in the implementation, send email to:\r\n");
-		response.append("214-    issues@subetha.tigris.org\r\n");
-		response.append("214-For local information send email to Postmaster at your site.\r\n");
-		response.append("214 End of HELP info");
-
-		return response.toString();
+		return "214-This is the "
+				+ server.getNameVersion()
+				+ " server running on "
+				+ server.getHostName()
+				+ "\r\n"
+				+ "214-Topics:\r\n"
+				+ getFormattedTopicList(server)
+				+ "214-For more info use \"HELP <topic>\".\r\n"
+				+ "214-For more information about this server, visit:\r\n"
+				+ "214-    http://subetha.tigris.org\r\n"
+				+ "214-To report bugs in the implementation, send email to:\r\n"
+				+ "214-    issues@subetha.tigris.org\r\n"
+				+ "214-For local information send email to Postmaster at your site.\r\n"
+				+ "214 End of HELP info";
 	}
 
-	protected void getFormattedTopicList(StringBuilder sb)
+	protected String getFormattedTopicList(SMTPServer server)
 	{
-		for (String key : super.getHelp().keySet())
-		{
-			sb.append("214-     ");
-			sb.append(key);
-			sb.append("\r\n");
-		}
+		StringBuilder sb = new StringBuilder();
+		for (String key : server.getCommandHandler().getVerbs())
+	    {
+	    	sb.append("214-     " + key + "\r\n");
+	    }
+		return sb.toString();
 	}
 }

@@ -48,10 +48,10 @@ google_color_url = "FF0000";
 	
 	<p>
 		<a href="http://en.wikipedia.org/wiki/Sub-Etha">SubEtha</a>SMTP is
-		a easy to understand Java library which provides a receptive 
+		an easy to understand Java library which provides a receptive 
 		SMTP server component. By plugging this component into your 
 		Java application, you can easily receive SMTP mail using a simple 
-		abstract Java interface.
+		but powerful abstract Java interface.
 	</p>
 	
 	<p>
@@ -123,34 +123,9 @@ google_color_url = "FF0000";
 	<p>
 		Ian McFarland contributed the first codebase to SubEtha Mail. Then, Jon Stevens
 		and Jeff Schnitzer re-wrote most of Ian's code into what we have today. Edouard De Oliveira
-		re-wrote the network layer to use <a href="http://mina.apache.org/">Apache Mina</a> to provide
-		new IO (NIO) support.
+		and Scott Hernandez have also made significant contributions.
 	</p>
 	
-	<h2>Project Status</h2>
-	
-	<p>
-		This application is as feature complete as we need it right now. 
-		There are zero known issues (and when they do crop up, we fix them 
-		as quickly as possible). It can be used in production environments today.
-		Enjoy. =)
-	</p>
-
-	<h2>User Stories</h2>
-	<p>
-		Open source always provides one great mystery. Who are your users? Many
-		people often enjoy our hard work for years and we have no idea who they
-		are or how they are using the software. So, we have created a page that
-		we hope you will help contribute to. It's called User Stories...
-	</p>
-	
-	<p>
-		On <a href="stories.html">this page</a>, we have a collection of people 
-		who have emailed us with a description of how they use SubEthaSMTP in 
-		their every day lives. We would love to hear from you as well. Send a message
-		to our <a href="project_lists.html">mailing list</a>.
-	</p>
-
 	<h2>How To Get It</h2>
 	
 	<p>
@@ -161,32 +136,80 @@ google_color_url = "FF0000";
 	<h2>How To Use It</h2>
 	
 	<p>
-		SubEthaSMTP and <a href="wiser.html">Wiser</a> depends on
-		commons-logging.jar, mail.jar/activation.jar. As of version 2.0,
-		this project also now depends on a few more jar files because we
-		use Mina as our underlying networking layer. These jars are:
-		mina-core.jar, mina-filter-ssl.jar, mina-integration-jmx.jar and
-		slf4j-api.jar. <strong>For your convenience, these jar files are
-		included in the distribution in the lib directory</strong>.
-	</p>
-
-	<p>
-		Using SubEthaSMTP is trivial:
+		SubEthaSMTP depends only on the <a href="http://www.slf4j.org/">SLF4J</a> logging library.
+		You will need <code>slf4j-api-X.X.X.jar</code> and one of the SLF4J binding jars such
+		as <code>slf4j-simple-X.X.X.jar</code>, both of which are included in our distribution.
+		Other binding jars (Log4J, java.util.logging, LogKit, etc) are available in the SLF4J distribution.
 	</p>
 	
-<pre>List&lt;MessageListener&gt; listeners = new ArrayList&lt;MessageListener&gt;();
-listeners.add(myListener);
-SMTPServer smtpServer = new SMTPServer(listeners);
+	<p>
+		Note that <a href="wiser.html">Wiser</a> has additional dependencies.
+	</p>
+	
+	<p>
+		SubEthaSMTP implements a powerful, low-level API that lets you handle incoming mail
+		and (optionally) authenticate clients.  It also provides several helper classes that
+		make life easier, if perhaps less flexible. 
+	</p>	
+
+	<h3>The Basic API</h3>
+
+<pre>SMTPServer smtpServer = new SMTPServer(myFactory);
+smtpServer.start();</pre>
+	
+<pre>public interface MessageHandlerFactory
+{
+	/**
+	 * Called for the exchange of a single message during an SMTP conversation.
+	 */
+	public MessageHandler create(MessageContext ctx);
+}
+
+public interface MessageHandler
+{
+	/**
+	 * Called first, after the MAIL FROM during a SMTP exchange.
+	 */
+	public void from(String from) throws RejectException;
+	
+	/**
+	 * Called once for every RCPT TO during a SMTP exchange.
+	 * This will occur after a from() call.
+	 */
+	public void recipient(String recipient) throws RejectException;
+	
+	/**
+	 * Called when the DATA part of the SMTP exchange begins.
+	 */
+	public void data(InputStream data) throws RejectException, TooMuchDataException, IOException;
+}</pre>
+
+	<p>
+		For every message delivery, SubEthaSMTP will call your Factory to create
+		a MessageHandler.  The from(), recipient(), and data() methods will be
+		called during each stage of the SMTP transaction.
+		If multiple messages are delivered within a single SMTP session (via the RSET
+		command), multiple MessageHandlers will be created.
+	</p>
+
+	<h3>Higher-Level Help</h3>
+	<p>
+		If you simply wish to receive one copy of each message/recipient combination,
+		the SimpleMessageListener will help you.
+	</p>
+	
+<pre>SMTPServer smtpServer = new SMTPServer(new SimpleMessageListenerAdapter(myListener));
 smtpServer.start();</pre>
 	
 	<p>
-		The MessageListener is easy to implement:
+		The SimpleMessageListener is easy to implement:
 	</p>
 	
-<pre>public interface MessageListener
+<pre>public interface SimpleMessageListener
 {
 	/**
-	 * Called once for every RCPT TO during a SMTP exchange.
+	 * Called once for every RCPT TO during a SMTP exchange.  Each accepted recipient
+	 * will result in a separate deliver() call later.
 	 */
 	public boolean accept(String from, String recipient);
 
@@ -203,70 +226,47 @@ smtpServer.start();</pre>
 		the SMTP server will deliver() an input stream of the message data.
 		Any recipients which are not accepted by a listener will be rejected.
 	</p>
+	
+	<p>
+		Beware, however, that delivering mail to multiple
+		recipients requires that the entire message be buffered as it is read by the
+		first consumer.  The buffer will start to memory, then switch to disk if the
+		size exceeds a threshold.
+	</p>
 
 	<p>
-		Take a look at the <a href="http://subethasmtp.tigris.org/source/browse/*checkout*/subethasmtp/trunk/smtp/src/org/subethamail/wiser/Wiser.java">source code</a> for <a href="wiser.html">Wiser</a> 
-		to see a simple example of how to implement MessageListener.deliver() so that 
+		Look at the
+		<a href="http://subethasmtp.tigris.org/source/browse/*checkout*/subethasmtp/trunk/smtp/src/org/subethamail/wiser/Wiser.java">source code</a>
+		for <a href="wiser.html">Wiser</a> 
+		to see a simple example of how to implement SimpleMessageListener.deliver() so that 
 		it receives a message and converts it into a JavaMail MimeMessage object.
-		This should make it very easy to add to your application the ability 
-		to receive and process email.
 	</p>
 	
-	<h2>Additional Server Control</h2>
-	
+	<h3>Authentication</h3>
 	<p>
-		As an alternative to the simple MessageListener interface, we have a slightly more 
-		complicated way of creating a SMTPServer that involves the creation of a class that
-		implements MessageHandler and another class that implements MessageHandlerFactory.
-		Take a look at the MessageListenerAdapter for an example of how to use these interfaces.
-		When using the SMTPServer with the MessageListener interface, it actually creates a
-		MessageListenerAdapter under the covers.
+		SubEtha SMTP supports the SMTP AUTH commands through a factory interface similar to
+		the MessageHandlerFactory.  For convenience, a pluggable authenticator implementation
+		that supports PLAIN and LOGIN is provided with the distribution.
 	</p>
 
+<pre>SMTPServer smtpServer = new SMTPServer(myMessageHandlerFactory);
+smtpServer.setAuthenticationHandlerFactory(new EasyAuthenticationHandlerFactory(myUsernamePasswordValidator));
+smtpServer.start();</pre>
+
 	<p>
-		SubEtha SMTP now supports the SMTP AUTH commands. PLAIN and LOGIN are included as part 
-		of the distribution. The implementation of AUTH is done with a pluggable implementation 
-		so that you can write your own backend authentication handler. Please see the 
-		org.tigris.smtp.auth package for more information. The unit tests also contain example 
-		usage.
+		If you do not explicitly set an AuthenticationHandlerFactory, SMTP AUTH will not
+		be advertised or supported.  See the javadocs for AuthenticationHandlerFactory for
+		more information.
 	</p>
 	
-	<h2>Performance and Security</h2>
-	
+	<h2>Threading</h2>
 	<p>
-		SubEthaSMTP is fully multithreaded. For the fastest possible networking, 
-		it uses <a href="http://mina.apache.org/">Apache Mina</a> to provide NIO based
-		stream handling. This should be one of the fastest Java SMTP receivers on the 
-		planet.
-	</p>
-	
-	<p>
-		SubEthaSMTP handles streams efficiently:
-	</p>
-	<ul>
-		<li>
-			If only one listener accept()s a message, the network
-			InputStream (filtered to remove SMTP protocol bits) is
-			handed to the listener.
-		</li>
-		<li>
-			If more than one listener accept()s a message, the
-			message data is first buffered.  The buffer will be
-			kept in RAM until the data reaches a certain size
-			(the default is 5 megs and is configurable by instantiating
-			your own MessageListenerAdapter or implemeting your own 
-			MessageHandlerFactory, then the buffer is moved to a 
-			temporary disk file. Each listener will be delivered 
-			a complete copy of the buffered message.
-		</li>
-	</ul>
-	
-	<p>
-		Java by it's nature should be immune to buffer-overflow attacks.
+		SubEthaSMTP is a multithreaded server.  You may change settings on a stopped server
+		(ie the # of simultaneous connections allowed) but not after calling start().  Each
+		SMTP connection will be serviced by a new thread.
 	</p>
 	
 	<h2>Support</h2>
-
 	<p>
 		If you have any bug reports, questions or comments about SubEtha SMTP, it's best that
 		you bring these issues up on the 
@@ -280,10 +280,6 @@ smtpServer.start();</pre>
 		For now, we have just focused on implementing just the minimal 
 		required aspects of <a href="http://rfc.net/rfc2821.html#s4.5.1" target="_new">RFC 2821</a>.
 		We also return SMTP status responses that mimic what Postfix returns.
-		However we do not directly support the 'postmaster' requirement of the 
-		RFC since we do not actually deliver mail locally. That's your job as 
-		the user of this library by implementing the MessageListener 
-		interface. =)
 	</p>
 	
 	<p>
