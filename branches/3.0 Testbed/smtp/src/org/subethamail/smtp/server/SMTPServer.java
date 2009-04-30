@@ -62,7 +62,7 @@ public class SMTPServer implements Runnable
 	private Thread serverThread;
 	private Watchdog watchdog;
 
-	private ThreadGroup connectionHanderGroup;
+	private ThreadGroup sessionGroup;
 
 	/** If true, TLS is not announced */
 	private boolean hideTLS = false;
@@ -111,7 +111,7 @@ public class SMTPServer implements Runnable
 
 		this.commandHandler = new CommandHandler();
 
-		this.connectionHanderGroup = new ThreadGroup(SMTPServer.class.getName() + " ConnectionHandler Group");
+		this.sessionGroup = new ThreadGroup(SMTPServer.class.getName() + " Session Group");
 	}
 
 	/** @return the host name that will be reported to SMTP clients */
@@ -206,12 +206,8 @@ public class SMTPServer implements Runnable
 		this.go = true;
 
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
-		// daemon threads do not keep the program from quitting;
-		// user threads keep the program from quitting.
-		// We want the serverThread to keep the program from quitting
-		// this.serverThread.setDaemon(true);
 
-		// Now call the serverThread.run() method
+		// Now this.run() will be called
 		this.serverThread.start();
 
 		this.watchdog = new Watchdog();
@@ -257,9 +253,8 @@ public class SMTPServer implements Runnable
 	protected void shutDownOpenConnections()
 	{
 		Thread[] groupThreads = new Thread[this.maxConnections];
-		ThreadGroup connectionGroup = this.getConnectionGroup();
 
-		connectionGroup.enumerate(groupThreads);
+		this.getSessionGroup().enumerate(groupThreads);
 		for (Thread thread : groupThreads)
 		{
 			if (thread instanceof Session)
@@ -313,8 +308,8 @@ public class SMTPServer implements Runnable
 		{
 			try
 			{
-				Session connectionHandler = new Session(this, this.serverSocket.accept());
-				connectionHandler.start();
+				Session sess = new Session(this, this.serverSocket.accept());
+				sess.start();
 			}
 			catch (IOException ioe)
 			{
@@ -384,14 +379,14 @@ public class SMTPServer implements Runnable
 		return this.commandHandler;
 	}
 
-	protected ThreadGroup getConnectionGroup()
+	protected ThreadGroup getSessionGroup()
 	{
-		return this.connectionHanderGroup;
+		return this.sessionGroup;
 	}
 
 	public int getNumberOfConnections()
 	{
-		return this.connectionHanderGroup.activeCount();
+		return this.sessionGroup.activeCount();
 	}
 
 	public boolean hasTooManyConnections()
@@ -495,7 +490,7 @@ public class SMTPServer implements Runnable
 			while (this.run)
 			{
 				Thread[] groupThreads = new Thread[SMTPServer.this.maxConnections];
-				ThreadGroup connectionGroup = SMTPServer.this.getConnectionGroup();	// from parent class
+				ThreadGroup connectionGroup = SMTPServer.this.getSessionGroup();	// from parent class
 				connectionGroup.enumerate(groupThreads);
 
 				for (Thread thread : groupThreads)

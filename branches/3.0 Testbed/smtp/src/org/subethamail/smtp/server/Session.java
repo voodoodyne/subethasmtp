@@ -59,7 +59,7 @@ public class Session extends Thread implements MessageContext
 	public Session(SMTPServer server, Socket socket)
 		throws IOException
 	{
-		super(server.getConnectionGroup(), Session.class.getName());
+		super(server.getSessionGroup(), Session.class.getName());
 		
 		this.server = server;
 
