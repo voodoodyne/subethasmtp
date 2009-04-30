@@ -57,10 +57,9 @@ public class SMTPServer implements Runnable
 	private CommandHandler commandHandler;
 
 	private ServerSocket serverSocket;
-	private boolean go = false;
+	private boolean shuttingDown;
 
 	private Thread serverThread;
-	private Watchdog watchdog;
 
 	private ThreadGroup sessionGroup;
 
@@ -157,7 +156,7 @@ public class SMTPServer implements Runnable
 	 */
 	public boolean isRunning()
 	{
-		return this.go;
+		return this.serverThread != null;
 	}
 
 	/**
@@ -190,6 +189,8 @@ public class SMTPServer implements Runnable
 	 */
 	public synchronized void start()
 	{
+		log.info("SMTP server starting");
+		
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
 
@@ -203,15 +204,12 @@ public class SMTPServer implements Runnable
 			throw new RuntimeException(e);
 		}
 
-		this.go = true;
-
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
 
+		this.shuttingDown = false;
+		
 		// Now this.run() will be called
 		this.serverThread.start();
-
-		this.watchdog = new Watchdog();
-		this.watchdog.start();
 	}
 
 	/**
@@ -219,40 +217,24 @@ public class SMTPServer implements Runnable
 	 */
 	public synchronized void stop()
 	{
-		// don't accept any more connections
-		this.go = false;
-
-		// kill the listening thread
-		this.serverThread = null;
-
-		// stop the watchdog
-		if (this.watchdog != null)
-		{
-			this.watchdog.quit();
-			this.watchdog = null;
-		}
-
+		log.info("SMTP server stopping");
+		
+		// First make sure we aren't accepting any new connections
+		this.stopServerThread();
+		
 		// Shut down any open connections.
-		this.shutDownOpenConnections();
-
-		// if the serverSocket is not null, force a socket close for good measure
-		try
-		{
-			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
-				this.serverSocket.close();
-		}
-		catch (IOException e)
-		{
-		}
+		this.stopAllSessions();
 	}
 
 	/**
-	 * Grabs all ThreadGroup instances of ConnectionHander's and attempts to close the
-	 * socket if it is still open.
+	 * Grabs all instances of Sessions and attempts to close the
+	 * socket if it is still open.  Note this must be called after
+	 * the main server socket is shut down, otherwise new sessions
+	 * could be created while we are shutting them down.
 	 */
-	protected void shutDownOpenConnections()
+	protected void stopAllSessions()
 	{
-		Thread[] groupThreads = new Thread[this.maxConnections];
+		Thread[] groupThreads = new Thread[this.getSessionGroup().activeCount()];
 
 		this.getSessionGroup().enumerate(groupThreads);
 		for (Thread thread : groupThreads)
@@ -260,25 +242,18 @@ public class SMTPServer implements Runnable
 			if (thread instanceof Session)
 			{
 				Session handler = (Session)thread;
-				try
-				{
-					handler.closeSocket();
-				}
-				catch (IOException e)
-				{
-				}
+				handler.quit();
 			}
 		}
 	}
-
+	
 	/**
 	 * Override this method if you want to create your own server sockets.
 	 * You must return a bound ServerSocket instance
 	 *
 	 * @throws IOException
 	 */
-	protected ServerSocket createServerSocket()
-		throws IOException
+	protected ServerSocket createServerSocket() throws IOException
 	{
 		InetSocketAddress isa;
 
@@ -298,45 +273,86 @@ public class SMTPServer implements Runnable
 
 		return serverSocket;
 	}
-
+	
 	/**
-	 * This method is called by this thread when it starts up.
+	 * Closes the serverSocket in an orderly way
 	 */
-	public void run()
+	protected void closeServerSocket()
 	{
-		while (this.go)
-		{
-			try
-			{
-				Session sess = new Session(this, this.serverSocket.accept());
-				sess.start();
-			}
-			catch (IOException ioe)
-			{
-				if (this.go)
-					log.error("Error accepting connections", ioe);
-			}
-		}
-
 		try
 		{
 			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
 				this.serverSocket.close();
 
-			log.info("SMTP Server socket shut down.");
+			log.debug("SMTP Server socket shut down");
 		}
 		catch (IOException e)
 		{
 			log.error("Failed to close server socket.", e);
 		}
+		
 		this.serverSocket = null;
 	}
 
+	/**
+	 * Shuts down the server thread and the associated server socket in an orderly fashion.
+	 */
+	protected void stopServerThread()
+	{
+		this.shuttingDown = true;
+		this.closeServerSocket();
+		
+		this.serverThread = null;
+	}
+
+	/**
+	 * This method is called by this thread when it starts up.  To safely cause this to
+	 * exit, call stopServerThread().
+	 */
+	public void run()
+	{
+		while (!this.shuttingDown)
+		{
+			// This deals with a race condition; a start followed by a quick stop
+			// that clears the serversocket in the key moments between the while loop
+			// check and the accept() call.  In that case, the socket will be invalid,
+			// but the accept() will throw an exception and we will be fine.
+			ServerSocket server;
+			synchronized(this) { server = this.serverSocket; }
+			
+			if (server != null)
+			{
+				try
+				{
+					Session sess = new Session(this, server.accept());
+					sess.start();
+				}
+				catch (IOException ioe)
+				{
+					if (!this.shuttingDown)
+						log.error("Error accepting connections", ioe);
+				}
+			}
+		}
+
+		// Normally we get here because we're shutting down and we've close()ed the
+		// serverSocket.  If some other IOException brought us here, let's make sure
+		// thing is shut down properly.
+		this.closeServerSocket();
+		
+		this.serverSocket = null;
+		this.serverThread = null;
+		
+		log.info("SMTP server stopped");
+	}
+
+	/** */
 	public String getName()
 	{
 		return "SubEthaSMTP";
 	}
 
+	/** */
 	public String getNameVersion()
 	{
 		return this.getName() + " " + Version.getSpecification();
@@ -458,60 +474,5 @@ public class SMTPServer implements Runnable
 	public void setHideTLS(boolean value)
 	{
 		this.hideTLS = value;
-	}
-
-	/**
-	 * A watchdog thread that makes sure that connections don't go stale. It
-	 * prevents someone from opening up MAX_CONNECTIONS to the server and
-	 * holding onto them for more than 1 minute.
-	 */
-	private class Watchdog extends Thread
-	{
-		private boolean run = true;
-
-		public Watchdog()
-		{
-			super(Watchdog.class.getName());
-
-			// We do not want the watchdog to keep the program from quitting
-			this.setDaemon(true);
-
-			this.setPriority(Thread.MAX_PRIORITY / 3);
-		}
-
-		public void quit()
-		{
-			this.run = false;
-		}
-
-		@Override
-		public void run()
-		{
-			while (this.run)
-			{
-				Thread[] groupThreads = new Thread[SMTPServer.this.maxConnections];
-				ThreadGroup connectionGroup = SMTPServer.this.getSessionGroup();	// from parent class
-				connectionGroup.enumerate(groupThreads);
-
-				for (Thread thread : groupThreads)
-				{
-					if ((thread instanceof Session) && thread.isAlive())
-					{
-						Session aThread = ((Session)thread);
-						aThread.checkForIdle();
-					}
-				}
-
-				try
-				{
-					// go to sleep for 10 seconds.
-					sleep(1000 * 10);
-				}
-				catch (InterruptedException e)
-				{
-					// ignore
-				}
-			}
-		}
 	}
 }

@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.SocketAddress;
+import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -12,7 +13,6 @@ import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.server.io.CRLFTerminatedReader;
-import org.subethamail.smtp.server.io.LastActiveInputStream;
 
 /**
  * The thread that handles a connection. This class
@@ -20,6 +20,7 @@ import org.subethamail.smtp.server.io.LastActiveInputStream;
  * CommandHandler.
  * 
  * @author Jon Stevens
+ * @author Jeff Schnitzer
  */
 public class Session extends Thread implements MessageContext
 {
@@ -28,16 +29,14 @@ public class Session extends Thread implements MessageContext
 	/** A link to our parent server */
 	private SMTPServer server;
 
-	/** When this goes true, the thread shuts down */
-	private boolean shutdown = false;
+	/** Set this true when doing an ordered shutdown */
+	private boolean quitting = false;
 
 	/** I/O to the client */
 	private Socket socket;
+	private InputStream input;
 	private CRLFTerminatedReader reader;
 	private PrintWriter writer;
-
-	/** Can be used to check for staleness */
-	private LastActiveInputStream input;
 
 	/** Might exist if the client has successfully authenticated */
 	private AuthenticationHandler authenticationHandler;
@@ -46,8 +45,8 @@ public class Session extends Thread implements MessageContext
 	private MessageHandler messageHandler;
 
 	/** Some state information */
-	private boolean hasMailFrom = false;
-	private int recipientCount = 0;
+	private boolean hasMailFrom;
+	private int recipientCount;
 
 	/**
 	 * Creates (but does not start) the thread object.
@@ -82,7 +81,6 @@ public class Session extends Thread implements MessageContext
 		if (log.isDebugEnabled())
 			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
 
-		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
 		try
 		{
 			if (this.server.hasTooManyConnections())
@@ -95,7 +93,10 @@ public class Session extends Thread implements MessageContext
 
 			this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getName());
 
-			while (!this.shutdown)
+			// Start with fresh message state
+			this.resetMessageState();
+			
+			while (!this.quitting)
 			{
 				try
 				{
@@ -111,6 +112,11 @@ public class Session extends Thread implements MessageContext
 
 					this.server.getCommandHandler().handleCommand(this, line);
 				}
+				catch (SocketTimeoutException ex)
+				{
+					this.sendResponse("421 Timeout waiting for data from client.");
+					return;
+				}
 				catch (CRLFTerminatedReader.TerminationException te)
 				{
 					String msg = "501 Syntax error at character position "
@@ -121,7 +127,7 @@ public class Session extends Thread implements MessageContext
 					this.sendResponse(msg);
 
 					// if people are screwing with things, close connection
-					break;
+					return;
 				}
 				catch (CRLFTerminatedReader.MaxLineLengthException mlle)
 				{
@@ -131,25 +137,25 @@ public class Session extends Thread implements MessageContext
 					this.sendResponse(msg);
 
 					// if people are screwing with things, close connection
-					break;
+					return;
 				}
 			}
 		}
 		catch (IOException e1)
 		{
-			try
+			if (!this.quitting)
 			{
-				// primarily if things fail during the MessageListener.deliver(), then try
-				// to send a temporary failure back so that the server will try to resend 
-				// the message later.
-				this.sendResponse("450 Problem attempting to execute commands. Please try again later.");
+				try
+				{
+					// Send a temporary failure back so that the server will try to resend 
+					// the message later.
+					this.sendResponse("450 Problem attempting to execute commands. Please try again later.");
+				}
+				catch (IOException e) {}
+				
+				if (log.isDebugEnabled())
+					log.warn("Exception during SMTP transaction", e1);
 			}
-			catch (IOException e)
-			{
-			}
-			
-			if (log.isDebugEnabled())
-				log.debug(e1.toString());
 		}
 		finally
 		{
@@ -188,9 +194,11 @@ public class Session extends Thread implements MessageContext
 	public void setSocket(Socket socket) throws IOException
 	{
 		this.socket = socket;
-		this.input = new LastActiveInputStream(this.socket.getInputStream());
+		this.input = this.socket.getInputStream();
 		this.reader = new CRLFTerminatedReader(this.input);
 		this.writer = new PrintWriter(this.socket.getOutputStream());
+
+		this.socket.setSoTimeout(this.server.getConnectionTimeout());	
 	}
 
 	/**
@@ -315,32 +323,7 @@ public class Session extends Thread implements MessageContext
 	 */
 	public void quit()
 	{
-		this.shutdown = true;
-	}
-	
-	/**
-	 * Call this from any thread (ie, the watchdog) to see if the connection is idle.
-	 * If so, the connection will be shut down.
-	 */
-	public void checkForIdle()
-	{
-		if (this.input.isWaitingLongerThan(this.server.getConnectionTimeout()))
-		{
-			try
-			{
-				try
-				{
-					this.sendResponse("421 Timeout waiting for data from client.");
-				}
-				finally
-				{
-					closeConnection();
-				}
-			}
-			catch (IOException ioe)
-			{
-				log.debug("Lost connection to client during timeout");
-			}
-		}
+		this.quitting = true;
+		this.closeConnection();
 	}
 }

@@ -1,8 +1,10 @@
 package org.subethamail.smtp.test;
 
-import java.util.Properties;
-
-import javax.mail.Session;
+import java.io.OutputStream;
+import java.io.OutputStreamWriter;
+import java.io.PrintWriter;
+import java.net.InetAddress;
+import java.net.Socket;
 
 import junit.framework.Test;
 import junit.framework.TestCase;
@@ -18,22 +20,17 @@ import org.subethamail.wiser.Wiser;
  * 
  * @author Jon Stevens
  */
-public class StartStopTest extends TestCase
+public class TimeoutTest extends TestCase
 {
 	/** */
 	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(StartStopTest.class);
+	private static Logger log = LoggerFactory.getLogger(TimeoutTest.class);
 
 	/** */
 	public static final int PORT = 2566;
 
 	/** */
-	protected Session session;
-
-	protected int counter = 0;
-
-	/** */
-	public StartStopTest(String name)
+	public TimeoutTest(String name)
 	{
 		super(name);
 	}
@@ -42,11 +39,6 @@ public class StartStopTest extends TestCase
 	protected void setUp() throws Exception
 	{
 		super.setUp();
-
-		Properties props = new Properties();
-		props.setProperty("mail.smtp.host", "localhost");
-		props.setProperty("mail.smtp.port", Integer.toString(PORT));
-		this.session = Session.getDefaultInstance(props);
 	}
 
 	/** */
@@ -55,33 +47,32 @@ public class StartStopTest extends TestCase
 		super.tearDown();
 	}
 
-	public void testMultipleStartStop() throws Exception
-	{
-		for (int i = 0; i < 10; i++)
-		{
-			startStop(i > 5);
-		}
-		assertEquals(counter, 10);
-	}
-
-	private void startStop(boolean pause) throws Exception
+	public void testTimeout() throws Exception
 	{
 		Wiser wiser = new Wiser();
 		wiser.setPort(PORT);
+		wiser.getServer().setConnectionTimeout(1000);
 
 		wiser.start();
 
-		if (pause)
-			Thread.sleep(1000);
+		Socket sock = new Socket(InetAddress.getLocalHost(), PORT);
+		OutputStream out = sock.getOutputStream();
+		PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
+		
+		writer.print("HELO foo\r\n");
+		assert(!writer.checkError());
+		
+		Thread.sleep(2000);
+		
+		writer.print("HELO bar\r\n");
+		assert(writer.checkError());
 		
 		wiser.stop();
-
-		counter++;
 	}
 
 	/** */
 	public static Test suite()
 	{
-		return new TestSuite(StartStopTest.class);
+		return new TestSuite(TimeoutTest.class);
 	}
 }
