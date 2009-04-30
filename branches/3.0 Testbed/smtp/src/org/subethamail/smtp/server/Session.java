@@ -104,7 +104,7 @@ public class Session extends Thread implements MessageContext
 					if (line == null)
 					{
 						log.debug("no more lines from client");
-						break;
+						return;
 					}
 
 					if (log.isDebugEnabled())

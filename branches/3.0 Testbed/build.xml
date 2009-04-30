@@ -131,6 +131,20 @@
 		</junit>
 	</target>
 	
+	<target name="practice" depends="rtest-jar">
+		<java classname="org.subethamail.smtp.test.util.Practice">
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}/smtp/">
+						<include name="*.jar" />
+				</fileset>
+				<fileset dir="${build.dir}/rtest/">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	
 	<target name="clean">
 		<delete dir="${build.dir}" />
 	</target>
