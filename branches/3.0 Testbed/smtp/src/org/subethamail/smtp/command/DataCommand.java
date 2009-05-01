@@ -51,6 +51,12 @@ public class DataCommand extends BaseCommand
 		try
 		{
 			sess.getMessageHandler().data(stream);
+			
+			// The consumer must consume all the data!  Otherwise the command parser
+			// will start to interpret the message data as commands.
+			if (stream.available() > 0)
+				throw new IllegalStateException("Unread client data left in stream");
+			
 			sess.sendResponse("250 Ok");
 		}
 		catch (RejectException ex)
