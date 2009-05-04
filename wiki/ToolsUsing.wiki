@@ -1,0 +1,4 @@
+#labels Featured
+= Tools using SubethaSMTP =
+  * tool 1
+  * tool 2
