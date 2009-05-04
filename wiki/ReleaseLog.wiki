@@ -1,0 +1,91 @@
+ 
+= SubethaSMTP Release Log =
+		
+== Changes ==
+3.0 - ?:
+  * 3.0 is a thorough refactoring based on the 1.2.1 codebase
+  * Removed MINA and NIO, returning to blocking I/O
+  * Redesigned Authentication API
+  * Moved MessageListener API into a helper package
+  * MessageHandlers are no longer recycled
+  * Better handling of idle connections
+  * Countless other changes
+				
+2.1 - July 11, 2008:
+  * Fix to ensure session is closed on QUIT command response
+  * Fix to close connections after QUIT for clients which don't auto close the session
+  * Announce TLS support patch
+  * small optimization for getAuthenticationMechanisms()
+  * catch exceptions so that all the shutdown methods get called if there is an error.
+  * Default MessageHandler implementation easily extendable or replaceable
+  * Modified to allow easier tweaking of the message handling
+  * Added default authentication handling / removed dummy message handling methods / added a private stream generator
+  * Replaced the old AuthLoginTest and AuthPlainTest classes
+  * Fix for encoding problems in junit classes src
+  * Fixed issue 8 : shutdown the thread pools to avoid unnecessary delays when server stopped
+  * Fixed max length to comply with RFC
+  * Added some encoding tests
+  * The new smtp decoder (enhanced performances, charset friendly)
+  * Fixed default charset and added some methods to further configure the core
+  * Added SMTP server configuration methods
+  * Updated mina libraries
+  * Modified ThreadFactory to setup debug friendly thread's names
+			 
+2.0.1 - January 25, 2008:
+  * Fix issue with Wiser not storing messages for re-use.
+  * Major refatoring to prevent OOM and improve perfs when dealing with large attached files
+  * Changed returned hostname to locahost when null
+  * Added -1 value to override limits on setMaxConnections() and setMaxRecipients()
+  * Fixed handling of auth mechanisms to require a configured auth mechanism when needed
+  * Fixed missing space char in extended HELO AUTH string
+  * Will prevent an SLF4J error on startup by linking the jdk14 logging facility
+			 
+2.0 - October 26, 2007:
+  * Use Apache Mina 1.1.3 for the networking layer. This make us Native IO (NIO) based. woot!
+  * Expose Mina JMX monitoring.
+  * Use slf4j instead of log4j for logging.
+  * Rewrite build system to be easier / cleaner / faster.
+  * Remove Maven pom.xml crap. Its a pile of dog shit. Don't ever use it.
+			 
+1.2.1 - June 28, 2007:
+  * Fix issue with requiring a HELO/EHLO after a RSET.
+  * Fix issue with canceling the sending of a message and not resetting internal state.
+  * Add more unit tests.
+				
+1.2 - March 1, 2007:
+  * Integrate retroweaver into the ant build system for JDK 1.4 compatibility.
+  * Change the license from LGPL to ASFL 2.0 to allow for wider adoption.
+  * New feature: Pluggable SMTP AUTH and related unit tests. Thanks Marco.
+  * Bug fix: Accept 'MAIL FROM: <>' and properly reject 'MAIL FROM:'.  Thanks to the report from David Haggerty.
+			 
+1.1 - Oct 5, 2006:
+  * Added new interface for instantiating the server (MessageHandler/MessageHandlerFactory). This allows much more control over the message handling. MessageListenerAdapter has been added as a backwards compatible way of creating the server instance.
+  * Removed SMTPServer.setDataDeferredSize() method. This is a non backwards compatible change, but we assume not many people were using it anyway. It's possible to still modify this setting by instantiating your own SMTPServer instance and passing the value into MessageListenerAdapter or your own MessageHandlerFactory.
+  * Rewrote unit tests to use a lightweight telnet client.
+  * Fixed some threading issues with fast start/stop'ing of the server.
+  * Added code to explicitly close any open Socket connections when the server is shut down.
+  * Now including the source code in the distribution for easy viewing.
+  * java -jar on the smtp/wiser jar files now returns it's version info.
+			 
+1.0.4 - Sep 12, 2006:
+  * Fixed issue where HELO/EHLO was required after a RSET.
+
+1.0.3 - Aug 20, 2006:
+  * Fixed issue with sockets not properly being closed.
+  * Made it possible to override the way that sockets are created.
+  * Fixed a bug when MAIL FROM is executed after RSET is called after DATA.
+  * Added support for TLS. Might have bugs.
+  * More maven POM cleanup.
+			 
+1.0.2 - Aug 2, 2006:
+  * Include www/wiser.html in the distribution.
+  * Add http://maven.apache.org/ pom.xml files.
+  * Documentation improvements.
+
+1.0.1 - Jul 5, 2006:
+  * Adding junit tests.
+  * SMTP spec compliance improvements.
+  * Fixes a problem with multiple recipients.
+			 
+1.0 - Jun 20, 2006:
+  * First public release.
