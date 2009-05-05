@@ -200,7 +200,7 @@
 			<fileset dir=".">
 				<include name="README.html" />
 				<include name="LICENSE.txt" />
-				<include name="www/**" />
+				<include name="docs/**" />
 			</fileset>
 		</copy>
 
