@@ -2,14 +2,17 @@
 #labels Featured
 		
 == Changes ==
-3.0 - ?:
+
+3.0 - May 5, 2009:
   * 3.0 is a thorough refactoring based on the 1.2.1 codebase
   * Removed MINA and NIO, returning to blocking I/O
   * Redesigned Authentication API
   * Moved MessageListener API into a helper package
+  * Timeouts are now controlled by sockets rather than a watchdog thread
   * MessageHandlers are no longer recycled
   * Better handling of idle connections
   * Countless other changes
+  * Moved project from tigris.org to code.google.com
 				
 2.1 - July 11, 2008:
   * Fix to ensure session is closed on QUIT command response
