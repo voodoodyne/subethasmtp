@@ -1,3 +1,4 @@
+#labels Featured
 = Wiser =
 
 Wiser is a smart replacement for [http://quintanasoft.com/dumbster/ Dumbster].
