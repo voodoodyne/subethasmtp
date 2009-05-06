@@ -1,0 +1,216 @@
+<?xml version="1.0"?>
+
+<!--
+	$Id$
+	$URL$
+
+	Top-level build file for SubEthaSMTP.  Imports build files for the
+	various modules, so this is the only entry point.
+	
+	To run the junit tests, you must copy junit.jar into ANT_HOME/lib.
+-->
+
+<project name="subethasmtp" default="smtp-jar" basedir=".">
+
+	<property name="name" value="${ant.project.name}" />
+	
+	<property file="user.properties" />
+	<property file="build.properties" />
+
+	<property name="build.dir" location="target" />
+	<property name="src.dir" location="src" />
+	<property name="lib.dir" location="lib" />
+	
+	<property name="build.debug" value="on" />
+	<property name="build.deprecation" value="on" />
+	<property name="build.encoding" value="UTF-8" />
+
+	<property name="retroweaver.version" value="2.0.7" />
+	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
+
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+		
+	<target name="smtp-jar" depends="init">
+		<mkdir dir="${build.dir}/classes" />
+
+		<javac srcdir="${src.dir}" destdir="${build.dir}/classes"
+			includeAntRuntime="false" debug="${build.debug}"
+			deprecation="${build.deprecation}"
+			encoding="${build.encoding}"
+			source="1.5"
+			target="1.5">
+			
+			<classpath refid="classpath"/>
+		</javac>
+		<jar jarfile="${build.dir}/${name}.jar">
+			<fileset dir="${build.dir}/classes"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+				<attribute name="Main-Class" value="org.subethamail.smtp.Version" />
+			</manifest>
+			
+			<exclude name="org/subethamail/smtp/test/**"/>
+		</jar>
+	</target>
+
+	<target name="smtp-jdk1.4-jar" depends="smtp-jar, rt-task">
+		<retroweaver inputjar="${build.dir}/${name}.jar" outputjar="${build.dir}/${name}-jdk1.4.jar" />
+	</target>
+
+	<target name="rtest-jar" depends="init, smtp-jar">
+		<jar jarfile="${build.dir}/rtest.jar">
+			<fileset dir="${build.dir}/classes"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+			</manifest>
+			
+			<include name="org/subethamail/smtp/test/**"/>
+		</jar>
+	</target>
+	
+	<target name="junit" depends="rtest-jar">
+		<junit printsummary="yes" showoutput="yes" fork="yes" maxmemory="512m">
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+
+			<formatter type="plain"/>
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.dir}/classes">
+					<include name="**/*Test.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="junit-special" depends="rtest-jar">
+		<junit printsummary="true" showoutput="true" fork="true" maxmemory="512m">
+			
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+			
+			<formatter type="plain" />
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.dir}/classes">
+					<include name="${junit.special.tests}" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="practice" depends="rtest-jar">
+		<java classname="org.subethamail.smtp.test.util.Practice">
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="input-version">
+		<input addproperty="build.version" message="Version number?" />
+	</target>
+	
+	<target name="formal-build" depends="clean, input-version, smtp-jar">
+	</target>
+	
+	<target name="formal-deploy" depends="formal-build, deploy">
+	</target>
+	
+	<target name="init">
+		<tstamp/>
+		<tstamp>
+			<format property="YEAR" pattern="yyyy" />
+		</tstamp>
+		<property name="build.version" value="UNVERSIONED"/>
+	</target>
+
+	<target name="javadoc" depends="init">
+		<javadoc
+			destdir="${build.dir}/javadoc"
+			packagenames="*"
+			classpathref="classpath"
+			author="true"
+			version="true"
+			Windowtitle="SubEthaSMTP Javadoc"
+		>
+			<fileset dir="${src.dir}"/>
+			<doctitle><![CDATA[<h1>SubEthaSMTP</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; ${YEAR} SubEthaSMTP. All Rights Reserved. Build version: ${build.version}</i>]]></bottom>
+		</javadoc>
+	</target>
+	
+	<target name="deploy" depends="smtp-jar">
+		<copy file="${build.dir}/${name}.jar" todir="../Subetha/core/lib" />
+	</target>
+	
+	<target name="dist" depends="clean, formal-build, javadoc">
+		<property name="build.dist.dir" location="${build.dir}/${name}-${build.version}"/>
+		<property name="build.dist.zip" location="${build.dir}/${name}-${build.version}.zip"/>
+
+		<antcall target="smtp-jdk1.4-jar" />
+
+		<copy todir="${build.dist.dir}">
+			<fileset dir="${build.dir}">
+				<include name="${name}.jar" />
+			</fileset>
+			
+			<fileset dir="${build.dir}">
+				<include name="javadoc/**" />
+			</fileset>
+
+			<fileset dir=".">
+				<include name="README.html" />
+				<include name="LICENSE.txt" />
+				<include name="build.xml" />
+				<include name="build.properties" />
+				<include name=".project" />
+				<include name=".classpath" />
+				
+				<include name="lib/**" />
+				<include name="src/**" />
+			</fileset>
+		</copy>
+
+		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
+		<basename property="build.dist.dir.basename" file="${build.dist.dir}" />
+		
+		<zip zipfile="${build.dist.zip}" basedir="${build.dist.dir.dirname}">
+			<include name="${build.dist.dir.basename}/**" />
+		</zip>
+	</target>
+
+	<target name="rt-task">
+		<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+		  <classpath>
+		    <fileset dir="${retroweaver.home}/lib" includes="**/*"/>
+		    <pathelement location="${retroweaver.home}/release/retroweaver-all-${retroweaver.version}.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+
+</project>
+
