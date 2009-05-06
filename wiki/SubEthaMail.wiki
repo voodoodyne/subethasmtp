@@ -1,0 +1,3 @@
+#summary The Sub Etha Mailing List Server
+
+The [http://code.google.com/p/subetha SubEtha Mailing List Server] is what inspired the creation of this library.
