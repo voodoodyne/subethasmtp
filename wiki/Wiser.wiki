@@ -1,0 +1,39 @@
+= Wiser =
+
+Wiser is a smart replacement for [http://quintanasoft.com/dumbster/ Dumbster].
+
+A few benefits of Wiser over Dumbster are:
+  * Very simple to use 
+  * Works properly with MacOS X
+  * Uses the JavaMail API
+  * Works properly with Unicode characters. Confirmed by lots of Japanese Wiser users.
+
+== How To Use It ==
+Include the following jars on your classpath:
+  * subethasmtp.jar
+  * slf4j-api-X.X.X.jar
+  * One of the slf4j connectors such as slf4j-simple-X.X.X.jar
+  * JavaMail (mail.jar and activation.jar)
+
+Using Wiser is trivial:
+{{{
+Wiser wiser = new Wiser();
+wiser.setPort(2500); // Default is 25
+wiser.start();
+}}}
+ 
+Now, use a mail client to send email to your Wiser server. To get your JavaMail messages out of the Wiser server, just use this code:
+
+{{{
+for (WiserMessage message : wiser.getMessages())
+{
+	String envelopeSender = message.getEnvelopeSender();
+	String envelopeReceiver = message.getEnvelopeReceiver();
+
+	MimeMessage mess = message.getMimeMessage();
+
+	// now do something fun!
+}
+}}}
+
+Note that Wiser is not thread-safe; start it, process your unit tests, then check for delivered messages.
