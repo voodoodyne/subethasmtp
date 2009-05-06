@@ -18,6 +18,7 @@
 	<property file="build.properties" />
 
 	<property name="build.dir" location="target" />
+	<property name="src.dir" location="src" />
 	<property name="lib.dir" location="lib" />
 	
 	<property name="build.debug" value="on" />
@@ -34,9 +35,9 @@
 	</path>
 		
 	<target name="smtp-jar" depends="init">
-		<mkdir dir="${build.dir}/smtp/classes" />
+		<mkdir dir="${build.dir}/classes" />
 
-		<javac srcdir="smtp/src" destdir="${build.dir}/smtp/classes"
+		<javac srcdir="${src.dir}" destdir="${build.dir}/classes"
 			includeAntRuntime="false" debug="${build.debug}"
 			deprecation="${build.deprecation}"
 			encoding="${build.encoding}"
@@ -45,44 +46,33 @@
 			
 			<classpath refid="classpath"/>
 		</javac>
-		<jar jarfile="${build.dir}/smtp/subethasmtp.jar">
-			<fileset dir="${build.dir}/smtp/classes"/>
+		<jar jarfile="${build.dir}/${name}.jar">
+			<fileset dir="${build.dir}/classes"/>
 			
 			<manifest>
 				<attribute name="Specification-Version" value="${build.version}" />
 				<attribute name="Implementation-Version" value="${TODAY}" />
 				<attribute name="Main-Class" value="org.subethamail.smtp.Version" />
 			</manifest>
+			
+			<exclude name="org/subethamail/smtp/test/**"/>
 		</jar>
 	</target>
 
 	<target name="smtp-jdk1.4-jar" depends="smtp-jar, rt-task">
-		<retroweaver inputjar="${build.dir}/smtp/subethasmtp.jar" outputjar="${build.dir}/smtp/subethasmtp-jdk1.4.jar" />
+		<retroweaver inputjar="${build.dir}/${name}.jar" outputjar="${build.dir}/${name}-jdk1.4.jar" />
 	</target>
 
 	<target name="rtest-jar" depends="init, smtp-jar">
-		<mkdir dir="${build.dir}/rtest/classes"/>
-		
-		<javac srcdir="rtest/src" destdir="${build.dir}/rtest/classes"
-			includeAntRuntime="false" debug="${build.debug}"
-			deprecation="${build.deprecation}"
-			encoding="${build.encoding}">
-			
-			<classpath refid="classpath" />
-			<classpath>
-				<fileset dir="${build.dir}/smtp/">
-						<include name="*.jar" />
-				</fileset>
-			</classpath>
-		</javac>
-
-		<jar jarfile="${build.dir}/rtest/rtest.jar">
-			<fileset dir="${build.dir}/rtest/classes"/>
+		<jar jarfile="${build.dir}/rtest.jar">
+			<fileset dir="${build.dir}/classes"/>
 			
 			<manifest>
 				<attribute name="Specification-Version" value="${build.version}" />
 				<attribute name="Implementation-Version" value="${TODAY}" />
 			</manifest>
+			
+			<include name="org/subethamail/smtp/test/**"/>
 		</jar>
 	</target>
 	
@@ -90,10 +80,7 @@
 		<junit printsummary="yes" showoutput="yes" fork="yes" maxmemory="512m">
 			<classpath refid="classpath" />
 			<classpath>
-				<fileset dir="${build.dir}/smtp/">
-						<include name="*.jar" />
-				</fileset>
-				<fileset dir="${build.dir}/rtest/">
+				<fileset dir="${build.dir}">
 						<include name="*.jar" />
 				</fileset>
 			</classpath>
@@ -101,7 +88,7 @@
 			<formatter type="plain"/>
 			
 			<batchtest todir="${build.dir}">
-				<fileset dir="${build.dir}/rtest/classes">
+				<fileset dir="${build.dir}/classes">
 					<include name="**/*Test.class"/>
 				</fileset>
 			</batchtest>
@@ -113,10 +100,7 @@
 			
 			<classpath refid="classpath" />
 			<classpath>
-				<fileset dir="${build.dir}/smtp/">
-						<include name="*.jar" />
-				</fileset>
-				<fileset dir="${build.dir}/rtest/">
+				<fileset dir="${build.dir}">
 						<include name="*.jar" />
 				</fileset>
 			</classpath>
@@ -124,7 +108,7 @@
 			<formatter type="plain" />
 			
 			<batchtest todir="${build.dir}">
-				<fileset dir="${build.dir}/rtest/classes">
+				<fileset dir="${build.dir}/classes">
 					<include name="${junit.special.tests}" />
 				</fileset>
 			</batchtest>
@@ -135,10 +119,7 @@
 		<java classname="org.subethamail.smtp.test.util.Practice">
 			<classpath refid="classpath" />
 			<classpath>
-				<fileset dir="${build.dir}/smtp/">
-						<include name="*.jar" />
-				</fileset>
-				<fileset dir="${build.dir}/rtest/">
+				<fileset dir="${build.dir}">
 						<include name="*.jar" />
 				</fileset>
 			</classpath>
@@ -176,23 +157,27 @@
 			version="true"
 			Windowtitle="SubEthaSMTP Javadoc"
 		>
-			<fileset dir="smtp/src"/>
+			<fileset dir="${src.dir}"/>
 			<doctitle><![CDATA[<h1>SubEthaSMTP</h1>]]></doctitle>
 			<bottom><![CDATA[<i>Copyright &#169; ${YEAR} SubEthaSMTP. All Rights Reserved. Build version: ${build.version}</i>]]></bottom>
 		</javadoc>
 	</target>
 	
 	<target name="deploy" depends="smtp-jar">
-		<copy file="${build.dir}/smtp/subethasmtp.jar" todir="../Subetha/core/lib" />
+		<copy file="${build.dir}/${name}.jar" todir="../Subetha/core/lib" />
 	</target>
 	
 	<target name="dist" depends="clean, formal-build, javadoc">
-		<property name="build.dist.dir" location="${build.dir}/${ant.project.name}-${build.version}"/>
-		<property name="build.dist.zip" location="${build.dir}/${ant.project.name}-${build.version}.zip"/>
+		<property name="build.dist.dir" location="${build.dir}/${name}-${build.version}"/>
+		<property name="build.dist.zip" location="${build.dir}/${name}-${build.version}.zip"/>
 
 		<antcall target="smtp-jdk1.4-jar" />
 
 		<copy todir="${build.dist.dir}">
+			<fileset dir="${build.dir}">
+				<include name="${name}.jar" />
+			</fileset>
+			
 			<fileset dir="${build.dir}">
 				<include name="javadoc/**" />
 			</fileset>
@@ -200,27 +185,16 @@
 			<fileset dir=".">
 				<include name="README.html" />
 				<include name="LICENSE.txt" />
+				<include name="build.xml" />
+				<include name="build.properties" />
+				<include name=".project" />
+				<include name=".classpath" />
+				
+				<include name="lib/**" />
+				<include name="src/**" />
 			</fileset>
 		</copy>
 
-		<copy todir="${build.dist.dir}">
-			<fileset dir="${build.dir}/smtp">
-				<include name="*.jar" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.dir}/lib">
-			<fileset dir="lib">
-				<include name="*.jar" />
-			</fileset>
-		</copy>
-
-		<copy todir="${build.dist.dir}/src/smtp">
-			<fileset dir="smtp/src">
-				<include name="org/**" />
-			</fileset>
-		</copy>
-		
 		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
 		<basename property="build.dist.dir.basename" file="${build.dist.dir}" />
 		
