@@ -175,7 +175,7 @@
 
 		<copy todir="${build.dist.dir}">
 			<fileset dir="${build.dir}">
-				<include name="${name}.jar" />
+				<include name="${name}*.jar" />
 			</fileset>
 			
 			<fileset dir="${build.dir}">
