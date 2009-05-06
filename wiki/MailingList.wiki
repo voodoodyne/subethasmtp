@@ -1,4 +1,5 @@
 #summary The mailing list for developers and users of SubEthaSMTP
+#labels Featured
 
 The mailing list for SubEthaSMTP, including a searchable archive, is run on SubEthaMail at this address:
 
