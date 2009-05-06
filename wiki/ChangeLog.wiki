@@ -1,5 +1,5 @@
+#summary Changes between releases
 #labels Featured
-= SubethaSMTP Release Log =
 		
 == Changes ==
 3.0 - ?:
