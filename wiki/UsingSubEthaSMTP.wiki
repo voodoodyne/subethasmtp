@@ -1,4 +1,6 @@
+#summary How to use the SubEtha SMTP library to receive mail
 #labels Featured
+
 SubEthaSMTP depends only on the [http://www.slf4j.org/ SLF4J] logging library. You will need  slf4j-api-X.X.X.jar and one of the SLF4J binding jars such as  slf4j-simple-X.X.X.jar, both of which are included in our distribution. Other binding jars (Log4J, java.util.logging, LogKit, etc) are available in the SLF4J distribution which you can download from their website.
 
 Note that [Wiser] has additional dependencies.
