@@ -39,7 +39,6 @@ import org.subethamail.smtp.server.SMTPServer;
 public class Wiser implements SimpleMessageListener
 {
 	/** */
-	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Wiser.class);
 
 	/** */
@@ -57,14 +56,6 @@ public class Wiser implements SimpleMessageListener
 	{
 		this.server = new SMTPServer(new SimpleMessageListenerAdapter(this));
 		this.server.setPort(25);
-	}
-
-	/**
-	 *
-	 */
-	public Wiser(boolean acceptAuth)
-	{
-
 	}
 
 	/**
@@ -107,12 +98,18 @@ public class Wiser implements SimpleMessageListener
 	/** Always accept everything */
 	public boolean accept(String from, String recipient)
 	{
+		if (log.isDebugEnabled())
+			log.debug("Accepting mail from " + from + " to " + recipient);
+		
 		return true;
 	}
 
 	/** Cache the messages in memory */
 	public void deliver(String from, String recipient, InputStream data) throws TooMuchDataException, IOException
 	{
+		if (log.isDebugEnabled())
+			log.debug("Delivering mail from " + from + " to " + recipient);
+		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		data = new BufferedInputStream(data);
 
@@ -122,9 +119,14 @@ public class Wiser implements SimpleMessageListener
 		{
 			out.write(current);
 		}
+		
+		byte[] bytes = out.toByteArray();
+		
+		if (log.isDebugEnabled())
+			log.debug("Creating message from data with " + bytes.length + " bytes");
 
 		// create a new WiserMessage.
-		this.messages.add(new WiserMessage(this, from, recipient, out.toByteArray()));
+		this.messages.add(new WiserMessage(this, from, recipient, bytes));
 	}
 
 	/**

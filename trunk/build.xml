@@ -164,7 +164,7 @@
 	</target>
 	
 	<target name="deploy" depends="smtp-jar">
-		<copy file="${build.dir}/${name}.jar" todir="../Subetha/core/lib" />
+		<copy file="${build.dir}/${name}.jar" todir="../Subetha/lib" />
 	</target>
 	
 	<target name="dist" depends="clean, formal-build, javadoc">
