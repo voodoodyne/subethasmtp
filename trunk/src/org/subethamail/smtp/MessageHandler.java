@@ -60,4 +60,10 @@ public interface MessageHandler
 	 * @throws IOException if there is an IO error reading the input data.
 	 */
 	public void data(InputStream data) throws RejectException, TooMuchDataException, IOException;
+	
+	/**
+	 * Called after all other methods are completed.  Note that this method
+	 * will be called even if the client never triggered any of the other callbacks.
+	 */
+	public void done();
 }

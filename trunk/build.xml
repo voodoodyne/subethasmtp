@@ -28,6 +28,8 @@
 	<property name="retroweaver.version" value="2.0.7" />
 	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
 
+	<property name="deploy.dir" location="../Subetha/lib" />
+	
 	<path id="classpath">
 		<fileset dir="${lib.dir}">
 			<include name="**/*.jar"/>
@@ -164,7 +166,7 @@
 	</target>
 	
 	<target name="deploy" depends="smtp-jar">
-		<copy file="${build.dir}/${name}.jar" todir="../Subetha/lib" />
+		<copy file="${build.dir}/${name}.jar" todir="${deploy.dir}" />
 	</target>
 	
 	<target name="dist" depends="clean, formal-build, javadoc">

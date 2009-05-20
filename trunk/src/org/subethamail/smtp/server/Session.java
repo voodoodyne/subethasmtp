@@ -160,6 +160,7 @@ public class Session extends Thread implements MessageContext
 		finally
 		{
 			this.closeConnection();
+			this.endMessageHandler();
 		}
 	}
 
@@ -313,9 +314,26 @@ public class Session extends Thread implements MessageContext
 	 */
 	public void resetMessageState()
 	{
+		this.endMessageHandler();
 		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
+	}
+	
+	/** Safely calls done() on a message hander, if one exists */
+	protected void endMessageHandler()
+	{
+		if (this.messageHandler != null)
+		{
+			try
+			{
+				this.messageHandler.done();
+			}
+			catch (Exception ex)
+			{
+				log.error("done() threw exception", ex);
+			}
+		}
 	}
 	
 	/**

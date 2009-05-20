@@ -91,4 +91,11 @@ public class DotUnstuffingInputStream extends FilterInputStream {
 
         return i;
     }
+
+    /**
+     * Provide access to the base input stream.
+     */
+    public InputStream getBaseStream() {
+    	return this.in;
+    }
 }

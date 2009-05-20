@@ -164,5 +164,10 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 				}
 			}
 		}
+
+		/** */
+		public void done()
+		{
+		}
 	}
 }

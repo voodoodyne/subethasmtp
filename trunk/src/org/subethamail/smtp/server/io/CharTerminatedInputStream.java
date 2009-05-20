@@ -159,4 +159,11 @@ public class CharTerminatedInputStream
         pos--;
         return b;
     }
+    
+    /**
+     * Provide access to the base input stream.
+     */
+    public InputStream getBaseStream() {
+    	return this.in;
+    }
 }
