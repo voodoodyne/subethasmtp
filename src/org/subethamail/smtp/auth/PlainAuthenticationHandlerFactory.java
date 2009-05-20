@@ -48,7 +48,10 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 	 */
 	class Handler implements AuthenticationHandler
 	{
-		/** */
+		private String username;
+		private String password;
+		
+		/* */
 		public String auth(String clientInput) throws RejectException
 		{
 			StringTokenizer stk = new StringTokenizer(clientInput);
@@ -88,8 +91,8 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 				}
 			}
 
-			String username = new String(decodedSecret, 1, usernameStop - 1);
-			String password = new String(decodedSecret, usernameStop + 1,
+			this.username = new String(decodedSecret, 1, usernameStop - 1);
+			this.password = new String(decodedSecret, usernameStop + 1,
 					decodedSecret.length - usernameStop - 1);
 			try
 			{
@@ -101,6 +104,13 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 			}
 			
 			return null;
+		}
+
+		/* */
+		@Override
+		public Object getIdentity()
+		{
+			return this.username;
 		}
 		
 	}
