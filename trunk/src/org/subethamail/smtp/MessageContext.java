@@ -27,9 +27,7 @@ public interface MessageContext
 	public SocketAddress getRemoteAddress();
 	
 	/**
-	 * @return the handler that was used to authenticate.  You will
-	 *  probably want to upcast this object to the actual implementation
-	 *  to pull out information like user identity. 
+	 * @return the handler instance that was used to authenticate.
 	 */
 	public AuthenticationHandler getAuthenticationHandler();
 }
