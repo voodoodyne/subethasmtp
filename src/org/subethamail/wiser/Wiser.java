@@ -49,15 +49,21 @@ public class Wiser implements SimpleMessageListener
 
 	/**
 	 * Create a new SMTP server with this class as the listener.
-	 * The default port is set to 25. Call setPort()/setHostname() before
+	 * The default port is 25. Call setPort()/setHostname() before
 	 * calling start().
 	 */
 	public Wiser()
 	{
 		this.server = new SMTPServer(new SimpleMessageListenerAdapter(this));
-		this.server.setPort(25);
 	}
 
+	/** Convenience constructor */
+	public Wiser(int port)
+	{
+		this();
+		this.setPort(port);
+	}
+	
 	/**
 	 * The port that the server should listen on.
 	 * @param port
