@@ -51,7 +51,8 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 		private String username;
 		private String password;
 		
-		/** */
+		/* */
+		@Override
 		public String auth(String clientInput) throws RejectException
 		{
 			StringTokenizer stk = new StringTokenizer(clientInput);
@@ -105,6 +106,13 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 			}
 			
 			return null;
+		}
+
+		/* */
+		@Override
+		public Object getIdentity()
+		{
+			return this.username;
 		}
 	}
 }

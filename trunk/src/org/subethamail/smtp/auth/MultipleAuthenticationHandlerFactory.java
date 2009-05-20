@@ -71,7 +71,7 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 	{
 		AuthenticationHandler active;
 		
-		/** */
+		/* */
 		public String auth(String clientInput) throws RejectException
 		{
 			if (this.active == null)
@@ -91,6 +91,13 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 			}
 			
 			return this.active.auth(clientInput);
+		}
+
+		/* */
+		@Override
+		public Object getIdentity()
+		{
+			return this.active.getIdentity();
 		}
 	}
 }
