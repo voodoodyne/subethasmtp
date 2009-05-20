@@ -65,6 +65,23 @@
 		<retroweaver inputjar="${build.dir}/${name}.jar" outputjar="${build.dir}/${name}-jdk1.4.jar" />
 	</target>
 
+	<target name="smtp-assembly" depends="smtp-jar">
+		<property name="ikvm.dir" value="/dotnet/ikvm-0.38.0.2"/>
+		
+		<taskdef name="ikvmc" classname="net.ikvm.ant.IkvmcTask"/>
+		
+		<ikvmc target="library" out="${build.dir}/${name}.dll" home="${ikvm.dir}" debug="true">
+			<fileset dir="${build.dir}">
+				<include name="${name}.jar"/>
+			</fileset>
+			
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar"/>
+				<exclude name="activation.jar"/>
+			</fileset>
+		</ikvmc>
+	</target>
+
 	<target name="rtest-jar" depends="init, smtp-jar">
 		<jar jarfile="${build.dir}/rtest.jar">
 			<fileset dir="${build.dir}/classes"/>
