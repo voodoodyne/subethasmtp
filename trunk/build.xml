@@ -10,7 +10,7 @@
 	To run the junit tests, you must copy junit.jar into ANT_HOME/lib.
 -->
 
-<project name="subethasmtp" default="smtp-jar" basedir=".">
+<project name="subethasmtp" default="jar" basedir=".">
 
 	<property name="name" value="${ant.project.name}" />
 	
@@ -36,7 +36,7 @@
 		</fileset>
 	</path>
 		
-	<target name="smtp-jar" depends="init">
+	<target name="jar" depends="init">
 		<mkdir dir="${build.dir}/classes" />
 
 		<javac srcdir="${src.dir}" destdir="${build.dir}/classes"
@@ -61,14 +61,14 @@
 		</jar>
 	</target>
 
-	<target name="smtp-jdk1.4-jar" depends="smtp-jar, rt-task">
+	<target name="smtp-jdk1.4-jar" depends="jar, rt-task">
 		<retroweaver inputjar="${build.dir}/${name}.jar" outputjar="${build.dir}/${name}-jdk1.4.jar" />
 	</target>
 
-	<target name="smtp-assembly" depends="smtp-jar">
+	<target name="assembly" depends="jar">
 		<property name="ikvm.dir" value="/dotnet/ikvm-0.38.0.2"/>
 		
-		<taskdef name="ikvmc" classname="net.ikvm.ant.IkvmcTask"/>
+		<taskdef name="ikvmc" classname="net.ikvm.ant.IkvmcTask" classpathref="classpath"/>
 		
 		<ikvmc target="library" out="${build.dir}/${name}.dll" home="${ikvm.dir}" debug="true">
 			<fileset dir="${build.dir}">
@@ -82,7 +82,7 @@
 		</ikvmc>
 	</target>
 
-	<target name="rtest-jar" depends="init, smtp-jar">
+	<target name="rtest-jar" depends="init, jar">
 		<jar jarfile="${build.dir}/rtest.jar">
 			<fileset dir="${build.dir}/classes"/>
 			
@@ -153,7 +153,7 @@
 		<input addproperty="build.version" message="Version number?" />
 	</target>
 	
-	<target name="formal-build" depends="clean, input-version, smtp-jar">
+	<target name="formal-build" depends="clean, input-version, jar">
 	</target>
 	
 	<target name="formal-deploy" depends="formal-build, deploy">
@@ -182,7 +182,7 @@
 		</javadoc>
 	</target>
 	
-	<target name="deploy" depends="smtp-jar">
+	<target name="deploy" depends="jar">
 		<copy file="${build.dir}/${name}.jar" todir="${deploy.dir}" />
 	</target>
 	
