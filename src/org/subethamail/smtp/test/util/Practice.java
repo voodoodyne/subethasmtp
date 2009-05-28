@@ -1,5 +1,12 @@
 package org.subethamail.smtp.test.util;
 
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.PrintStream;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
@@ -27,14 +34,27 @@ public class Practice
 
 		wiser.start();
 
-		char ch;
+		String line;
+		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
+		
 		do
 		{
-			ch = (char)System.in.read();
-			if (ch == ' ')
+			line = in.readLine();
+			line = line.trim();
+			
+			if ("dump".equals(line));
 				wiser.dumpMessages(System.out);
+				
+			if (line.startsWith("dump "))
+			{
+				line = line.substring("dump ".length());
+				File f = new File(line);
+				OutputStream out = new FileOutputStream(f);
+				wiser.dumpMessages(new PrintStream(out));
+				out.close();
+			}
 		}
-		while (ch != 'q');
+		while (!"quit".equals(line));
 		
 		wiser.stop();
 	}
