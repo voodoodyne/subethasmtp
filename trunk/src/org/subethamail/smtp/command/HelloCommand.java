@@ -28,6 +28,8 @@ public class HelloCommand extends BaseCommand
 			return;
 		}
 		
+		sess.setHelo(args[1]);
+		
 		sess.sendResponse("250 " + sess.getServer().getHostName());
 	}
 }

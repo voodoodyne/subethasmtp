@@ -30,6 +30,8 @@ public class EhloCommand extends BaseCommand
 			sess.sendResponse("501 Syntax: EHLO hostname");
 			return;
 		}
+		
+		sess.setHelo(args[1]);
 
 //		postfix returns...
 //		250-server.host.name

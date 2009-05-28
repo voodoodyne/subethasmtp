@@ -31,6 +31,8 @@ public class Practice
 		do
 		{
 			ch = (char)System.in.read();
+			if (ch == ' ')
+				wiser.dumpMessages(System.out);
 		}
 		while (ch != 'q');
 		
