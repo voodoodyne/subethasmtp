@@ -9,6 +9,7 @@ import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
 import org.subethamail.smtp.server.io.CharTerminatedInputStream;
 import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
+import org.subethamail.smtp.server.io.ReceivedHeaderStream;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -47,6 +48,7 @@ public class DataCommand extends BaseCommand
 		stream = new BufferedInputStream(stream, BUFFER_SIZE);
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
+		stream = new ReceivedHeaderStream(stream, sess.getHelo(), sess.getRemoteAddress().getAddress(), sess.getServer().getHostName());
 
 		try
 		{

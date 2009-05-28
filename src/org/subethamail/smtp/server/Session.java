@@ -3,8 +3,8 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
@@ -45,6 +45,7 @@ public class Session extends Thread implements MessageContext
 	private MessageHandler messageHandler;
 
 	/** Some state information */
+	private String helo;
 	private boolean hasMailFrom;
 	private int recipientCount;
 
@@ -247,9 +248,9 @@ public class Session extends Thread implements MessageContext
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
 	 */
-	public SocketAddress getRemoteAddress()
+	public InetSocketAddress getRemoteAddress()
 	{
-		return this.socket.getRemoteSocketAddress();
+		return (InetSocketAddress)this.socket.getRemoteSocketAddress();
 	}
 
 	/* (non-Javadoc)
@@ -269,6 +270,16 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/** Simple state */
+	public String getHelo()
+	{
+		return this.helo;
+	}
+	
+	public void setHelo(String value)
+	{
+		this.helo = value;
+	}
+	
 	public boolean getHasMailFrom()
 	{
 		return this.hasMailFrom;
@@ -316,6 +327,7 @@ public class Session extends Thread implements MessageContext
 	{
 		this.endMessageHandler();
 		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
+		this.helo = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
 	}

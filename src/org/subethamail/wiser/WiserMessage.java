@@ -1,6 +1,7 @@
 package org.subethamail.wiser;
 
 import java.io.ByteArrayInputStream;
+import java.io.PrintStream;
 
 import javax.mail.MessagingException;
 import javax.mail.internet.MimeMessage;
@@ -57,5 +58,22 @@ public class WiserMessage
 	public String getEnvelopeSender()
 	{
 		return this.envelopeSender;
+	}
+	
+	/**
+	 * Dumps the rough contents of the message for debugging purposes
+	 */
+	public void dumpMessage(PrintStream out) throws MessagingException
+	{
+		out.println("===== Dumping message =====");
+		
+		out.println("Envelope sender: " + this.getEnvelopeSender());
+		out.println("Envelope recipient: " + this.getEnvelopeReceiver());
+
+		// It should all be convertible with ascii or utf8
+		String content = new String(this.getData());
+		out.println(content);
+		
+		out.println("===== End message dump =====");
 	}
 }

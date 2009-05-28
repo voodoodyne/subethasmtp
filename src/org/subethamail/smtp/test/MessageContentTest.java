@@ -77,6 +77,24 @@ public class MessageContentTest extends TestCase
 	}
 	
 	/** */
+	public void testReceivedHeader() throws Exception
+	{
+		MimeMessage message = new MimeMessage(this.session);
+		message.addRecipient(Message.RecipientType.TO, new InternetAddress("anyone@anywhere.com"));
+		message.setFrom(new InternetAddress("someone@somewhereelse.com"));
+		message.setSubject("barf");
+		message.setText("body");
+
+		Transport.send(message);
+
+		assertEquals(1, this.wiser.getMessages().size());
+		
+		String[] receivedHeaders = this.wiser.getMessages().get(0).getMimeMessage().getHeader("Received");
+		
+		assertEquals(1, receivedHeaders.length);
+	}
+
+	/** */
 	public void testMultipleRecipients() throws Exception
 	{
 		MimeMessage message = new MimeMessage(this.session);

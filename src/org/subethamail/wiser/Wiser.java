@@ -9,11 +9,13 @@ import java.io.BufferedInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.PrintStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Properties;
 
+import javax.mail.MessagingException;
 import javax.mail.Session;
 
 import org.slf4j.Logger;
@@ -157,5 +159,18 @@ public class Wiser implements SimpleMessageListener
 	public SMTPServer getServer()
 	{
 		return this.server;
+	}
+	
+	/**
+	 * For debugging purposes, dumps a rough outline of the messages to the output stream.
+	 */
+	public void dumpMessages(PrintStream out) throws MessagingException
+	{
+		out.println("----- Start printing messages -----");
+		
+		for (WiserMessage wmsg: this.getMessages())
+			wmsg.dumpMessage(out);
+		
+		out.println("----- End printing messages -----");
 	}
 }
