@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
-import org.subethamail.smtp.server.io.CRLFTerminatedReader;
+import org.subethamail.smtp.io.CRLFTerminatedReader;
 
 /**
  * The thread that handles a connection. This class

@@ -1,7 +1,7 @@
 /*
  * 
  */
-package org.subethamail.smtp.server.io;
+package org.subethamail.smtp.io;
 
 import java.io.ByteArrayInputStream;
 import java.io.FilterInputStream;

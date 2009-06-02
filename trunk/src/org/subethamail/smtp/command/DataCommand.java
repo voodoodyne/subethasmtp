@@ -5,11 +5,11 @@ import java.io.IOException;
 import java.io.InputStream;
 
 import org.subethamail.smtp.RejectException;
+import org.subethamail.smtp.io.CharTerminatedInputStream;
+import org.subethamail.smtp.io.DotUnstuffingInputStream;
+import org.subethamail.smtp.io.ReceivedHeaderStream;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
-import org.subethamail.smtp.server.io.CharTerminatedInputStream;
-import org.subethamail.smtp.server.io.DotUnstuffingInputStream;
-import org.subethamail.smtp.server.io.ReceivedHeaderStream;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;

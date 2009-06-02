@@ -5,9 +5,9 @@ import java.io.IOException;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.RejectException;
+import org.subethamail.smtp.io.CRLFTerminatedReader;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
-import org.subethamail.smtp.server.io.CRLFTerminatedReader;
 
 /**
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
