@@ -1,4 +1,4 @@
-package org.subethamail.smtp.server.io;
+package org.subethamail.smtp.io;
 
 /***********************************************************************
  * Copyright (c) 2000-2006 The Apache Software Foundation.             *
