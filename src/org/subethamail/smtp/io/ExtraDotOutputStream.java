@@ -43,7 +43,7 @@ public class ExtraDotOutputStream extends CRLFOutputStream {
      * Overrides super writeChunk in order to add a "." if the previous chunk ended with
      * a new line and a new chunk starts with "."
      * 
-     * @see org.apache.james.util.stream.CRLFOutputStream#writeChunk(byte[], int, int)
+     * @see CRLFOutputStream#writeChunk(byte[], int, int)
      */
     protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
         if (length > 0 && buffer[offset] == '.' && startOfLine) {
