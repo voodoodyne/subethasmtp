@@ -136,7 +136,7 @@ public class SMTPClient
 	 * be appended to the message.
 	 * 
 	 * @param msg should not have any newlines
-	 * @returns the response from the server
+	 * @return the response from the server
 	 */
 	public Response sendReceive(String msg) throws IOException
 	{

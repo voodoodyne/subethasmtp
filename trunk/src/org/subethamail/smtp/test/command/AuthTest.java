@@ -1,7 +1,7 @@
 package org.subethamail.smtp.test.command;
 
-import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.EasyAuthenticationHandlerFactory;
+import org.subethamail.smtp.auth.LoginFailedException;
 import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.test.util.Client;
 import org.subethamail.smtp.test.util.ServerTestCase;
@@ -74,7 +74,7 @@ public class AuthTest extends ServerTestCase
 	 * <li>User issues another AUTH command</li>
 	 * <li>We expect an error message</li>
 	 * </ol>
-	 * {@link org.subethamail.smtp.command.AuthCommand#execute(java.lang.String, org.subethamail.smtp.server.ConnectionContext)}.
+	 * {@link org.subethamail.smtp.command.AuthCommand#execute(java.lang.String, org.subethamail.smtp.server.Session)}.
 	 */
 	public void testAuthPlain() throws Exception
 	{
@@ -112,7 +112,7 @@ public class AuthTest extends ServerTestCase
 	 * <li>User issues another AUTH command</li>
 	 * <li>We expect an error message</li>
 	 * </ol>
-	 * {@link org.subethamail.smtp.command.AuthCommand#execute(java.lang.String, org.subethamail.smtp.server.ConnectionContext)}.
+	 * {@link org.subethamail.smtp.command.AuthCommand#execute(java.lang.String, org.subethamail.smtp.server.Session)}.
 	 */
 	public void testAuthLogin() throws Exception
 	{
