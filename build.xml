@@ -23,12 +23,26 @@
 	
 	<property name="build.debug" value="on" />
 	<property name="build.deprecation" value="on" />
-	<property name="build.encoding" value="UTF-8" />
+
+	<property name="docs.dir" value="${build.dir}/docs" />
+	
+	<property name="ant.build.javac.target" value="1.6" />
+	<property name="ant.build.javac.source" value="1.6" />
+	<property name="ant.build.javac.encoding" value="UTF-8" />
 
 	<property name="retroweaver.version" value="2.0.7" />
 	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
 
 	<property name="deploy.dir" location="../Subetha/lib" />
+
+	<typedef resource="com/googlecode/svntask/svntask.xml">
+		<classpath>
+			<fileset dir="${lib.dir}">
+				<include name="**/svnkit.jar"/>
+				<include name="**/svntask.jar"/>
+			</fileset>
+		</classpath>
+	</typedef>
 	
 	<path id="classpath">
 		<fileset dir="${lib.dir}">
@@ -41,10 +55,7 @@
 
 		<javac srcdir="${src.dir}" destdir="${build.dir}/classes"
 			includeAntRuntime="false" debug="${build.debug}"
-			deprecation="${build.deprecation}"
-			encoding="${build.encoding}"
-			source="1.5"
-			target="1.5">
+			deprecation="${build.deprecation}">
 			
 			<classpath refid="classpath"/>
 		</javac>
@@ -185,8 +196,40 @@
 	<target name="deploy" depends="jar">
 		<copy file="${build.dir}/${name}.jar" todir="${deploy.dir}" />
 	</target>
-	
-	<target name="dist" depends="clean, formal-build, javadoc">
+
+	<target name="build-docs" description="downloads docs from wiki and processes them into the build/docs dir">
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="classpath"/>
+		
+		<property name="gc.name" value="subethasmtp"/>
+		
+		<property name="wiki.baseurl" value="http://code.google.com/p/${gc.name}/wiki"/>
+				
+		<mkdir dir="${docs.dir}"/>
+		
+		<svn><ls repository="http://${gc.name}.googlecode.com/svn" path="wiki" filterType="file" filterContains=".wiki"/></svn>
+		<propertyregex property="wiki.pages" input="${svn.ls}" regexp="\.wiki" replace=""/> 
+		<echo message="Getting wiki pages: ${wiki.pages}"/>
+		
+		<!-- Get files from wiki-->
+		<for list="${wiki.pages}" param="wiki.page" parallel="yes">
+		  <sequential>
+			<get dest="${docs.dir}/@{wiki.page}.html" src="${wiki.baseurl}/@{wiki.page}?show=content"/>
+		  </sequential>
+		</for>
+		
+		<!-- Replace links in files -->
+		<for list="${wiki.pages}" param="wiki.page">
+		  <sequential>
+			<replace dir="${docs.dir}" token="/p/${gc.name}/wiki/${wiki.page}" value="@{wiki.page}.html"/>
+		  </sequential>
+		</for>
+		
+		<!-- link back to the wiki, if we haven't downloaded the content -->
+		<replace dir="${docs.dir}" token="/p/${gc.name}/wiki" value="${wiki.baseurl}"/>
+		
+	</target>
+
+	<target name="dist" depends="clean, formal-build, build-docs, javadoc">
 		<property name="build.dist.dir" location="${build.dir}/${name}-${build.version}"/>
 		<property name="build.dist.zip" location="${build.dir}/${name}-${build.version}.zip"/>
 
@@ -199,6 +242,10 @@
 			
 			<fileset dir="${build.dir}">
 				<include name="javadoc/**" />
+			</fileset>
+
+			<fileset dir="${build.dir}">
+				<include name="docs/**" />
 			</fileset>
 
 			<fileset dir=".">
@@ -232,4 +279,3 @@
 	</target>
 
 </project>
-
