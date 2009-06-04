@@ -17,7 +17,13 @@ public class RejectException extends Exception
 	/** */
 	public RejectException()
 	{
-		this(554, "Transaction failed");
+		this("Transaction failed");
+	}
+
+	/** */
+	public RejectException(String message)
+	{
+		this(554, message);
 	}
 
 	/** */
