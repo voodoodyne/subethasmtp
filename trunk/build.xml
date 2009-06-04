@@ -59,7 +59,8 @@
 			
 			<classpath refid="classpath"/>
 		</javac>
-		<jar jarfile="${build.dir}/${name}.jar">
+		
+		<jar jarfile="${build.dir}/${name}-${build.version}.jar">
 			<fileset dir="${build.dir}/classes"/>
 			
 			<manifest>
@@ -73,7 +74,7 @@
 	</target>
 
 	<target name="smtp-jdk1.4-jar" depends="jar, rt-task">
-		<retroweaver inputjar="${build.dir}/${name}.jar" outputjar="${build.dir}/${name}-jdk1.4.jar" />
+		<retroweaver inputjar="${build.dir}/${name}-${build.version}.jar" outputjar="${build.dir}/${name}-${build.version}-jdk1.4.jar" />
 	</target>
 
 	<target name="assembly" depends="jar">
@@ -194,7 +195,7 @@
 	</target>
 	
 	<target name="deploy" depends="jar">
-		<copy file="${build.dir}/${name}.jar" todir="${deploy.dir}" />
+		<copy file="${build.dir}/${name}-${build.version}.jar" todir="${deploy.dir}" />
 	</target>
 
 	<target name="build-docs" description="downloads docs from wiki and processes them into the build/docs dir">
