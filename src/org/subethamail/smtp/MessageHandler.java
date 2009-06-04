@@ -49,7 +49,8 @@ public interface MessageHandler
 	 * Called when the DATA part of the SMTP exchange begins.  This
 	 * will occur after all recipient() calls are complete.
 	 * 
-	 * Note: If you do not throw an exception, YOU MUST READ ALL THE DATA.
+	 * Note: If you do not read all the data, it will be read for you
+	 * after this method completes.
 	 *
 	 * @param data will be the smtp data stream, stripped of any extra '.' chars.  The
 	 * 			data stream will be valid only for the duration of the call.
