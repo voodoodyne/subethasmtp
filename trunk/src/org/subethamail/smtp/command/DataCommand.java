@@ -54,10 +54,12 @@ public class DataCommand extends BaseCommand
 		{
 			sess.getMessageHandler().data(stream);
 			
-			// The consumer must consume all the data!  Otherwise the command parser
-			// will start to interpret the message data as commands.
-			if (stream.available() > 0)
-				throw new IllegalStateException("Unread client data left in stream");
+			// Just in case the handler didn't consume all the data, we might as well
+			// suck it up so it doesn't pollute further exchanges.  This code used to
+			// throw an exception, but this seems an arbitrary part of the contract that
+			// we might as well relax.
+			while (stream.available() > 0)
+				stream.read();
 			
 			sess.sendResponse("250 Ok");
 		}
