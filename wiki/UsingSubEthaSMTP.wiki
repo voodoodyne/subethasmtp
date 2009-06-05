@@ -94,3 +94,7 @@ If you do not explicitly set an AuthenticationHandlerFactory, SMTP AUTH will not
 == Threading ==
 
 SubEthaSMTP is a multithreaded server.  You may change settings on a stopped server (ie the # of simultaneous connections allowed) but not after calling start().  Each SMTP connection will be serviced by a new thread.
+
+== Using Port 25 on Unix ==
+
+On unix, it is possible to run SubEthatSMTP on port 25 without running the JVM as root. Please see the iptables/ipfw instructions here: [http://code.google.com/p/subetha/wiki/UsingPort25 UsingPort25]
