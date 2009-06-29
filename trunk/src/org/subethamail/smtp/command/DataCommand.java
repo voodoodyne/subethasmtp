@@ -21,7 +21,7 @@ public class DataCommand extends BaseCommand
     private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
     private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
 
-    /** */
+	/** */
     public DataCommand()
 	{
 		super("DATA",
@@ -29,7 +29,7 @@ public class DataCommand extends BaseCommand
 				+ "End data with <CR><LF>.<CR><LF>");
 	}
 
-    /** */
+	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{

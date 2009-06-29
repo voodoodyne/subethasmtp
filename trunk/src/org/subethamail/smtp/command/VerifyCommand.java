@@ -11,13 +11,13 @@ import org.subethamail.smtp.server.Session;
  */
 public class VerifyCommand extends BaseCommand
 {
-    /** */
+	/** */
 	public VerifyCommand()
 	{
 		super("VRFY", "The vrfy command.");
 	}
 
-    /** */
+	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
