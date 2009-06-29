@@ -73,11 +73,11 @@ public class CharTerminatedInputStream
         if (terminator.length == 0) {
             throw new IllegalArgumentException("The terminating character array cannot be of zero length.");
         }
-        match = new int[terminator.length];
-        buffer = new int[terminator.length];
+        this.match = new int[terminator.length];
+        this.buffer = new int[terminator.length];
         for (int i = 0; i < terminator.length; i++) {
-            match[i] = (int)terminator[i];
-            buffer[i] = (int)terminator[i];
+            this.match[i] = terminator[i];
+            this.buffer[i] = terminator[i];
         }
         this.in = in;
     }
@@ -89,32 +89,33 @@ public class CharTerminatedInputStream
      * @throws IOException if an IOException is encountered while reading off the stream
      * @throws ProtocolException if the underlying stream returns -1 before the terminator is seen.
      */
-    public int read() throws IOException {
-        if (endFound) {
+    @Override
+	public int read() throws IOException {
+        if (this.endFound) {
             //We've found the match to the terminator
             return -1;
         }
-        if (pos == 0) {
+        if (this.pos == 0) {
             //We have no data... read in a record
-            int b = in.read();
+            int b = this.in.read();
             if (b == -1) {
                 //End of stream reached without seeing the terminator
                 throw new java.net.ProtocolException("pre-mature end of data");
             }
-            if (b != match[0]) {
+            if (b != this.match[0]) {
                 //this char is not the first char of the match
                 return b;
             }
             //this is a match...put this in the first byte of the buffer,
             // and fall through to matching logic
-            buffer[0] = b;
-            pos++;
+            this.buffer[0] = b;
+            this.pos++;
         } else {
-            if (buffer[0] != match[0]) {
+            if (this.buffer[0] != this.match[0]) {
                 //Maybe from a previous scan, there is existing data,
                 // and the first available char does not match the
                 // beginning of the terminating string.
-                return topChar();
+                return this.topChar();
             }
             //we have a match... fall through to matching logic.
         }
@@ -122,26 +123,26 @@ public class CharTerminatedInputStream
 
         //The first character is a match... scan for complete match,
         // reading extra chars as needed, until complete match is found
-        for (int i = 0; i < match.length; i++) {
-            if (i >= pos) {
-                int b = in.read();
+        for (int i = 0; i < this.match.length; i++) {
+            if (i >= this.pos) {
+                int b = this.in.read();
                 if (b == -1) {
                     //end of stream found, so match cannot be fulfilled.
                     // note we don't set endFound, because otherwise
                     // remaining part of buffer won't be returned.
-                    return topChar();
+                    return this.topChar();
                 }
                 //put the read char in the buffer
-                buffer[pos] = b;
-                pos++;
+                this.buffer[this.pos] = b;
+                this.pos++;
             }
-            if (buffer[i] != match[i]) {
+            if (this.buffer[i] != this.match[i]) {
                 //we did not find a match... return the top char
-                return topChar();
+                return this.topChar();
             }
         }
         //A complete match was made...
-        endFound = true;
+        this.endFound = true;
         return -1;
     }
 
@@ -151,15 +152,15 @@ public class CharTerminatedInputStream
      * @return the byte that was previously at the front of the internal buffer
      */
     private int topChar() {
-        int b = buffer[0];
-        if (pos > 1) {
+        int b = this.buffer[0];
+        if (this.pos > 1) {
             //copy down the buffer to keep the fresh data at top
-            System.arraycopy(buffer, 1, buffer, 0, pos - 1);
+            System.arraycopy(this.buffer, 1, this.buffer, 0, this.pos - 1);
         }
-        pos--;
+        this.pos--;
         return b;
     }
-    
+
     /**
      * Provide access to the base input stream.
      */

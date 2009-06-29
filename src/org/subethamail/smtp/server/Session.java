@@ -18,7 +18,7 @@ import org.subethamail.smtp.io.CRLFTerminatedReader;
  * The thread that handles a connection. This class
  * passes most of it's responsibilities off to the
  * CommandHandler.
- * 
+ *
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
@@ -40,7 +40,7 @@ public class Session extends Thread implements MessageContext
 
 	/** Might exist if the client has successfully authenticated */
 	private AuthenticationHandler authenticationHandler;
-	
+
 	/** Might exist if the client is giving us a message */
 	private MessageHandler messageHandler;
 
@@ -51,7 +51,7 @@ public class Session extends Thread implements MessageContext
 
 	/**
 	 * Creates (but does not start) the thread object.
-	 * 
+	 *
 	 * @param server a link to our parent
 	 * @param socket is the socket to the client
 	 * @throws IOException
@@ -60,7 +60,7 @@ public class Session extends Thread implements MessageContext
 		throws IOException
 	{
 		super(server.getSessionGroup(), Session.class.getName());
-		
+
 		this.server = server;
 
 		this.setSocket(socket);
@@ -77,6 +77,7 @@ public class Session extends Thread implements MessageContext
 	/**
 	 * The thread for each session runs on this and shuts down when the shutdown member goes true.
 	 */
+	@Override
 	public void run()
 	{
 		if (log.isDebugEnabled())
@@ -96,7 +97,7 @@ public class Session extends Thread implements MessageContext
 
 			// Start with fresh message state
 			this.resetMessageState();
-			
+
 			while (!this.quitting)
 			{
 				try
@@ -148,12 +149,12 @@ public class Session extends Thread implements MessageContext
 			{
 				try
 				{
-					// Send a temporary failure back so that the server will try to resend 
+					// Send a temporary failure back so that the server will try to resend
 					// the message later.
 					this.sendResponse("450 Problem attempting to execute commands. Please try again later.");
 				}
 				catch (IOException e) {}
-				
+
 				if (log.isDebugEnabled())
 					log.warn("Exception during SMTP transaction", e1);
 			}
@@ -165,7 +166,7 @@ public class Session extends Thread implements MessageContext
 		}
 	}
 
-	/** 
+	/**
 	 * Close reader, writer, and socket, logging exceptions but otherwise ignoring them
 	 */
 	private void closeConnection()
@@ -200,7 +201,7 @@ public class Session extends Thread implements MessageContext
 		this.reader = new CRLFTerminatedReader(this.input);
 		this.writer = new PrintWriter(this.socket.getOutputStream());
 
-		this.socket.setSoTimeout(this.server.getConnectionTimeout());	
+		this.socket.setSoTimeout(this.server.getConnectionTimeout());
 	}
 
 	/**
@@ -226,7 +227,7 @@ public class Session extends Thread implements MessageContext
 	{
 		return this.input;
 	}
-	
+
 	/**
 	 * @return the cooked CRLF-terminated reader from the client
 	 */
@@ -244,7 +245,7 @@ public class Session extends Thread implements MessageContext
 		this.writer.print(response + "\r\n");
 		this.writer.flush();
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
 	 */
@@ -260,7 +261,7 @@ public class Session extends Thread implements MessageContext
 	{
 		return this.server;
 	}
-	
+
 	/**
 	 * @return the current message handler
 	 */
@@ -274,42 +275,49 @@ public class Session extends Thread implements MessageContext
 	{
 		return this.helo;
 	}
-	
+
+	/** */
 	public void setHelo(String value)
 	{
 		this.helo = value;
 	}
-	
+
+	/** */
 	public boolean getHasMailFrom()
 	{
 		return this.hasMailFrom;
 	}
 
+	/** */
 	public void setHasMailFrom(boolean value)
 	{
 		this.hasMailFrom = value;
 	}
 
+	/** */
 	public void addRecipient()
 	{
 		this.recipientCount++;
 	}
-	
+
+	/** */
 	public int getRecipientCount()
 	{
 		return this.recipientCount;
 	}
-	
+
+	/** */
 	public boolean isAuthenticated()
 	{
 		return this.authenticationHandler != null;
 	}
-	
+
+	/** */
 	public AuthenticationHandler getAuthenticationHandler()
 	{
 		return this.authenticationHandler;
 	}
-	
+
 	/**
 	 * This is called by the AuthCommand when a session is successfully authenticated.  The
 	 * handler will be an object created by the AuthenticationHandlerFactory.
@@ -318,7 +326,7 @@ public class Session extends Thread implements MessageContext
 	{
 		this.authenticationHandler = handler;
 	}
-	
+
 	/**
 	 * Some state is associated with each particular message (senders, recipients, the message handler).
 	 * Some state is not; seeing hello, TLS, authentication.
@@ -331,7 +339,7 @@ public class Session extends Thread implements MessageContext
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
 	}
-	
+
 	/** Safely calls done() on a message hander, if one exists */
 	protected void endMessageHandler()
 	{
@@ -347,7 +355,7 @@ public class Session extends Thread implements MessageContext
 			}
 		}
 	}
-	
+
 	/**
 	 * Triggers the shutdown of the thread and the closing of the connection.
 	 */

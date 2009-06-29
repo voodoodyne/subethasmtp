@@ -14,7 +14,7 @@ public class TextUtils
 	public static String joinTogether(Collection<String> items, String delim)
 	{
 		StringBuffer ret = new StringBuffer();
-		
+
 		for (Iterator<String> it=items.iterator(); it.hasNext();)
 		{
 			ret.append(it.next());
@@ -23,8 +23,8 @@ public class TextUtils
 				ret.append(delim);
 			}
 		}
-		
+
 		return ret.toString();
 	}
-	
+
 }

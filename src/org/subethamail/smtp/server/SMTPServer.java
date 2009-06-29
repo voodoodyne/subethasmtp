@@ -146,6 +146,7 @@ public class SMTPServer implements Runnable
 		return this.port;
 	}
 
+	/** */
 	public void setPort(int port)
 	{
 		this.port = port;
@@ -190,7 +191,7 @@ public class SMTPServer implements Runnable
 	public synchronized void start()
 	{
 		log.info("SMTP server starting");
-		
+
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
 
@@ -207,7 +208,7 @@ public class SMTPServer implements Runnable
 		this.serverThread = new Thread(this, SMTPServer.class.getName());
 
 		this.shuttingDown = false;
-		
+
 		// Now this.run() will be called
 		this.serverThread.start();
 	}
@@ -218,10 +219,10 @@ public class SMTPServer implements Runnable
 	public synchronized void stop()
 	{
 		log.info("SMTP server stopping");
-		
+
 		// First make sure we aren't accepting any new connections
 		this.stopServerThread();
-		
+
 		// Shut down any open connections.
 		this.stopAllSessions();
 	}
@@ -246,7 +247,7 @@ public class SMTPServer implements Runnable
 			}
 		}
 	}
-	
+
 	/**
 	 * Override this method if you want to create your own server sockets.
 	 * You must return a bound ServerSocket instance
@@ -273,7 +274,7 @@ public class SMTPServer implements Runnable
 
 		return serverSocket;
 	}
-	
+
 	/**
 	 * Closes the serverSocket in an orderly way
 	 */
@@ -290,7 +291,7 @@ public class SMTPServer implements Runnable
 		{
 			log.error("Failed to close server socket.", e);
 		}
-		
+
 		this.serverSocket = null;
 	}
 
@@ -301,7 +302,7 @@ public class SMTPServer implements Runnable
 	{
 		this.shuttingDown = true;
 		this.closeServerSocket();
-		
+
 		this.serverThread = null;
 	}
 
@@ -319,7 +320,7 @@ public class SMTPServer implements Runnable
 			// but the accept() will throw an exception and we will be fine.
 			ServerSocket server;
 			synchronized(this) { server = this.serverSocket; }
-			
+
 			if (server != null)
 			{
 				try
@@ -339,10 +340,10 @@ public class SMTPServer implements Runnable
 		// serverSocket.  If some other IOException brought us here, let's make sure
 		// thing is shut down properly.
 		this.closeServerSocket();
-		
+
 		this.serverSocket = null;
 		this.serverThread = null;
-		
+
 		log.info("SMTP server stopped");
 	}
 
@@ -366,6 +367,7 @@ public class SMTPServer implements Runnable
 		return this.messageHandlerFactory;
 	}
 
+	/** */
 	public void setMessageHandlerFactory(MessageHandlerFactory fact)
 	{
 		this.messageHandlerFactory = fact;
@@ -379,6 +381,7 @@ public class SMTPServer implements Runnable
 		return this.authenticationHandlerFactory;
 	}
 
+	/** */
 	public void setAuthenticationHandlerFactory(AuthenticationHandlerFactory fact)
 	{
 		this.authenticationHandlerFactory = fact;
@@ -395,16 +398,19 @@ public class SMTPServer implements Runnable
 		return this.commandHandler;
 	}
 
+	/** */
 	protected ThreadGroup getSessionGroup()
 	{
 		return this.sessionGroup;
 	}
 
+	/** */
 	public int getNumberOfConnections()
 	{
 		return this.sessionGroup.activeCount();
 	}
 
+	/** */
 	public boolean hasTooManyConnections()
 	{
 		if (this.maxConnections < 0)
@@ -413,6 +419,7 @@ public class SMTPServer implements Runnable
 			return (this.getNumberOfConnections() >= this.maxConnections);
 	}
 
+	/** */
 	public int getMaxConnections()
 	{
 		return this.maxConnections;
@@ -432,6 +439,7 @@ public class SMTPServer implements Runnable
 		this.maxConnections = maxConnections;
 	}
 
+	/** */
 	public int getConnectionTimeout()
 	{
 		return this.connectionTimeout;

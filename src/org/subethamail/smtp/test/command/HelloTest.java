@@ -9,44 +9,47 @@ import org.subethamail.smtp.test.util.ServerTestCase;
  */
 public class HelloTest extends ServerTestCase
 {
+	/** */
 	public HelloTest(String name)
 	{
 		super(name);
 	}
-	
+
+	/** */
 	public void testHelloCommand() throws Exception
 	{
-		expect("220");
+		this.expect("220");
 
-		send("HELO");
-		expect("501 Syntax: HELO <hostname>");
+		this.send("HELO");
+		this.expect("501 Syntax: HELO <hostname>");
 
-		send("HELO");
-		expect("501 Syntax: HELO <hostname>");
-		
-		// Correct!
-		send("HELO foo.com");
-		expect("250");
+		this.send("HELO");
+		this.expect("501 Syntax: HELO <hostname>");
 
 		// Correct!
-		send("HELO foo.com");
-		expect("250");
+		this.send("HELO foo.com");
+		this.expect("250");
+
+		// Correct!
+		this.send("HELO foo.com");
+		this.expect("250");
 	}
 
+	/** */
 	public void testHelloReset() throws Exception
 	{
-		expect("220");
+		this.expect("220");
 
-		send("HELO foo.com");
-		expect("250");
+		this.send("HELO foo.com");
+		this.expect("250");
 
-		send("MAIL FROM: test@foo.com");
-		expect("250 Ok");
+		this.send("MAIL FROM: test@foo.com");
+		this.expect("250 Ok");
 
-		send("RSET");
-		expect("250 Ok");
+		this.send("RSET");
+		this.expect("250 Ok");
 
-		send("MAIL FROM: test@foo.com");
-		expect("250 Ok");
+		this.send("MAIL FROM: test@foo.com");
+		this.expect("250 Ok");
 	}
 }

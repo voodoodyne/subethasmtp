@@ -21,6 +21,7 @@ public class DataCommand extends BaseCommand
     private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
     private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
 
+    /** */
     public DataCommand()
 	{
 		super("DATA",
@@ -28,6 +29,7 @@ public class DataCommand extends BaseCommand
 				+ "End data with <CR><LF>.<CR><LF>");
 	}
 
+    /** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
@@ -53,14 +55,14 @@ public class DataCommand extends BaseCommand
 		try
 		{
 			sess.getMessageHandler().data(stream);
-			
+
 			// Just in case the handler didn't consume all the data, we might as well
 			// suck it up so it doesn't pollute further exchanges.  This code used to
 			// throw an exception, but this seems an arbitrary part of the contract that
 			// we might as well relax.
 			while (stream.available() > 0)
 				stream.read();
-			
+
 			sess.sendResponse("250 Ok");
 		}
 		catch (RejectException ex)

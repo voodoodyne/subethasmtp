@@ -7,22 +7,24 @@ import org.subethamail.smtp.test.util.ServerTestCase;
  */
 public class StartTLSTest extends ServerTestCase
 {
+	/** */
 	public StartTLSTest(String name)
 	{
 		super(name);
 	}
 
+	/** */
 	public void testQuit() throws Exception
 	{
-		expect("220");
+		this.expect("220");
 
-		send("HELO foo.com");
-		expect("250");
+		this.send("HELO foo.com");
+		this.expect("250");
 
-		send("STARTTLS foo");
-		expect("501 Syntax error (no parameters allowed)");
+		this.send("STARTTLS foo");
+		this.expect("501 Syntax error (no parameters allowed)");
 
-		send("QUIT");
-		expect("221 Bye");
+		this.send("QUIT");
+		this.expect("221 Bye");
 	}
 }

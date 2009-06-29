@@ -9,7 +9,7 @@ import java.io.IOException;
 /**
  * Thrown by message listeners if an input stream provides more data than the
  * listener can handle.
- * 
+ *
  * @author Jeff Schnitzer
  */
 @SuppressWarnings("serial")

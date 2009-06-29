@@ -32,51 +32,57 @@ import org.subethamail.wiser.WiserMessage;
 import com.sun.mail.smtp.SMTPTransport;
 
 /**
- * This class tests the transfer speed of emails that carry 
+ * This class tests the transfer speed of emails that carry
  * attached files.
- * 
+ *
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 public class BigAttachmentTest extends TestCase
 {
 	private final static Logger log = LoggerFactory.getLogger(BigAttachmentTest.class);
-	
+
 	private final static int SMTP_PORT = 1081;
 	private final static String TO_CHANGE = "<path>/<your_bigfile.ext>";
 	private final static int BUFFER_SIZE = 32768;
-		
+
 	// Set the full path name of the big file to use for the test.
 	private final static String BIGFILE_PATH = TO_CHANGE;
-	
+
 	private Wiser server;
-	
-	public BigAttachmentTest(String name) 
+
+	/** */
+	public BigAttachmentTest(String name)
 	{
 		super(name);
 	}
 
+	/** */
+	@Override
 	protected void setUp() throws Exception
 	{
 		super.setUp();
-		server = new Wiser();
-		server.setPort(SMTP_PORT);
-		server.start();		
+		this.server = new Wiser();
+		this.server.setPort(SMTP_PORT);
+		this.server.start();
 	}
 
+	/** */
+	@Override
 	protected void tearDown() throws Exception
 	{
 		super.tearDown();
-		try 
-		{ 
-			server.stop(); 
+		try
+		{
+			this.server.stop();
 		} catch (Exception e)
 		{
 			e.printStackTrace();
 		};
 	}
-	
+
+	/** */
 	public void testAttachments() throws Exception
-	{	
+	{
 		if (BIGFILE_PATH.equals(TO_CHANGE))
 		{
 			log.error("BigAttachmentTest: To complete this test you must change the BIGFILE_PATH var to point out a file on your disk !");
@@ -91,7 +97,7 @@ public class BigAttachmentTest extends TestCase
 		MimeBodyPart bp1 = new MimeBodyPart();
 		bp1.setHeader("Content-Type", "text/plain");
 		bp1.setContent("Hello World!!!", "text/plain; charset=\"ISO-8859-1\"");
-		
+
 		// Attach the file
 		MimeBodyPart bp2 = new MimeBodyPart();
 		FileDataSource fileAttachment = new FileDataSource(BIGFILE_PATH);
@@ -109,8 +115,8 @@ public class BigAttachmentTest extends TestCase
 		baseMsg.setSubject("Test Big attached file message");
 		baseMsg.setContent(multipart);
         baseMsg.saveChanges();
-        
-        log.debug("Send started");        
+
+        log.debug("Send started");
         Transport t = new SMTPTransport(session, new URLName("smtp://localhost:"+SMTP_PORT));
 		long started = System.currentTimeMillis();
         t.connect();
@@ -119,12 +125,12 @@ public class BigAttachmentTest extends TestCase
         t.close();
         started = System.currentTimeMillis() - started;
         log.info("Elapsed ms = "+started);
-        
-        WiserMessage msg = server.getMessages().get(0);
-        
-        assertEquals(1, server.getMessages().size());		
+
+        WiserMessage msg = this.server.getMessages().get(0);
+
+        assertEquals(1, this.server.getMessages().size());
 		assertEquals("success@subethamail.org", msg.getEnvelopeReceiver());
-		
+
 		File compareFile = File.createTempFile("attached", ".tmp");
 		log.debug("Writing received attachment ...");
 
@@ -132,34 +138,35 @@ public class BigAttachmentTest extends TestCase
 		((MimeMultipart) msg.getMimeMessage().getContent()).getBodyPart(1).getDataHandler().writeTo(fos);
 		fos.close();
 		log.debug("Checking integrity ...");
-		assertTrue(checkIntegrity(new File(BIGFILE_PATH), compareFile));
+		assertTrue(this.checkIntegrity(new File(BIGFILE_PATH), compareFile));
 		log.debug("Checking integrity DONE");
 		compareFile.delete();
 	}
-	
+
+	/** */
 	private boolean checkIntegrity(File src, File dest) throws IOException, NoSuchAlgorithmException
 	{
 		BufferedInputStream ins = new BufferedInputStream(new FileInputStream(src));
 		BufferedInputStream ind = new BufferedInputStream(new FileInputStream(dest));
 		MessageDigest md1 = MessageDigest.getInstance("MD5");
 		MessageDigest md2 = MessageDigest.getInstance("MD5");
-		
+
 		if (ins == null || ind == null)
 			return false;
-		
+
 		int r = 0;
 		byte[] buf1 = new byte[BUFFER_SIZE];
 		byte[] buf2 = new byte[BUFFER_SIZE];
-		
+
 		while (r !=-1)
 		{
 			r = ins.read(buf1);
 			ind.read(buf2);
-			
+
 			md1.update(buf1);
 			md2.update(buf2);
 		}
-		
+
 		ins.close();
 		ind.close();
 		return MessageDigest.isEqual(md1.digest(), md2.digest());

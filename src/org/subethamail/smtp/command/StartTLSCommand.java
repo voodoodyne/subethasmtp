@@ -21,11 +21,13 @@ public class StartTLSCommand extends BaseCommand
 {
 	private final static Logger log = LoggerFactory.getLogger(StartTLSCommand.class);
 
+    /** */
 	public StartTLSCommand()
 	{
 		super("STARTTLS", "The starttls command");
 	}
 
+    /** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{

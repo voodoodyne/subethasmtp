@@ -12,17 +12,17 @@ class BetterByteArrayOutputStream extends ByteArrayOutputStream
 {
 	/** */
 	public BetterByteArrayOutputStream()
-	{	
+	{
 	}
-	
+
 	/** */
 	public BetterByteArrayOutputStream(int size)
 	{
 		super(size);
 	}
-	
+
 	/**
-	 * Does not make a copy of the internal buffer. 
+	 * Does not make a copy of the internal buffer.
 	 */
 	public InputStream getInputStream()
 	{

@@ -15,7 +15,7 @@ import org.subethamail.wiser.Wiser;
 /**
  * This class attempts to quickly start/stop 10 Wiser servers. It makes sure that the socket bind address is correctly
  * shut down.
- * 
+ *
  * @author Jon Stevens
  */
 public class StartStopTest extends TestCase
@@ -39,6 +39,7 @@ public class StartStopTest extends TestCase
 	}
 
 	/** */
+	@Override
 	protected void setUp() throws Exception
 	{
 		super.setUp();
@@ -50,20 +51,23 @@ public class StartStopTest extends TestCase
 	}
 
 	/** */
+	@Override
 	protected void tearDown() throws Exception
 	{
 		super.tearDown();
 	}
 
+	/** */
 	public void testMultipleStartStop() throws Exception
 	{
 		for (int i = 0; i < 10; i++)
 		{
-			startStop(i > 5);
+			this.startStop(i > 5);
 		}
-		assertEquals(counter, 10);
+		assertEquals(this.counter, 10);
 	}
 
+	/** */
 	private void startStop(boolean pause) throws Exception
 	{
 		Wiser wiser = new Wiser();
@@ -73,10 +77,10 @@ public class StartStopTest extends TestCase
 
 		if (pause)
 			Thread.sleep(1000);
-		
+
 		wiser.stop();
 
-		counter++;
+		this.counter++;
 	}
 
 	/** */

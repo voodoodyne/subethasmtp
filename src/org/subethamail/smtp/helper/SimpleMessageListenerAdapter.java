@@ -32,10 +32,10 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 	 * when they hit this limit in the DATA received.
 	 */
 	private static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*5;
-	
+
 	private Collection<SimpleMessageListener> listeners;
 	private int dataDeferredSize;
-	
+
 	/**
 	 * Initializes this factory with a single listener.
 	 *
@@ -45,7 +45,7 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 	{
 		this(Collections.singleton(listener), DEFAULT_DATA_DEFERRED_SIZE);
 	}
-	
+
 	/**
 	 * Initializes this factory with the listeners.
 	 *
@@ -55,7 +55,7 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 	{
 		this(listeners, DEFAULT_DATA_DEFERRED_SIZE);
 	}
-	
+
 	/**
 	 * Initializes this factory with the listeners.
 	 * @param dataDeferredSize The server will buffer
@@ -67,7 +67,7 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 		this.listeners = listeners;
 		this.dataDeferredSize = dataDeferredSize;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.MessageHandlerFactory#create(org.subethamail.smtp.MessageContext)
 	 */
@@ -75,7 +75,7 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 	{
 		return new Handler(ctx);
 	}
-	
+
 	/**
 	 * Needed by this class to track which listeners need delivery.
 	 */
@@ -83,17 +83,17 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 	{
 		SimpleMessageListener listener;
 		public SimpleMessageListener getListener() { return this.listener; }
-		
+
 		String recipient;
 		public String getRecipient() { return this.recipient; }
-		
+
 		public Delivery(SimpleMessageListener listener, String recipient)
 		{
 			this.listener = listener;
 			this.recipient = recipient;
 		}
 	}
-	
+
 	/**
 	 * Class which implements the actual handler interface.
 	 */
@@ -102,25 +102,25 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 		MessageContext ctx;
 		String from;
 		List<Delivery> deliveries = new ArrayList<Delivery>();
-		
+
 		/** */
 		public Handler(MessageContext ctx)
 		{
 			this.ctx = ctx;
 		}
-		
+
 		/** */
 		public void from(String from) throws RejectException
 		{
 			this.from = from;
 		}
-		
+
 		/** */
 		public void recipient(String recipient) throws RejectException
 		{
 			boolean addedListener = false;
-			
-			for (SimpleMessageListener listener: listeners)
+
+			for (SimpleMessageListener listener: SimpleMessageListenerAdapter.this.listeners)
 			{
 				if (listener.accept(this.from, recipient))
 				{
@@ -128,11 +128,11 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 					addedListener = true;
 				}
 			}
-			
+
 			if (!addedListener)
 				throw new RejectException(553, "<" + recipient + "> address unknown.");
 		}
-		
+
 		/** */
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
@@ -143,8 +143,8 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 			}
 			else
 			{
-				DeferredFileOutputStream dfos = new DeferredFileOutputStream(dataDeferredSize);
-				
+				DeferredFileOutputStream dfos = new DeferredFileOutputStream(SimpleMessageListenerAdapter.this.dataDeferredSize);
+
 				try
 				{
 					int value;
@@ -152,7 +152,7 @@ public class SimpleMessageListenerAdapter implements MessageHandlerFactory
 					{
 						dfos.write(value);
 					}
-					
+
 					for (Delivery delivery: this.deliveries)
 					{
 						delivery.getListener().deliver(this.from, delivery.getRecipient(), dfos.getInputStream());

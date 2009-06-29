@@ -41,7 +41,7 @@ public class EmailUtils
 		String address = args.substring(offset).trim();
 		if (address.indexOf('<') == 0)
 			address = address.substring(1, address.indexOf('>'));
-		
+
 		return address;
 	}
 }

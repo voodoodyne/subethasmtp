@@ -15,13 +15,15 @@ import org.subethamail.smtp.util.EmailUtils;
  */
 public class MailCommand extends BaseCommand
 {
+    /** */
 	public MailCommand()
 	{
-		super("MAIL", 
+		super("MAIL",
 				"Specifies the sender.",
 				"FROM: <sender> [ <parameters> ]");
 	}
 
+    /** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
@@ -37,15 +39,15 @@ public class MailCommand extends BaseCommand
 				return;
 			}
 
-			String args = getArgPredicate(commandString);
+			String args = this.getArgPredicate(commandString);
 			if (!args.toUpperCase().startsWith("FROM:"))
 			{
 				sess.sendResponse(
 						"501 Syntax: MAIL FROM: <address>  Error in parameters: \"" +
-						getArgPredicate(commandString) + "\"");
+						this.getArgPredicate(commandString) + "\"");
 				return;
 			}
-			
+
 			String emailAddress = EmailUtils.extractEmailAddress(args, 5);
 			if (EmailUtils.isValidEmailAddress(emailAddress))
 			{

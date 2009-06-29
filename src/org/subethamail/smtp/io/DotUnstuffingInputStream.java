@@ -42,14 +42,15 @@ public class DotUnstuffingInputStream extends FilterInputStream {
      *
      * @return the byte read from the stream
      */
-    public int read() throws IOException {
-        int b = in.read();
-        if (b == '.' && last[0] == '\r' && last[1] == '\n') {
+    @Override
+	public int read() throws IOException {
+        int b = this.in.read();
+        if (b == '.' && this.last[0] == '\r' && this.last[1] == '\n') {
             //skip this '.' because it should have been stuffed
-            b = in.read();
+            b = this.in.read();
         }
-        last[0] = last[1];
-        last[1] = b;
+        this.last[0] = this.last[1];
+        this.last[1] = b;
         return b;
     }
 
@@ -61,7 +62,8 @@ public class DotUnstuffingInputStream extends FilterInputStream {
      * @param len the maximum number of bytes to be read off the stream
      * @return the number of bytes read
      */
-    public int read(byte[] b, int off, int len) throws IOException {
+    @Override
+	public int read(byte[] b, int off, int len) throws IOException {
         if (b == null) {
             throw new NullPointerException();
         } else if ((off < 0) || (off > b.length) || (len < 0) ||
@@ -71,7 +73,7 @@ public class DotUnstuffingInputStream extends FilterInputStream {
             return 0;
         }
 
-        int c = read();
+        int c = this.read();
         if (c == -1) {
             return -1;
         }
@@ -80,7 +82,7 @@ public class DotUnstuffingInputStream extends FilterInputStream {
         int i = 1;
 
         for (; i < len ; i++) {
-            c = read();
+            c = this.read();
             if (c == -1) {
                 break;
             }
