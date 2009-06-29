@@ -13,7 +13,7 @@ import org.subethamail.smtp.util.Base64;
  * Implements the SMTP AUTH PLAIN mechanism.<br>
  * You are only required to plug your UsernamePasswordValidator implementation
  * for username and password validation to take effect.
- * 
+ *
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
  * @author Jeff Schnitzer
  */
@@ -23,7 +23,7 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 	static {
 		MECHANISMS.add("PLAIN");
 	}
-	
+
 	private UsernamePasswordValidator helper;
 
 	/** */
@@ -43,14 +43,14 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 	{
 		return new Handler();
 	}
-	
+
 	/**
 	 */
 	class Handler implements AuthenticationHandler
 	{
 		private String username;
 		private String password;
-		
+
 		/* */
 		public String auth(String clientInput) throws RejectException
 		{
@@ -65,7 +65,7 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 					// Mechanism mismatch
 					throw new RejectException(504, "AUTH mechanism mismatch");
 				}
-				
+
 				if (stk.hasMoreTokens())
 				{
 					// the client submitted an initial response
@@ -83,7 +83,7 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 				throw new RejectException();
 
 			int usernameStop = -1;
-			for (int i = 1; i < decodedSecret.length && usernameStop < 0; i++)
+			for (int i = 1; (i < decodedSecret.length) && (usernameStop < 0); i++)
 			{
 				if (decodedSecret[i] == 0)
 				{
@@ -96,22 +96,20 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 					decodedSecret.length - usernameStop - 1);
 			try
 			{
-				helper.login(username.toString(), password);
+				PlainAuthenticationHandlerFactory.this.helper.login(this.username.toString(), this.password);
 			}
 			catch (LoginFailedException lfe)
 			{
 				throw new RejectException();
 			}
-			
+
 			return null;
 		}
 
 		/* */
-		@Override
 		public Object getIdentity()
 		{
 			return this.username;
 		}
-		
 	}
 }
