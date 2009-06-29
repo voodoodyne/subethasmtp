@@ -14,7 +14,7 @@ import org.subethamail.smtp.util.EmailUtils;
  */
 public class ReceiptCommand extends BaseCommand
 {
-    /** */
+	/** */
 	public ReceiptCommand()
 	{
 		super("RCPT",
@@ -22,7 +22,7 @@ public class ReceiptCommand extends BaseCommand
 				"TO: <recipient> [ <parameters> ]");
 	}
 
-    /** */
+	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{

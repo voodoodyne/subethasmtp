@@ -12,13 +12,13 @@ import org.subethamail.smtp.server.Session;
  */
 public class NoopCommand extends BaseCommand
 {
-    /** */
+	/** */
 	public NoopCommand()
 	{
 		super("NOOP", "The noop command");
 	}
 
-    /** */
+	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{

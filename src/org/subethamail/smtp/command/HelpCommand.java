@@ -16,7 +16,7 @@ import org.subethamail.smtp.server.Session;
  */
 public class HelpCommand extends BaseCommand
 {
-    /** */
+	/** */
 	public HelpCommand()
 	{
 		super("HELP",
@@ -25,7 +25,7 @@ public class HelpCommand extends BaseCommand
 				"[ <topic> ]");
 	}
 
-    /** */
+	/** */
 	@Override
 	public void execute(String commandString, Session context) throws IOException
 	{
@@ -45,7 +45,7 @@ public class HelpCommand extends BaseCommand
 		}
 	}
 
-    /** */
+	/** */
 	private String getCommandMessage(SMTPServer server)
 	{
 		return "214-This is the "
@@ -64,7 +64,7 @@ public class HelpCommand extends BaseCommand
 				+ "214 End of HELP info";
 	}
 
-    /** */
+	/** */
 	protected String getFormattedTopicList(SMTPServer server)
 	{
 		StringBuilder sb = new StringBuilder();

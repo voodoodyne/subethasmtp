@@ -15,7 +15,7 @@ import org.subethamail.smtp.util.EmailUtils;
  */
 public class MailCommand extends BaseCommand
 {
-    /** */
+	/** */
 	public MailCommand()
 	{
 		super("MAIL",
@@ -23,7 +23,7 @@ public class MailCommand extends BaseCommand
 				"FROM: <sender> [ <parameters> ]");
 	}
 
-    /** */
+	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
