@@ -16,11 +16,13 @@ import org.subethamail.smtp.util.TextUtils;
  */
 public class EhloCommand extends BaseCommand
 {
+    /** */
 	public EhloCommand()
 	{
 		super("EHLO", "Introduce yourself.", "<hostname>");
 	}
 
+    /** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
@@ -30,7 +32,7 @@ public class EhloCommand extends BaseCommand
 			sess.sendResponse("501 Syntax: EHLO hostname");
 			return;
 		}
-		
+
 		sess.setHelo(args[1]);
 
 //		postfix returns...

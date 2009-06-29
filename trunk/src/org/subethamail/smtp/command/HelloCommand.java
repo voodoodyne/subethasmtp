@@ -13,23 +13,25 @@ import org.subethamail.smtp.server.Session;
  */
 public class HelloCommand extends BaseCommand
 {
+    /** */
 	public HelloCommand()
 	{
 		super("HELO", "Introduce yourself.", "<hostname>");
 	}
 
+    /** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
-		String[] args = getArgs(commandString);
+		String[] args = this.getArgs(commandString);
 		if (args.length < 2)
 		{
 			sess.sendResponse("501 Syntax: HELO <hostname>");
 			return;
 		}
-		
+
 		sess.setHelo(args[1]);
-		
+
 		sess.sendResponse("250 " + sess.getServer().getHostName());
 	}
 }

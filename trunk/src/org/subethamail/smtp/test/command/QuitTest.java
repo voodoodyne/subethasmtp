@@ -7,22 +7,24 @@ import org.subethamail.smtp.test.util.ServerTestCase;
  */
 public class QuitTest extends ServerTestCase
 {
+	/** */
 	public QuitTest(String name)
 	{
 		super(name);
 	}
 
+	/** */
 	public void testQuit() throws Exception
 	{
-		expect("220");
+		this.expect("220");
 
-		send("HELO foo.com");
-		expect("250");
+		this.send("HELO foo.com");
+		this.expect("250");
 
-		send("MAIL FROM: test@example.com");
-		expect("250 Ok");
+		this.send("MAIL FROM: test@example.com");
+		this.expect("250 Ok");
 
-		send("QUIT");
-		expect("221 Bye");
+		this.send("QUIT");
+		this.expect("221 Bye");
 	}
 }

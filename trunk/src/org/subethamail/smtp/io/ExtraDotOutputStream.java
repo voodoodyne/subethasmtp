@@ -17,8 +17,6 @@
  * under the License.                                           *
  ****************************************************************/
 
-
-
 package org.subethamail.smtp.io;
 
 import java.io.IOException;
@@ -42,13 +40,14 @@ public class ExtraDotOutputStream extends CRLFOutputStream {
     /**
      * Overrides super writeChunk in order to add a "." if the previous chunk ended with
      * a new line and a new chunk starts with "."
-     * 
+     *
      * @see CRLFOutputStream#writeChunk(byte[], int, int)
      */
-    protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
-        if (length > 0 && buffer[offset] == '.' && startOfLine) {
+    @Override
+	protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
+        if (length > 0 && buffer[offset] == '.' && this.startOfLine) {
             // add extra dot (the first of the pair)
-            out.write('.');
+            this.out.write('.');
         }
         super.writeChunk(buffer, offset, length);
     }
@@ -62,10 +61,11 @@ public class ExtraDotOutputStream extends CRLFOutputStream {
      *
      * @throws IOException if an error occurs writing the byte
      */
-    public void write(int b) throws IOException {
-        if (b == '.' && statusLast != LAST_WAS_OTHER) {
+    @Override
+	public void write(int b) throws IOException {
+        if (b == '.' && this.statusLast != LAST_WAS_OTHER) {
             // add extra dot (the first of the pair)
-            out.write('.');
+            this.out.write('.');
         }
         super.write(b);
     }

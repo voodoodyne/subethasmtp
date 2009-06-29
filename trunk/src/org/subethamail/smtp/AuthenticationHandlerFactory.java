@@ -4,7 +4,7 @@ import java.util.List;
 
 /**
  * The factory interface for creating authentication handlers.
- * 
+ *
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
  * @author Jeff Schnitzer
  */
@@ -17,10 +17,10 @@ public interface AuthenticationHandlerFactory
 	 * @return the supported authentication mechanisms as List.
 	 */
 	public List<String> getAuthenticationMechanisms();
-	
+
 	/**
 	 * Create a fresh instance of your handler.
 	 */
 	public AuthenticationHandler create();
-	
+
 }

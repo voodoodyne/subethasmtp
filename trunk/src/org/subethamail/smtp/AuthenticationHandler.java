@@ -12,7 +12,7 @@ package org.subethamail.smtp;
  */
 public interface AuthenticationHandler
 {
-	
+
 	/**
 	 * Initially called using an input string in the RFC2554 form: "AUTH <mechanism> [initial-response]". <br>
 	 * This method must return text which will be delivered to the client, or null if the exchange
@@ -30,11 +30,11 @@ public interface AuthenticationHandler
 	 * AuthenticationHandlers do not need to handle the "*" cancel response; this is handled by the framework.
 	 *
 	 * @return <code>null</code> if the authentication process is finished, otherwise a string to hand back to the client.
-	 * @param clientInput The client's input, eg "AUTH PLAIN dGVzdAB0ZXN0ADEyMzQ=" 
+	 * @param clientInput The client's input, eg "AUTH PLAIN dGVzdAB0ZXN0ADEyMzQ="
 	 * @throws org.subethamail.smtp.RejectException if authentication fails.
 	 */
 	public String auth(String clientInput) throws RejectException;
-	
+
 	/**
 	 * If the authentication process was successful, this returns the identity
 	 * of the user.  The type defining the identity can vary depending on the

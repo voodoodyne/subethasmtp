@@ -9,7 +9,7 @@ import org.subethamail.wiser.Wiser;
 /**
  * A base class for testing the SMTP server at the raw protocol level.
  * Handles setting up and tearing down of the server.
- * 
+ *
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
@@ -18,7 +18,7 @@ public abstract class ServerTestCase extends TestCase
 	/** */
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(ServerTestCase.class);
-	
+
 	/** */
 	public static final int PORT = 2566;
 
@@ -28,6 +28,7 @@ public abstract class ServerTestCase extends TestCase
 	 */
 	public class TestWiser extends Wiser
 	{
+		@Override
 		public boolean accept(String from, String recipient)
 		{
 			if (recipient.equals("failure@subethamail.org"))
@@ -41,10 +42,10 @@ public abstract class ServerTestCase extends TestCase
 			return true;
 		}
 	}
-	
+
 	/** */
 	protected TestWiser wiser;
-	
+
 	/** */
 	protected Client c;
 
@@ -55,19 +56,21 @@ public abstract class ServerTestCase extends TestCase
 	}
 
 	/** */
+	@Override
 	protected void setUp() throws Exception
 	{
 		super.setUp();
-		
+
 		this.wiser = new TestWiser();
 		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
 		this.wiser.start();
-		
+
 		this.c = new Client("localhost", PORT);
 	}
-	
+
 	/** */
+	@Override
 	protected void tearDown() throws Exception
 	{
 		this.wiser.stop();
@@ -77,12 +80,14 @@ public abstract class ServerTestCase extends TestCase
 
 		super.tearDown();
 	}
-	
+
+	/** */
 	public void send(String msg) throws Exception
 	{
 		this.c.send(msg);
 	}
 
+	/** */
 	public void expect(String msg) throws Exception
 	{
 		this.c.expect(msg);

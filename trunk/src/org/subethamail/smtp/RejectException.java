@@ -6,14 +6,14 @@ package org.subethamail.smtp;
 
 /**
  * Thrown to reject an SMTP command with a specific code.
- * 
+ *
  * @author Jeff Schnitzer
  */
 @SuppressWarnings("serial")
 public class RejectException extends Exception
 {
 	int code;
-	
+
 	/** */
 	public RejectException()
 	{
@@ -30,7 +30,7 @@ public class RejectException extends Exception
 	public RejectException(int code, String message)
 	{
 		super(code + " " + message);
-		
+
 		this.code = code;
 	}
 

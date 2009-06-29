@@ -26,11 +26,11 @@ import java.io.OutputStream;
 /**
  * A Filter for use with SMTP or other protocols in which lines must end with
  * CRLF. Converts every "isolated" occourency of \r or \n with \r\n
- * 
+ *
  * RFC 2821 #2.3.7 mandates that line termination is CRLF, and that CR and LF
  * must not be transmitted except in that pairing. If we get a naked LF, convert
  * to CRLF.
- * 
+ *
  */
 public class CRLFOutputStream extends FilterOutputStream {
 
@@ -44,18 +44,18 @@ public class CRLFOutputStream extends FilterOutputStream {
     protected final static int LAST_WAS_CR = 1;
 
     protected final static int LAST_WAS_LF = 2;
-    
+
     protected boolean startOfLine = true;
 
     /**
      * Constructor that wraps an OutputStream.
-     * 
+     *
      * @param out
      *                the OutputStream to be wrapped
      */
     public CRLFOutputStream(OutputStream out) {
         super(out);
-        statusLast = LAST_WAS_LF; // we already assume a CRLF at beginning
+        this.statusLast = LAST_WAS_LF; // we already assume a CRLF at beginning
                                     // (otherwise TOP would not work correctly
                                     // !)
     }
@@ -63,52 +63,54 @@ public class CRLFOutputStream extends FilterOutputStream {
     /**
      * Writes a byte to the stream Fixes any naked CR or LF to the RFC 2821
      * mandated CFLF pairing.
-     * 
+     *
      * @param b
      *                the byte to write
-     * 
+     *
      * @throws IOException
      *                 if an error occurs writing the byte
      */
-    public void write(int b) throws IOException {
+    @Override
+	public void write(int b) throws IOException {
         switch (b) {
             case '\r':
-                out.write('\r');
-                out.write('\n');
-                startOfLine = true;
-                statusLast = LAST_WAS_CR;
+                this.out.write('\r');
+                this.out.write('\n');
+                this.startOfLine = true;
+                this.statusLast = LAST_WAS_CR;
                 break;
             case '\n':
-                if (statusLast != LAST_WAS_CR) {
-                    out.write('\r');
-                    out.write('\n');
-                    startOfLine = true;
+                if (this.statusLast != LAST_WAS_CR) {
+                    this.out.write('\r');
+                    this.out.write('\n');
+                    this.startOfLine = true;
                 }
-                statusLast = LAST_WAS_LF;
+                this.statusLast = LAST_WAS_LF;
                 break;
             default:
                 // we're no longer at the start of a line
-                out.write(b);
-                startOfLine = false;
-                statusLast = LAST_WAS_OTHER;
+                this.out.write(b);
+                this.startOfLine = false;
+                this.statusLast = LAST_WAS_OTHER;
                 break;
         }
     }
-    
+
     /**
      * Provides an extension point for ExtraDotOutputStream to be able to add dots
      * at the beginning of new lines.
-     * 
+     *
      * @see java.io.FilterOutputStream#write(byte[], int, int)
      */
     protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
-        out.write(buffer, offset, length);
+        this.out.write(buffer, offset, length);
     }
 
     /**
      * @see java.io.FilterOutputStream#write(byte[], int, int)
      */
-    public synchronized void write(byte buffer[], int offset, int length)
+    @Override
+	public synchronized void write(byte buffer[], int offset, int length)
             throws IOException {
         /* optimized */
         int lineStart = offset;
@@ -117,45 +119,45 @@ public class CRLFOutputStream extends FilterOutputStream {
             case '\r':
                 // CR case. Write down the last line
                 // and position the new lineStart at the next char
-                writeChunk(buffer, lineStart, i - lineStart);
-                out.write('\r');
-                out.write('\n');
-                startOfLine = true;
+                this.writeChunk(buffer, lineStart, i - lineStart);
+                this.out.write('\r');
+                this.out.write('\n');
+                this.startOfLine = true;
                 lineStart = i + 1;
-                statusLast = LAST_WAS_CR;
+                this.statusLast = LAST_WAS_CR;
                 break;
             case '\n':
-                if (statusLast != LAST_WAS_CR) {
-                    writeChunk(buffer, lineStart, i - lineStart);
-                    out.write('\r');
-                    out.write('\n');
-                    startOfLine = true;
+                if (this.statusLast != LAST_WAS_CR) {
+                    this.writeChunk(buffer, lineStart, i - lineStart);
+                    this.out.write('\r');
+                    this.out.write('\n');
+                    this.startOfLine = true;
                 }
                 lineStart = i + 1;
-                statusLast = LAST_WAS_LF;
+                this.statusLast = LAST_WAS_LF;
                 break;
             default:
-                statusLast = LAST_WAS_OTHER;
+                this.statusLast = LAST_WAS_OTHER;
             }
         }
         if (length + offset > lineStart) {
-            writeChunk(buffer, lineStart, length + offset - lineStart);
-            startOfLine = false;
+            this.writeChunk(buffer, lineStart, length + offset - lineStart);
+            this.startOfLine = false;
         }
     }
 
 
     /**
      * Ensure that the stream is CRLF terminated.
-     * 
+     *
      * @throws IOException
      *                 if an error occurs writing the byte
      */
     public void checkCRLFTerminator() throws IOException {
-        if (statusLast == LAST_WAS_OTHER) {
-            out.write('\r');
-            out.write('\n');
-            statusLast = LAST_WAS_CR;
+        if (this.statusLast == LAST_WAS_OTHER) {
+            this.out.write('\r');
+            this.out.write('\n');
+            this.statusLast = LAST_WAS_CR;
         }
     }
 }

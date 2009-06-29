@@ -36,10 +36,10 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 	 * when they hit this limit in the DATA received.
 	 */
 	private static int DEFAULT_DATA_DEFERRED_SIZE = 1024*1024*5;
-	
+
 	private Collection<SmarterMessageListener> listeners;
 	private int dataDeferredSize;
-	
+
 	/**
 	 * Initializes this factory with a single listener.
 	 *
@@ -49,7 +49,7 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 	{
 		this(Collections.singleton(listener), DEFAULT_DATA_DEFERRED_SIZE);
 	}
-	
+
 	/**
 	 * Initializes this factory with the listeners.
 	 *
@@ -59,7 +59,7 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 	{
 		this(listeners, DEFAULT_DATA_DEFERRED_SIZE);
 	}
-	
+
 	/**
 	 * Initializes this factory with the listeners.
 	 * @param dataDeferredSize The server will buffer
@@ -71,7 +71,7 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 		this.listeners = listeners;
 		this.dataDeferredSize = dataDeferredSize;
 	}
-	
+
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.MessageHandlerFactory#create(org.subethamail.smtp.MessageContext)
 	 */
@@ -79,7 +79,7 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 	{
 		return new Handler(ctx);
 	}
-	
+
 	/**
 	 * Class which implements the actual handler interface.
 	 */
@@ -88,34 +88,34 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 		MessageContext ctx;
 		String from;
 		List<Receiver> deliveries = new ArrayList<Receiver>();
-		
+
 		/** */
 		public Handler(MessageContext ctx)
 		{
 			this.ctx = ctx;
 		}
-		
+
 		/** */
 		public void from(String from) throws RejectException
 		{
 			this.from = from;
 		}
-		
+
 		/** */
 		public void recipient(String recipient) throws RejectException
 		{
-			for (SmarterMessageListener listener: listeners)
+			for (SmarterMessageListener listener: SmarterMessageListenerAdapter.this.listeners)
 			{
 				Receiver rec = listener.accept(this.from, recipient);
-				
+
 				if (rec != null)
 					this.deliveries.add(rec);
 			}
-			
+
 			if (this.deliveries.isEmpty())
 				throw new RejectException(553, "<" + recipient + "> address unknown.");
 		}
-		
+
 		/** */
 		public void data(InputStream data) throws TooMuchDataException, IOException
 		{
@@ -125,8 +125,8 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 			}
 			else
 			{
-				DeferredFileOutputStream dfos = new DeferredFileOutputStream(dataDeferredSize);
-				
+				DeferredFileOutputStream dfos = new DeferredFileOutputStream(SmarterMessageListenerAdapter.this.dataDeferredSize);
+
 				try
 				{
 					int value;
@@ -134,7 +134,7 @@ public class SmarterMessageListenerAdapter implements MessageHandlerFactory
 					{
 						dfos.write(value);
 					}
-					
+
 					for (Receiver rec: this.deliveries)
 					{
 						rec.deliver(dfos.getInputStream());
