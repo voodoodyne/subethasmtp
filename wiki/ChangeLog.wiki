@@ -3,6 +3,9 @@
 		
 == Changes ==
 
+=== 3.1.1 - August 17, 2009 ===
+ * Targeted to java 1.5 rather than 1.6.  No other changes.
+
 === 3.1 - June 4, 2009 ===
   * Now adds Received: headers to data stream
   * Added done() method to MessageHandler
