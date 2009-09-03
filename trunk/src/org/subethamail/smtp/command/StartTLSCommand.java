@@ -3,6 +3,7 @@ package org.subethamail.smtp.command;
 import java.io.IOException;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.util.Locale;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
@@ -31,7 +32,7 @@ public class StartTLSCommand extends BaseCommand
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
-		if (!commandString.trim().toUpperCase().equals(this.getName()))
+		if (!commandString.trim().toUpperCase(Locale.ENGLISH).equals(this.getName()))
 		{
 			sess.sendResponse("501 Syntax error (no parameters allowed)");
 			return;
