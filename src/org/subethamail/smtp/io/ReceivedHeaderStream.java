@@ -13,6 +13,8 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.Locale;
 
+import org.subethamail.smtp.util.TextUtils;
+
 /**
  * Prepends a Received: header at the beginning of the input stream.
  */
@@ -39,7 +41,7 @@ Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
 			"        by " + whoami + " with SMTP;\r\n" +
 			"        " + timestamp + "\r\n";
 
-		this.header = new ByteArrayInputStream(header.getBytes());
+		this.header = new ByteArrayInputStream(TextUtils.getAsciiBytes(header));
 	}
 
 	/* */
