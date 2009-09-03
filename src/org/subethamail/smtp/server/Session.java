@@ -3,6 +3,7 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
+import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.net.SocketTimeoutException;
@@ -81,8 +82,13 @@ public class Session extends Thread implements MessageContext
 	public void run()
 	{
 		if (log.isDebugEnabled())
-			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
-
+		{
+			InetAddress remoteInetAddress = getRemoteAddress().getAddress();
+			remoteInetAddress.getHostName();	// Causes future toString() to print the name too
+			
+			log.debug("SMTP connection from {}, new connection count: {}", remoteInetAddress, this.server.getNumberOfConnections());
+		}
+	
 		try
 		{
 			if (this.server.hasTooManyConnections())

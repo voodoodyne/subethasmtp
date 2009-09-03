@@ -1,6 +1,7 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
@@ -40,7 +41,7 @@ public class MailCommand extends BaseCommand
 			}
 
 			String args = this.getArgPredicate(commandString);
-			if (!args.toUpperCase().startsWith("FROM:"))
+			if (!args.toUpperCase(Locale.ENGLISH).startsWith("FROM:"))
 			{
 				sess.sendResponse(
 						"501 Syntax: MAIL FROM: <address>  Error in parameters: \"" +

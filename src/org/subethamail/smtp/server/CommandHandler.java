@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -118,7 +119,7 @@ public class CommandHandler
 		if (string == null || string.length() < 4)
 			throw new InvalidCommandNameException("Error: bad syntax");
 
-		return string.substring(0, 4).toUpperCase();
+		return string.substring(0, 4).toUpperCase(Locale.ENGLISH);
 	}
 
 	/** */
@@ -128,6 +129,6 @@ public class CommandHandler
 		if (!stringTokenizer.hasMoreTokens())
 			throw new InvalidCommandNameException("Error: bad syntax");
 
-		return stringTokenizer.nextToken().toUpperCase();
+		return stringTokenizer.nextToken().toUpperCase(Locale.ENGLISH);
 	}
 }

@@ -1,6 +1,7 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
+import java.util.Locale;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
@@ -63,7 +64,7 @@ public class AuthCommand extends BaseCommand
 
 		// Let's check if we support the required authentication mechanism
 		String mechanism = args[1];
-		if (!authFactory.getAuthenticationMechanisms().contains(mechanism.toUpperCase()))
+		if (!authFactory.getAuthenticationMechanisms().contains(mechanism.toUpperCase(Locale.ENGLISH)))
 		{
 			sess.sendResponse("504 The requested authentication mechanism is not supported");
 			return;
