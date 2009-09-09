@@ -1,13 +1,9 @@
 #summary The Wiser framework for unit testing mail
 #labels Featured
 
-Wiser is a smart replacement for [http://quintanasoft.com/dumbster/ Dumbster].
+Wiser is a simple SMTP server that you can use for unit testing applications that send mail.  It accepts all messages and stores them in an internal ArrayList.  Your unit test code can then examine the messages (or lack thereof) and verify their validity.
 
-A few benefits of Wiser over Dumbster are:
-  * Very simple to use 
-  * Works properly with MacOS X
-  * Uses the JavaMail API
-  * Works properly with Unicode characters. Confirmed by lots of Japanese Wiser users.
+WISER IS NOT A MAIL SERVER.  If you want to receive email and then "do something" with the mail, simply implement the MessageHandler or MessageListener interfaces.  Look at the (very short) Wiser code as an example.
 
 == How To Use It ==
 Include the following jars on your classpath:
