@@ -77,6 +77,9 @@ public class SMTPClient
 	{
 		this.hostPort = host + ":" + port;
 
+		if (log.isDebugEnabled())
+			log.debug("Connecting to " + this.hostPort);
+
 		this.socket = new Socket(host, port);
 		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
@@ -101,6 +104,9 @@ public class SMTPClient
 	 */
 	protected void send(String msg) throws IOException
 	{
+		if (log.isDebugEnabled())
+			log.debug("Client: " + msg);
+
 		// Force \r\n since println() behaves differently on different platforms
 		this.writer.print(msg + "\r\n");
 		this.writer.flush();
@@ -118,6 +124,9 @@ public class SMTPClient
 		while (!done)
 		{
 			line = this.reader.readLine();
+			
+			if (log.isDebugEnabled())
+				log.debug("Server: " + line);
 
 			builder.append(line.substring(4));
 
@@ -168,6 +177,9 @@ public class SMTPClient
 			try
 			{
 				this.socket.close();
+
+				if (log.isDebugEnabled())
+					log.debug("Closed connection to " + this.hostPort);
 			}
 			catch (IOException ex)
 			{
