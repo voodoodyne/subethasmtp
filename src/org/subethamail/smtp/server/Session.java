@@ -49,7 +49,7 @@ public class Session extends Thread implements MessageContext
 	private String helo;
 	private boolean hasMailFrom;
 	private int recipientCount;
-
+	
 	/**
 	 * Creates (but does not start) the thread object.
 	 *
@@ -60,7 +60,8 @@ public class Session extends Thread implements MessageContext
 	public Session(SMTPServer server, Socket socket)
 		throws IOException
 	{
-		super(server.getSessionGroup(), Session.class.getName());
+		super(server.getSessionGroup(), Session.class.getName()
+				+ "-" + socket.getInetAddress() + ":" + socket.getPort());
 
 		this.server = server;
 
