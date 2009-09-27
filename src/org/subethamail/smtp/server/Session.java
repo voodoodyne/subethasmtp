@@ -49,7 +49,7 @@ public class Session extends Thread implements MessageContext
 	private String helo;
 	private boolean hasMailFrom;
 	private int recipientCount;
-	
+
 	/**
 	 * Creates (but does not start) the thread object.
 	 *
@@ -84,12 +84,12 @@ public class Session extends Thread implements MessageContext
 	{
 		if (log.isDebugEnabled())
 		{
-			InetAddress remoteInetAddress = getRemoteAddress().getAddress();
+			InetAddress remoteInetAddress = this.getRemoteAddress().getAddress();
 			remoteInetAddress.getHostName();	// Causes future toString() to print the name too
-			
+
 			log.debug("SMTP connection from {}, new connection count: {}", remoteInetAddress, this.server.getNumberOfConnections());
 		}
-	
+
 		try
 		{
 			if (this.server.hasTooManyConnections())
@@ -162,7 +162,7 @@ public class Session extends Thread implements MessageContext
 				}
 				catch (IOException e) {}
 
-				if (log.isDebugEnabled())
+				if (log.isWarnEnabled())
 					log.warn("Exception during SMTP transaction", e1);
 			}
 		}
@@ -223,7 +223,7 @@ public class Session extends Thread implements MessageContext
 	/** Close the client socket if it is open */
 	public void closeSocket() throws IOException
 	{
-		if (this.socket != null && this.socket.isBound() && !this.socket.isClosed())
+		if ((this.socket != null) && this.socket.isBound() && !this.socket.isClosed())
 			this.socket.close();
 	}
 
