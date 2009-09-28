@@ -92,4 +92,10 @@ public abstract class ServerTestCase extends TestCase
 	{
 		this.c.expect(msg);
 	}
+	
+	/** */
+	public void expectContains(String msg) throws Exception
+	{
+		this.c.expectContains(msg);
+	}
 }
