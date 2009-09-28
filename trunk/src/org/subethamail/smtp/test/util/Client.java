@@ -56,7 +56,18 @@ public class Client
 		if (!response.startsWith(expect))
 			throw new Exception("Got: " + response + " Expected: " + expect);
 	}
-
+	
+	/**
+	 * Throws an exception if the response does not contain
+	 * the specified string.
+	 */
+	public void expectContains(String expect) throws Exception
+	{
+	    String response = this.readResponse();
+	    if (!response.contains(expect))
+	        throw new Exception("Got: " + response + " Expected to contain: " + expect);
+	}
+	
 	/**
 	 * Get the complete response, including a multiline response.
 	 * Newlines are included.

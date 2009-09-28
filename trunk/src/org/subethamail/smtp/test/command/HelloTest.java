@@ -52,4 +52,14 @@ public class HelloTest extends ServerTestCase
 		this.send("MAIL FROM: test@foo.com");
 		this.expect("250 Ok");
 	}
+
+	/** */
+	public void testEhloSize() throws Exception
+	{
+	    this.wiser.getServer().setMaxMessageSize(1000);
+	    this.expect("220");
+
+	    this.send("EHLO foo.com");
+	    this.expectContains("250-SIZE 1000");
+	}
 }

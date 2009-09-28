@@ -50,6 +50,12 @@ public class Session extends Thread implements MessageContext
 	private String helo;
 	private boolean hasMailFrom;
 	private int recipientCount;
+	
+	/**
+	 * If the client told us the size of the message, this is the value.
+	 * If they didn't, the value will be 0.
+	 */
+	private int declaredMessageSize = 0;
 
 	/**
 	 * Creates (but does not start) the thread object.
@@ -350,6 +356,22 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
+	 * @return the maxMessageSize
+	 */
+	public int getDeclaredMessageSize()
+	{
+		return this.declaredMessageSize;
+	}
+
+	/**
+	 * @param declaredMessageSize the size that the client says the message will be
+	 */
+	public void setDeclaredMessageSize(int declaredMessageSize)
+	{
+		this.declaredMessageSize = declaredMessageSize;
+	}
+
+    /**
 	 * Some state is associated with each particular message (senders, recipients, the message handler).
 	 * Some state is not; seeing hello, TLS, authentication.
 	 */
@@ -360,6 +382,7 @@ public class Session extends Thread implements MessageContext
 		this.helo = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
+		this.declaredMessageSize = 0;
 	}
 
 	/** Safely calls done() on a message hander, if one exists */

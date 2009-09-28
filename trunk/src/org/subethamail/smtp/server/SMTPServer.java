@@ -43,7 +43,7 @@ public class SMTPServer implements Runnable
 {
 	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
-	/** Hostame used if we can't find one */
+	/** Hostname used if we can't find one */
 	private final static String UNKNOWN_HOSTNAME = "localhost";
 
 	private InetAddress bindAddress = null;	// default to all interfaces
@@ -84,6 +84,15 @@ public class SMTPServer implements Runnable
 	private int maxRecipients = 1000;
 
 	/**
+	 * The maximum size of a message that the server will accept. This value is advertised 
+	 * during the EHLO phase if it is larger than 0. If the message size specified by the client
+	 * during the MAIL phase, the message will be rejected at that time. (RFC 1870) 
+	 * Default is 0.  Note this doesn't actually enforce any limits on the message being
+	 * read; you must do that yourself when reading data.
+	 */
+	private int maxMessageSize = 0;
+	
+    /**
 	 * The primary constructor.
 	 */
 	public SMTPServer(MessageHandlerFactory handlerFactory)
@@ -483,4 +492,21 @@ public class SMTPServer implements Runnable
 	{
 		this.hideTLS = value;
 	}
+	
+	/**
+	 * @return the maxMessageSize
+	 */
+	public int getMaxMessageSize()
+	{
+		return maxMessageSize;
+	}
+
+	/**
+	 * @param maxMessageSize the maxMessageSize to set
+	 */
+	public void setMaxMessageSize(int maxMessageSize)
+	{
+		this.maxMessageSize = maxMessageSize;
+	}
+
 }
