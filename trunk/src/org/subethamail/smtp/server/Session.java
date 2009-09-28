@@ -6,6 +6,7 @@ import java.io.PrintWriter;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
@@ -109,7 +110,21 @@ public class Session extends Thread implements MessageContext
 			{
 				try
 				{
-					String line = this.reader.readLine();
+					String line = null;
+					try
+					{
+						line = this.reader.readLine();
+					}
+					catch (SocketException ex)
+					{
+						// Lots of clients just "hang up" rather than issuing QUIT, which would
+						// fill our logs with the warning in the outer catch.
+						if (log.isDebugEnabled())
+							log.debug("Error reading client command: " + ex.getMessage(), ex);
+						
+						return;
+					}
+					
 					if (line == null)
 					{
 						log.debug("no more lines from client");
