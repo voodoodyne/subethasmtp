@@ -30,4 +30,13 @@ public interface MessageContext
 	 * @return the handler instance that was used to authenticate.
 	 */
 	public AuthenticationHandler getAuthenticationHandler();
+	
+	/**
+	 * @return the host name or address literal the client supplied in the HELO
+	 *         or EHLO command, or null if neither of these commands were
+	 *         received yet. Note that SubEthaSMTP (along with some MTAs, but
+	 *         contrary to RFC 5321) accept mail transactions without these
+	 *         commands.
+	 */
+	public String getHelo();
 }
