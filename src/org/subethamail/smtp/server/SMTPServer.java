@@ -1,16 +1,20 @@
 package org.subethamail.smtp.server;
 
 import java.io.IOException;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+
+import javax.net.ssl.SSLSocket;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.Version;
-
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 /**
  * Main SMTPServer class.  Construct this object, set the
