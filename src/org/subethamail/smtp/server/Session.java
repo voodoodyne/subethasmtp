@@ -3,11 +3,8 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.InetSocketAddress;
-import java.net.Socket;
-import java.net.SocketException;
-import java.net.SocketTimeoutException;
+import java.net.*;
+import java.security.cert.Certificate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,12 +47,16 @@ public class Session extends Thread implements MessageContext
 	private String helo;
 	private boolean hasMailFrom;
 	private int recipientCount;
-	
+
 	/**
 	 * If the client told us the size of the message, this is the value.
 	 * If they didn't, the value will be 0.
 	 */
 	private int declaredMessageSize = 0;
+
+	/** Some more state information */
+	private boolean tlsStarted;
+	private Certificate[] tlsPeerCertificates;
 
 	/**
 	 * Creates (but does not start) the thread object.
@@ -127,10 +128,10 @@ public class Session extends Thread implements MessageContext
 						// fill our logs with the warning in the outer catch.
 						if (log.isDebugEnabled())
 							log.debug("Error reading client command: " + ex.getMessage(), ex);
-						
+
 						return;
 					}
-					
+
 					if (line == null)
 					{
 						log.debug("no more lines from client");
@@ -371,7 +372,7 @@ public class Session extends Thread implements MessageContext
 		this.declaredMessageSize = declaredMessageSize;
 	}
 
-    /**
+	/**
 	 * Some state is associated with each particular message (senders, recipients, the message handler).
 	 * Some state is not; seeing hello, TLS, authentication.
 	 */
@@ -408,5 +409,34 @@ public class Session extends Thread implements MessageContext
 	{
 		this.quitting = true;
 		this.closeConnection();
+	}
+
+	/**
+	 * @return true when the TLS handshake was completed, false otherwise
+	 */
+	public boolean isTLSStarted()
+	{
+		return tlsStarted;
+	}
+
+	/**
+	 * @param tlsStarted true when the TLS handshake was completed, false otherwise
+	 */
+	public void setTlsStarted(boolean tlsStarted)
+	{
+		this.tlsStarted = tlsStarted;
+	}
+
+	public void setTlsPeerCertificates(Certificate[] tlsPeerCertificates)
+	{
+		this.tlsPeerCertificates = tlsPeerCertificates;
+	}
+
+	/**
+	 * {@inheritDoc}
+	 */
+	public Certificate[] getTlsPeerCertificates()
+	{
+		return tlsPeerCertificates;
 	}
 }

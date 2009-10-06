@@ -28,16 +28,21 @@ public class CommandHandler
 	public CommandHandler()
 	{
 		// This solution should be more robust than the earlier "manual" configuration.
-		for(CommandRegistry registry : CommandRegistry.values())
+		for (CommandRegistry registry: CommandRegistry.values())
 		{
 			this.addCommand(registry.getCommand());
 		}
 	}
 
-	/** */
+	/**
+	 * Create a command handler with a specific set of commands.
+	 *
+	 * @param availableCommands the available commands (not null)
+	 *  TLS note: wrap commands with {@link RequireTLSCommandWrapper} when appropriate.
+	 */
 	public CommandHandler(Collection<Command> availableCommands)
 	{
-		for(Command command :availableCommands )
+		for (Command command: availableCommands)
 		{
 			this.addCommand(command);
 		}

@@ -59,7 +59,7 @@ public class EhloCommand extends BaseCommand
 			response.append("\r\n" + "250-SIZE ");
 			response.append(maxSize);
 		}
-        
+
 		// Hiding TLS is a server setting
 		if (!sess.getServer().getHideTLS())
 		{

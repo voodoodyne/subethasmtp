@@ -19,11 +19,11 @@ public class SmartClient extends SMTPClient
 	private static Logger log = LoggerFactory.getLogger(SmartClient.class);
 
 	/** */
-    private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
+	private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
 
 	/** */
-    boolean sentFrom;
-    int recipientCount;
+	boolean sentFrom;
+	int recipientCount;
 
 	/**
 	 * @throws UnknownHostException if problem looking up hostname
