@@ -27,15 +27,15 @@ public enum CommandRegistry
 {
 	AUTH(new AuthCommand()),
 	DATA(new DataCommand()),
-	EHLO(new EhloCommand()),
+	EHLO(new EhloCommand(), false),
 	HELO(new HelloCommand()),
 	HELP(new HelpCommand()),
 	MAIL(new MailCommand()),
-	NOOP(new NoopCommand()),
-	QUIT(new QuitCommand()),
+	NOOP(new NoopCommand(), false),
+	QUIT(new QuitCommand(), false),
 	RCPT(new ReceiptCommand()),
 	RSET(new ResetCommand()),
-	STARTTLS(new StartTLSCommand()),
+	STARTTLS(new StartTLSCommand(), false),
 	VRFY(new VerifyCommand());
 
 	private Command command;
@@ -43,7 +43,16 @@ public enum CommandRegistry
 	/** */
 	private CommandRegistry(Command cmd)
 	{
-		this.command = cmd;
+		this(cmd, true);
+	}
+
+	/** */
+	private CommandRegistry(Command cmd, boolean checkForStartedTLSWhenRequired)
+	{
+		if (checkForStartedTLSWhenRequired)
+			this.command = new RequireTLSCommandWrapper(cmd);
+		else
+			this.command = cmd;
 	}
 
 	/** */

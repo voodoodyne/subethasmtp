@@ -81,12 +81,12 @@ public class SMTPClient
 	}
 
 	/**
-	 * Establishes a connection to host and port from the specified local socket 
+	 * Establishes a connection to host and port from the specified local socket
 	 * address and negotiate the initial EHLO exchange.
-	 * 
-	 * @param bindpoint the local socket address. If null, the system will pick 
+	 *
+	 * @param bindpoint the local socket address. If null, the system will pick
 	 *            up an ephemeral port and a valid local address.
-	 * 
+	 *
 	 * @throws UnknownHostException if the hostname cannot be resolved
 	 * @throws IOException if there is a problem connecting to the port
 	 */
@@ -115,7 +115,7 @@ public class SMTPClient
 		return this.hostPort;
 	}
 
-    /**
+	/**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
 	 *
@@ -143,7 +143,7 @@ public class SMTPClient
 		while (!done)
 		{
 			line = this.reader.readLine();
-			
+
 			if (log.isDebugEnabled())
 				log.debug("Server: " + line);
 
@@ -160,7 +160,7 @@ public class SMTPClient
 		return new Response(Integer.parseInt(code), builder.toString());
 	}
 
-    /**
+	/**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
 	 *

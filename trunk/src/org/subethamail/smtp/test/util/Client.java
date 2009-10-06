@@ -7,7 +7,6 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
-
 /**
  * A crude telnet client that can be used to send SMTP messages and test
  * the responses.
@@ -33,7 +32,7 @@ public class Client
 		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 	}
 
-    /**
+	/**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
 	 *
@@ -56,7 +55,7 @@ public class Client
 		if (!response.startsWith(expect))
 			throw new Exception("Got: " + response + " Expected: " + expect);
 	}
-	
+
 	/**
 	 * Throws an exception if the response does not contain
 	 * the specified string.
@@ -67,7 +66,7 @@ public class Client
 	    if (!response.contains(expect))
 	        throw new Exception("Got: " + response + " Expected to contain: " + expect);
 	}
-	
+
 	/**
 	 * Get the complete response, including a multiline response.
 	 * Newlines are included.

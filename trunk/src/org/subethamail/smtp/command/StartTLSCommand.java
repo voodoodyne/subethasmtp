@@ -1,13 +1,13 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
-import java.net.InetSocketAddress;
 import java.net.Socket;
 import java.util.Locale;
+import java.security.cert.Certificate;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
+import javax.net.ssl.SSLPeerUnverifiedException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,20 +49,25 @@ public class StartTLSCommand extends BaseCommand
 
 			sess.sendResponse("220 Ready to start TLS");
 
-			InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-			SSLSocketFactory sf = ((SSLSocketFactory) SSLSocketFactory.getDefault());
-			SSLSocket s = (SSLSocket) (sf.createSocket(socket, remoteAddress.getHostName(), socket.getPort(), true));
-
-			// we are a server
-			s.setUseClientMode(false);
-
-			// allow all supported cipher suites
-			s.setEnabledCipherSuites(s.getSupportedCipherSuites());
-
+			SSLSocket s = sess.getServer().createSSLSocket(socket);
 			s.startHandshake();
 
 			sess.setSocket(s);
 			sess.resetMessageState(); // clean slate
+			sess.setTlsStarted(true);
+
+			if (s.getNeedClientAuth()) {
+				try
+				{
+					Certificate[] peerCertificates = s.getSession().getPeerCertificates();
+					sess.setTlsPeerCertificates(peerCertificates);
+				}
+				catch (SSLPeerUnverifiedException e)
+				{
+					// IGNORE, just leave the certificate chain null
+				}
+			}
+
 		}
 		catch (SSLHandshakeException ex)
 		{
