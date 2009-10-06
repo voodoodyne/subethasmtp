@@ -56,7 +56,8 @@ public class StartTLSCommand extends BaseCommand
 			sess.resetMessageState(); // clean slate
 			sess.setTlsStarted(true);
 
-			if (s.getNeedClientAuth()) {
+			if (s.getNeedClientAuth())
+			{
 				try
 				{
 					Certificate[] peerCertificates = s.getSession().getPeerCertificates();
@@ -67,7 +68,6 @@ public class StartTLSCommand extends BaseCommand
 					// IGNORE, just leave the certificate chain null
 				}
 			}
-
 		}
 		catch (SSLHandshakeException ex)
 		{
