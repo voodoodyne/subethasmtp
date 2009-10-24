@@ -3,6 +3,17 @@
 		
 == Changes ==
 
+=== 3.1.2 - October 24, 2009 ===
+ * Much better TLS support
+ * Added support for the SIZE extension
+ * Helo information now available in MessageContext
+ * Fixed casing bug running in Turkish locale
+ * Better logging for mulithreaded environments
+ * Fixed issue with month formatting in smtp exchange
+ * Hides dropped connection exceptions from logs
+ * SMTPClient can now set bind address
+ * More logging in SMTClient
+
 === 3.1.1 - August 17, 2009 ===
  * Targeted to java 1.5 rather than 1.6.  No other changes.
 
