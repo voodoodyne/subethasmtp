@@ -12,6 +12,7 @@ import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.Version;
@@ -205,7 +206,8 @@ public class SMTPServer implements Runnable
 	 */
 	public synchronized void start()
 	{
-		log.info("SMTP server starting");
+		if (log.isInfoEnabled())
+			log.info("SMTP server {} starting", getDisplayableLocalSocketAddress());
 
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
@@ -233,7 +235,8 @@ public class SMTPServer implements Runnable
 	 */
 	public synchronized void stop()
 	{
-		log.info("SMTP server stopping");
+		if (log.isInfoEnabled())
+			log.info("SMTP server {} stopping", getDisplayableLocalSocketAddress());
 
 		// First make sure we aren't accepting any new connections
 		this.stopServerThread();
@@ -353,6 +356,12 @@ public class SMTPServer implements Runnable
 	 */
 	public void run()
 	{
+		if (log.isInfoEnabled())
+		{
+			MDC.put("smtpServerLocalSocketAddress", getDisplayableLocalSocketAddress());
+			log.info("SMTP server {} started", getDisplayableLocalSocketAddress());
+		}
+		
 		while (!this.shuttingDown)
 		{
 			// This deals with a race condition; a start followed by a quick stop
@@ -385,7 +394,11 @@ public class SMTPServer implements Runnable
 		this.serverSocket = null;
 		this.serverThread = null;
 
-		log.info("SMTP server stopped");
+		if (log.isInfoEnabled())
+		{
+			log.info("SMTP server {} stopped", getDisplayableLocalSocketAddress());
+			MDC.remove("smtpServerLocalSocketAddress");
+		}
 	}
 
 	/** */
@@ -398,6 +411,11 @@ public class SMTPServer implements Runnable
 	public String getNameVersion()
 	{
 		return this.getName() + " " + Version.getSpecification();
+	}
+
+	private String getDisplayableLocalSocketAddress()
+	{
+		return (this.bindAddress == null ? "*" : this.bindAddress) + ":" + this.port;
 	}
 
 	/**
