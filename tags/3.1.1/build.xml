@@ -1,0 +1,282 @@
+<?xml version="1.0"?>
+
+<!--
+	$Id$
+	$URL$
+
+	Top-level build file for SubEthaSMTP.  Imports build files for the
+	various modules, so this is the only entry point.
+	
+	To run the junit tests, you must copy junit.jar into ANT_HOME/lib.
+-->
+
+<project name="subethasmtp" default="jar" basedir=".">
+
+	<property name="name" value="${ant.project.name}" />
+	
+	<property file="user.properties" />
+	<property file="build.properties" />
+
+	<property name="build.dir" location="target" />
+	<property name="src.dir" location="src" />
+	<property name="lib.dir" location="lib" />
+	
+	<property name="build.debug" value="on" />
+	<property name="build.deprecation" value="on" />
+
+	<property name="docs.dir" value="${build.dir}/docs" />
+	
+	<property name="ant.build.javac.target" value="1.5" />
+	<property name="ant.build.javac.source" value="1.5" />
+	<property name="ant.build.javac.encoding" value="UTF-8" />
+
+	<property name="retroweaver.version" value="2.0.7" />
+	<property name="retroweaver.home" value="../retroweaver-${retroweaver.version}" />
+
+	<property name="deploy.dir" location="../Subetha/lib" />
+
+	<typedef resource="com/googlecode/svntask/svntask.xml">
+		<classpath>
+			<fileset dir="${lib.dir}">
+				<include name="**/svnkit.jar"/>
+				<include name="**/svntask.jar"/>
+			</fileset>
+		</classpath>
+	</typedef>
+	
+	<path id="classpath">
+		<fileset dir="${lib.dir}">
+			<include name="**/*.jar"/>
+		</fileset>
+	</path>
+		
+	<target name="jar" depends="init">
+		<mkdir dir="${build.dir}/classes" />
+
+		<javac srcdir="${src.dir}" destdir="${build.dir}/classes"
+			includeAntRuntime="false" debug="${build.debug}"
+			deprecation="${build.deprecation}">
+			
+			<classpath refid="classpath"/>
+		</javac>
+		
+		<jar jarfile="${build.dir}/${name}-${build.version}.jar">
+			<fileset dir="${build.dir}/classes"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+				<attribute name="Main-Class" value="org.subethamail.smtp.Version" />
+			</manifest>
+			
+			<exclude name="org/subethamail/smtp/test/**"/>
+		</jar>
+	</target>
+
+	<target name="smtp-jdk1.4-jar" depends="jar, rt-task">
+		<retroweaver inputjar="${build.dir}/${name}-${build.version}.jar" outputjar="${build.dir}/${name}-${build.version}-jdk1.4.jar" />
+	</target>
+
+	<target name="assembly" depends="jar">
+		<property name="ikvm.dir" value="/dotnet/ikvm-0.38.0.2"/>
+		
+		<taskdef name="ikvmc" classname="net.ikvm.ant.IkvmcTask" classpathref="classpath"/>
+		
+		<ikvmc target="library" out="${build.dir}/${name}.dll" home="${ikvm.dir}" debug="true">
+			<fileset dir="${build.dir}">
+				<include name="${name}.jar"/>
+			</fileset>
+			
+			<fileset dir="${lib.dir}">
+				<include name="**/*.jar"/>
+				<exclude name="activation.jar"/>
+			</fileset>
+		</ikvmc>
+	</target>
+
+	<target name="rtest-jar" depends="init, jar">
+		<jar jarfile="${build.dir}/rtest.jar">
+			<fileset dir="${build.dir}/classes"/>
+			
+			<manifest>
+				<attribute name="Specification-Version" value="${build.version}" />
+				<attribute name="Implementation-Version" value="${TODAY}" />
+			</manifest>
+			
+			<include name="org/subethamail/smtp/test/**"/>
+		</jar>
+	</target>
+	
+	<target name="junit" depends="rtest-jar">
+		<junit printsummary="yes" showoutput="yes" fork="yes" maxmemory="512m">
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+
+			<formatter type="plain"/>
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.dir}/classes">
+					<include name="**/*Test.class"/>
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+
+	<target name="junit-special" depends="rtest-jar">
+		<junit printsummary="true" showoutput="true" fork="true" maxmemory="512m">
+			
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+			
+			<formatter type="plain" />
+			
+			<batchtest todir="${build.dir}">
+				<fileset dir="${build.dir}/classes">
+					<include name="${junit.special.tests}" />
+				</fileset>
+			</batchtest>
+		</junit>
+	</target>
+	
+	<target name="practice" depends="rtest-jar">
+		<java classname="org.subethamail.smtp.test.util.Practice">
+			<classpath refid="classpath" />
+			<classpath>
+				<fileset dir="${build.dir}">
+						<include name="*.jar" />
+				</fileset>
+			</classpath>
+		</java>
+	</target>
+	
+	<target name="clean">
+		<delete dir="${build.dir}" />
+	</target>
+
+	<target name="input-version">
+		<input addproperty="build.version" message="Version number?" />
+	</target>
+	
+	<target name="formal-build" depends="clean, input-version, jar">
+	</target>
+	
+	<target name="formal-deploy" depends="formal-build, deploy">
+	</target>
+	
+	<target name="init">
+		<tstamp/>
+		<tstamp>
+			<format property="YEAR" pattern="yyyy" />
+		</tstamp>
+		<property name="build.version" value="UNVERSIONED"/>
+	</target>
+
+	<target name="javadoc" depends="init">
+		<javadoc
+			destdir="${build.dir}/javadoc"
+			packagenames="*"
+			classpathref="classpath"
+			author="true"
+			version="true"
+			Windowtitle="SubEthaSMTP Javadoc"
+		>
+			<fileset dir="${src.dir}"/>
+			<doctitle><![CDATA[<h1>SubEthaSMTP</h1>]]></doctitle>
+			<bottom><![CDATA[<i>Copyright &#169; ${YEAR} SubEthaSMTP. All Rights Reserved. Build version: ${build.version}</i>]]></bottom>
+		</javadoc>
+	</target>
+	
+	<target name="deploy" depends="jar">
+		<copy file="${build.dir}/${name}-${build.version}.jar" todir="${deploy.dir}" />
+	</target>
+
+	<target name="build-docs" description="downloads docs from wiki and processes them into the build/docs dir">
+		<taskdef resource="net/sf/antcontrib/antlib.xml" classpathref="classpath"/>
+		
+		<property name="gc.name" value="subethasmtp"/>
+		
+		<property name="wiki.baseurl" value="http://code.google.com/p/${gc.name}/wiki"/>
+				
+		<mkdir dir="${docs.dir}"/>
+		
+		<svn><ls repository="http://${gc.name}.googlecode.com/svn" path="wiki" filterType="file" filterContains=".wiki"/></svn>
+		<propertyregex property="wiki.pages" input="${svn.ls}" regexp="\.wiki" replace=""/> 
+		<echo message="Getting wiki pages: ${wiki.pages}"/>
+		
+		<!-- Get files from wiki-->
+		<for list="${wiki.pages}" param="wiki.page" parallel="yes">
+		  <sequential>
+			<get dest="${docs.dir}/@{wiki.page}.html" src="${wiki.baseurl}/@{wiki.page}?show=content"/>
+		  </sequential>
+		</for>
+		
+		<!-- Replace links in files -->
+		<for list="${wiki.pages}" param="wiki.page">
+		  <sequential>
+			<replace dir="${docs.dir}" token="/p/${gc.name}/wiki/${wiki.page}" value="@{wiki.page}.html"/>
+		  </sequential>
+		</for>
+		
+		<!-- link back to the wiki, if we haven't downloaded the content -->
+		<replace dir="${docs.dir}" token="/p/${gc.name}/wiki" value="${wiki.baseurl}"/>
+		
+	</target>
+
+	<target name="dist" depends="clean, formal-build, build-docs, javadoc">
+		<property name="build.dist.dir" location="${build.dir}/${name}-${build.version}"/>
+		<property name="build.dist.zip" location="${build.dir}/${name}-${build.version}.zip"/>
+
+		<antcall target="smtp-jdk1.4-jar" />
+
+		<copy todir="${build.dist.dir}">
+			<fileset dir="${build.dir}">
+				<include name="${name}*.jar" />
+			</fileset>
+			
+			<fileset dir="${build.dir}">
+				<include name="javadoc/**" />
+			</fileset>
+
+			<fileset dir="${build.dir}">
+				<include name="docs/**" />
+			</fileset>
+
+			<fileset dir=".">
+				<include name="README.html" />
+				<include name="LICENSE.txt" />
+				<include name="build.xml" />
+				<include name="build.properties" />
+				<include name=".project" />
+				<include name=".classpath" />
+				
+				<include name="lib/**" />
+				<include name="src/**" />
+			</fileset>
+		</copy>
+
+		<dirname property="build.dist.dir.dirname" file="${build.dist.dir}" />
+		<basename property="build.dist.dir.basename" file="${build.dist.dir}" />
+		
+		<zip zipfile="${build.dist.zip}" basedir="${build.dist.dir.dirname}">
+			<include name="${build.dist.dir.basename}/**" />
+		</zip>
+	</target>
+
+	<target name="rt-task">
+		<taskdef name="retroweaver" classname="net.sourceforge.retroweaver.ant.RetroWeaverTask">
+		  <classpath>
+		    <fileset dir="${retroweaver.home}/lib" includes="**/*"/>
+		    <pathelement location="${retroweaver.home}/release/retroweaver-all-${retroweaver.version}.jar"/>
+		  </classpath>
+		</taskdef>
+	</target>
+
+</project>
