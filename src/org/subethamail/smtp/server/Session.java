@@ -276,7 +276,7 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/* (non-Javadoc)
-	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
+	 * @see org.subethamail.smtp.MessageContext#getRemoteAddress()
 	 */
 	public InetSocketAddress getRemoteAddress()
 	{
