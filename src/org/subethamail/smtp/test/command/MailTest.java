@@ -44,10 +44,8 @@ public class MailTest extends ServerTestCase
 
 		this.send("HELO foo.com");
 		this.expect("250");
-		
-		// added <> because without them "lkjk" is a parameter
-		// to the MAIL command. (Postfix responds accordingly)
-		this.send("MAIL FROM: <test@lkjsd lkjk>");
+
+		this.send("MAIL FROM: test@lkjsd lkjk");
 		this.expect("553 <test@lkjsd lkjk> Invalid email address.");
 	}
 
@@ -98,45 +96,4 @@ public class MailTest extends ServerTestCase
 		this.send("MAIL FROM:<validuser@subethamail.org>");
 		this.expect("250 Ok");
 	}
-	
-	/** */
-	public void testSize() throws Exception
-	{
-	    this.wiser.getServer().setMaxMessageSize(1000);
-	    this.expect("220");
-
-	    this.send("EHLO foo.com");
-	    this.expectContains("250-SIZE 1000");
-
-	    this.send("MAIL FROM:<validuser@subethamail.org> SIZE=100");
-	    this.expect("250 Ok");
-	}
-
-	/** */
-	public void testSizeWithoutSize() throws Exception
-	{
-	    this.wiser.getServer().setMaxMessageSize(1000);
-	    this.expect("220");
-
-	    this.send("EHLO foo.com");
-	    this.expectContains("250-SIZE 1000");
-
-	    this.send("MAIL FROM:<validuser@subethamail.org>");
-	    this.expect("250 Ok");
-	}
-
-	/** */
-	public void testSizeTooLarge() throws Exception
-	{
-	    this.wiser.getServer().setMaxMessageSize(1000);
-	    this.expect("220");
-
-	    this.send("EHLO foo.com");
-	    this.expectContains("250-SIZE 1000");
-
-	    this.send("MAIL FROM:<validuser@subethamail.org> SIZE=1001");
-	    this.expect("552");
-	}
-
 }
-

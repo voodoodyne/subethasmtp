@@ -1,7 +1,6 @@
 package org.subethamail.smtp.client;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
@@ -19,11 +18,11 @@ public class SmartClient extends SMTPClient
 	private static Logger log = LoggerFactory.getLogger(SmartClient.class);
 
 	/** */
-	private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
+    private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
 
 	/** */
-	boolean sentFrom;
-	int recipientCount;
+    boolean sentFrom;
+    int recipientCount;
 
 	/**
 	 * @throws UnknownHostException if problem looking up hostname
@@ -32,17 +31,7 @@ public class SmartClient extends SMTPClient
 	 */
 	public SmartClient(String host, int port, String myHost) throws UnknownHostException, IOException, SMTPException
 	{
-		this(host, port, null, myHost);
-	}
-
-	/**
-	 * @throws UnknownHostException if problem looking up hostname
-	 * @throws SMTPException if problem reported by the server
-	 * @throws IOException if problem communicating with host
-	 */
-	public SmartClient(String host, int port, SocketAddress bindpoint, String myHost) throws UnknownHostException, IOException, SMTPException
-	{
-		super(host, port, bindpoint);
+		super(host, port);
 
 		this.receiveAndCheck();	// The server announces itself first
 		this.sendAndCheck("HELO " + myHost);

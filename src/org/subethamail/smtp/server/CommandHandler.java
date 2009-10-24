@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.net.SocketTimeoutException;
 import java.util.Collection;
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
 import java.util.StringTokenizer;
@@ -28,21 +27,16 @@ public class CommandHandler
 	public CommandHandler()
 	{
 		// This solution should be more robust than the earlier "manual" configuration.
-		for (CommandRegistry registry: CommandRegistry.values())
+		for(CommandRegistry registry : CommandRegistry.values())
 		{
 			this.addCommand(registry.getCommand());
 		}
 	}
 
-	/**
-	 * Create a command handler with a specific set of commands.
-	 *
-	 * @param availableCommands the available commands (not null)
-	 *  TLS note: wrap commands with {@link RequireTLSCommandWrapper} when appropriate.
-	 */
+	/** */
 	public CommandHandler(Collection<Command> availableCommands)
 	{
-		for (Command command: availableCommands)
+		for(Command command :availableCommands )
 		{
 			this.addCommand(command);
 		}
@@ -124,7 +118,7 @@ public class CommandHandler
 		if (string == null || string.length() < 4)
 			throw new InvalidCommandNameException("Error: bad syntax");
 
-		return string.substring(0, 4).toUpperCase(Locale.ENGLISH);
+		return string.substring(0, 4).toUpperCase();
 	}
 
 	/** */
@@ -134,6 +128,6 @@ public class CommandHandler
 		if (!stringTokenizer.hasMoreTokens())
 			throw new InvalidCommandNameException("Error: bad syntax");
 
-		return stringTokenizer.nextToken().toUpperCase(Locale.ENGLISH);
+		return stringTokenizer.nextToken().toUpperCase();
 	}
 }

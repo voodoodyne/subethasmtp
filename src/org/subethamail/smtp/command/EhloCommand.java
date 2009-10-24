@@ -53,13 +53,6 @@ public class EhloCommand extends BaseCommand
 		response.append(sess.getServer().getHostName());
 		response.append("\r\n" + "250-8BITMIME");
 
-		int maxSize = sess.getServer().getMaxMessageSize();
-		if (maxSize > 0)
-		{
-			response.append("\r\n" + "250-SIZE ");
-			response.append(maxSize);
-		}
-
 		// Hiding TLS is a server setting
 		if (!sess.getServer().getHideTLS())
 		{

@@ -1,6 +1,5 @@
 package org.subethamail.smtp.util;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Collection;
 import java.util.Iterator;
 
@@ -28,21 +27,4 @@ public class TextUtils
 		return ret.toString();
 	}
 
-	/**
-	 * @return the value of str.getBytes() without the idiotic checked exception
-	 */
-	public static byte[] getBytes(String str, String charset)
-	{
-		try
-		{
-			return str.getBytes(charset);
-		}
-		catch (UnsupportedEncodingException ex) { throw new IllegalStateException(ex); }
-	}
-	
-	/** @return the string as US-ASCII bytes */
-	public static byte[] getAsciiBytes(String str)
-	{
-		return getBytes(str, "US-ASCII");
-	}
 }

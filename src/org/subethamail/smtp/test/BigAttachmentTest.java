@@ -114,21 +114,21 @@ public class BigAttachmentTest extends TestCase
 				"success@subethamail.org"));
 		baseMsg.setSubject("Test Big attached file message");
 		baseMsg.setContent(multipart);
-		baseMsg.saveChanges();
+        baseMsg.saveChanges();
 
-		log.debug("Send started");
-		Transport t = new SMTPTransport(session, new URLName("smtp://localhost:"+SMTP_PORT));
+        log.debug("Send started");
+        Transport t = new SMTPTransport(session, new URLName("smtp://localhost:"+SMTP_PORT));
 		long started = System.currentTimeMillis();
-		t.connect();
-		t.sendMessage(baseMsg, new Address[] {new InternetAddress(
+        t.connect();
+        t.sendMessage(baseMsg, new Address[] {new InternetAddress(
 				"success@subethamail.org")});
-		t.close();
-		started = System.currentTimeMillis() - started;
-		log.info("Elapsed ms = "+started);
+        t.close();
+        started = System.currentTimeMillis() - started;
+        log.info("Elapsed ms = "+started);
 
-		WiserMessage msg = this.server.getMessages().get(0);
+        WiserMessage msg = this.server.getMessages().get(0);
 
-		assertEquals(1, this.server.getMessages().size());
+        assertEquals(1, this.server.getMessages().size());
 		assertEquals("success@subethamail.org", msg.getEnvelopeReceiver());
 
 		File compareFile = File.createTempFile("attached", ".tmp");

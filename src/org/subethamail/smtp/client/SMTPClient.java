@@ -5,9 +5,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.PrintWriter;
-import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
@@ -69,7 +67,7 @@ public class SMTPClient
 	}
 
 	/**
-	 * Establishes a connection to host and port and negotiate the initial EHLO
+	 * Establishes a connection to host and port and negotiated the inital EHLO
 	 * exchange.
 	 *
 	 * @throws UnknownHostException if the hostname cannot be resolved
@@ -77,29 +75,9 @@ public class SMTPClient
 	 */
 	public SMTPClient(String host, int port) throws UnknownHostException, IOException
 	{
-		this(host, port, null);
-	}
-
-	/**
-	 * Establishes a connection to host and port from the specified local socket
-	 * address and negotiate the initial EHLO exchange.
-	 *
-	 * @param bindpoint the local socket address. If null, the system will pick
-	 *            up an ephemeral port and a valid local address.
-	 *
-	 * @throws UnknownHostException if the hostname cannot be resolved
-	 * @throws IOException if there is a problem connecting to the port
-	 */
-	public SMTPClient(String host, int port, SocketAddress bindpoint) throws UnknownHostException, IOException
-	{
 		this.hostPort = host + ":" + port;
 
-		if (log.isDebugEnabled())
-			log.debug("Connecting to " + this.hostPort);
-
-		this.socket = new Socket();
-		this.socket.bind(bindpoint);
-		this.socket.connect(new InetSocketAddress(host, port));
+		this.socket = new Socket(host, port);
 		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
 		this.rawOutput = this.socket.getOutputStream();
@@ -115,7 +93,7 @@ public class SMTPClient
 		return this.hostPort;
 	}
 
-	/**
+    /**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
 	 *
@@ -123,9 +101,6 @@ public class SMTPClient
 	 */
 	protected void send(String msg) throws IOException
 	{
-		if (log.isDebugEnabled())
-			log.debug("Client: " + msg);
-
 		// Force \r\n since println() behaves differently on different platforms
 		this.writer.print(msg + "\r\n");
 		this.writer.flush();
@@ -144,9 +119,6 @@ public class SMTPClient
 		{
 			line = this.reader.readLine();
 
-			if (log.isDebugEnabled())
-				log.debug("Server: " + line);
-
 			builder.append(line.substring(4));
 
 			if (line.charAt(3) == '-')
@@ -160,7 +132,7 @@ public class SMTPClient
 		return new Response(Integer.parseInt(code), builder.toString());
 	}
 
-	/**
+    /**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
 	 *
@@ -196,9 +168,6 @@ public class SMTPClient
 			try
 			{
 				this.socket.close();
-
-				if (log.isDebugEnabled())
-					log.debug("Closed connection to " + this.hostPort);
 			}
 			catch (IOException ex)
 			{

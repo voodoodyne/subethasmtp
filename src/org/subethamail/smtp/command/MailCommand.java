@@ -1,7 +1,6 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
@@ -41,7 +40,7 @@ public class MailCommand extends BaseCommand
 			}
 
 			String args = this.getArgPredicate(commandString);
-			if (!args.toUpperCase(Locale.ENGLISH).startsWith("FROM:"))
+			if (!args.toUpperCase().startsWith("FROM:"))
 			{
 				sess.sendResponse(
 						"501 Syntax: MAIL FROM: <address>  Error in parameters: \"" +
@@ -52,33 +51,9 @@ public class MailCommand extends BaseCommand
 			String emailAddress = EmailUtils.extractEmailAddress(args, 5);
 			if (EmailUtils.isValidEmailAddress(emailAddress))
 			{
-				// extract SIZE argument from MAIL FROM command.
-				// disregard unknown parameters. TODO: reject unknown
-				// parameters.
-				int size = 0;
-				String largs = args.toLowerCase(Locale.ENGLISH);
-				int sizec = largs.indexOf(" size=");
-				if (sizec > -1)
-				{
-					// disregard non-numeric values.
-					String ssize = largs.substring(sizec + 6).trim();
-					if (ssize.length() > 0 && ssize.matches("[0-9]+"))
-					{
-						size = Integer.parseInt(ssize);
-					}
-				}
-				// Reject the message if the size supplied by the client
-				// is larger than what we advertised in EHLO answer.
-				if (size > sess.getServer().getMaxMessageSize())
-				{
-					sess.sendResponse("552 5.3.4 Message size exceeds fixed limit");
-					return;
-				}
-				
 				try
 				{
 					sess.getMessageHandler().from(emailAddress);
-					sess.setDeclaredMessageSize(size);
 					sess.setHasMailFrom(true);
 					sess.sendResponse("250 Ok");
 				}

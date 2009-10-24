@@ -6,7 +6,6 @@ import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.test.util.Client;
 import org.subethamail.smtp.test.util.ServerTestCase;
 import org.subethamail.smtp.util.Base64;
-import org.subethamail.smtp.util.TextUtils;
 
 /**
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
@@ -92,7 +91,7 @@ public class AuthTest extends ServerTestCase
 		String authString = new String(new byte[] {0}) + REQUIRED_USERNAME
 						+ new String(new byte[] {0}) + REQUIRED_PASSWORD;
 
-		String enc_authString = Base64.encodeToString(TextUtils.getAsciiBytes(authString), false);
+		String enc_authString = Base64.encodeToString(authString.getBytes(), false);
 		this.send(enc_authString);
 		this.expect("235");
 
@@ -127,7 +126,7 @@ public class AuthTest extends ServerTestCase
 		this.send("AUTH LOGIN");
 		this.expect("334");
 
-		String enc_username = Base64.encodeToString(TextUtils.getAsciiBytes(REQUIRED_USERNAME), false);
+		String enc_username = Base64.encodeToString(REQUIRED_USERNAME.getBytes(), false);
 
 		this.send(enc_username);
 		this.expect("334");
@@ -141,7 +140,7 @@ public class AuthTest extends ServerTestCase
 		this.send(enc_username);
 		this.expect("334");
 
-		String enc_pwd = Base64.encodeToString(TextUtils.getAsciiBytes(REQUIRED_PASSWORD), false);
+		String enc_pwd = Base64.encodeToString(REQUIRED_PASSWORD.getBytes(), false);
 		this.send(enc_pwd);
 		this.expect("235");
 

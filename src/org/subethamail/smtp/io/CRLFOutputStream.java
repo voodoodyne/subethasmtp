@@ -34,130 +34,130 @@ import java.io.OutputStream;
  */
 public class CRLFOutputStream extends FilterOutputStream {
 
-	/**
-	 * Counter for number of last (0A or 0D).
-	 */
-	protected int statusLast;
+    /**
+     * Counter for number of last (0A or 0D).
+     */
+    protected int statusLast;
 
-	protected final static int LAST_WAS_OTHER = 0;
+    protected final static int LAST_WAS_OTHER = 0;
 
-	protected final static int LAST_WAS_CR = 1;
+    protected final static int LAST_WAS_CR = 1;
 
-	protected final static int LAST_WAS_LF = 2;
+    protected final static int LAST_WAS_LF = 2;
 
-	protected boolean startOfLine = true;
+    protected boolean startOfLine = true;
 
-	/**
-	 * Constructor that wraps an OutputStream.
-	 *
-	 * @param out
-	 *                the OutputStream to be wrapped
-	 */
-	public CRLFOutputStream(OutputStream out) {
-		super(out);
-		this.statusLast = LAST_WAS_LF; // we already assume a CRLF at beginning
-									// (otherwise TOP would not work correctly
-									// !)
-	}
+    /**
+     * Constructor that wraps an OutputStream.
+     *
+     * @param out
+     *                the OutputStream to be wrapped
+     */
+    public CRLFOutputStream(OutputStream out) {
+        super(out);
+        this.statusLast = LAST_WAS_LF; // we already assume a CRLF at beginning
+                                    // (otherwise TOP would not work correctly
+                                    // !)
+    }
 
-	/**
-	 * Writes a byte to the stream Fixes any naked CR or LF to the RFC 2821
-	 * mandated CFLF pairing.
-	 *
-	 * @param b
-	 *                the byte to write
-	 *
-	 * @throws IOException
-	 *                 if an error occurs writing the byte
-	 */
-	@Override
+    /**
+     * Writes a byte to the stream Fixes any naked CR or LF to the RFC 2821
+     * mandated CFLF pairing.
+     *
+     * @param b
+     *                the byte to write
+     *
+     * @throws IOException
+     *                 if an error occurs writing the byte
+     */
+    @Override
 	public void write(int b) throws IOException {
-		switch (b) {
-			case '\r':
-				this.out.write('\r');
-				this.out.write('\n');
-				this.startOfLine = true;
-				this.statusLast = LAST_WAS_CR;
-				break;
-			case '\n':
-				if (this.statusLast != LAST_WAS_CR) {
-					this.out.write('\r');
-					this.out.write('\n');
-					this.startOfLine = true;
-				}
-				this.statusLast = LAST_WAS_LF;
-				break;
-			default:
-				// we're no longer at the start of a line
-				this.out.write(b);
-				this.startOfLine = false;
-				this.statusLast = LAST_WAS_OTHER;
-				break;
-		}
-	}
+        switch (b) {
+            case '\r':
+                this.out.write('\r');
+                this.out.write('\n');
+                this.startOfLine = true;
+                this.statusLast = LAST_WAS_CR;
+                break;
+            case '\n':
+                if (this.statusLast != LAST_WAS_CR) {
+                    this.out.write('\r');
+                    this.out.write('\n');
+                    this.startOfLine = true;
+                }
+                this.statusLast = LAST_WAS_LF;
+                break;
+            default:
+                // we're no longer at the start of a line
+                this.out.write(b);
+                this.startOfLine = false;
+                this.statusLast = LAST_WAS_OTHER;
+                break;
+        }
+    }
 
-	/**
-	 * Provides an extension point for ExtraDotOutputStream to be able to add dots
-	 * at the beginning of new lines.
-	 *
-	 * @see java.io.FilterOutputStream#write(byte[], int, int)
-	 */
-	protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
-		this.out.write(buffer, offset, length);
-	}
+    /**
+     * Provides an extension point for ExtraDotOutputStream to be able to add dots
+     * at the beginning of new lines.
+     *
+     * @see java.io.FilterOutputStream#write(byte[], int, int)
+     */
+    protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
+        this.out.write(buffer, offset, length);
+    }
 
-	/**
-	 * @see java.io.FilterOutputStream#write(byte[], int, int)
-	 */
-	@Override
+    /**
+     * @see java.io.FilterOutputStream#write(byte[], int, int)
+     */
+    @Override
 	public synchronized void write(byte buffer[], int offset, int length)
-			throws IOException {
-		/* optimized */
-		int lineStart = offset;
-		for (int i = offset; i < length + offset; i++) {
-			switch(buffer[i]) {
-			case '\r':
-				// CR case. Write down the last line
-				// and position the new lineStart at the next char
-				this.writeChunk(buffer, lineStart, i - lineStart);
-				this.out.write('\r');
-				this.out.write('\n');
-				this.startOfLine = true;
-				lineStart = i + 1;
-				this.statusLast = LAST_WAS_CR;
-				break;
-			case '\n':
-				if (this.statusLast != LAST_WAS_CR) {
-					this.writeChunk(buffer, lineStart, i - lineStart);
-					this.out.write('\r');
-					this.out.write('\n');
-					this.startOfLine = true;
-				}
-				lineStart = i + 1;
-				this.statusLast = LAST_WAS_LF;
-				break;
-			default:
-				this.statusLast = LAST_WAS_OTHER;
-			}
-		}
-		if (length + offset > lineStart) {
-			this.writeChunk(buffer, lineStart, length + offset - lineStart);
-			this.startOfLine = false;
-		}
-	}
+            throws IOException {
+        /* optimized */
+        int lineStart = offset;
+        for (int i = offset; i < length + offset; i++) {
+            switch(buffer[i]) {
+            case '\r':
+                // CR case. Write down the last line
+                // and position the new lineStart at the next char
+                this.writeChunk(buffer, lineStart, i - lineStart);
+                this.out.write('\r');
+                this.out.write('\n');
+                this.startOfLine = true;
+                lineStart = i + 1;
+                this.statusLast = LAST_WAS_CR;
+                break;
+            case '\n':
+                if (this.statusLast != LAST_WAS_CR) {
+                    this.writeChunk(buffer, lineStart, i - lineStart);
+                    this.out.write('\r');
+                    this.out.write('\n');
+                    this.startOfLine = true;
+                }
+                lineStart = i + 1;
+                this.statusLast = LAST_WAS_LF;
+                break;
+            default:
+                this.statusLast = LAST_WAS_OTHER;
+            }
+        }
+        if (length + offset > lineStart) {
+            this.writeChunk(buffer, lineStart, length + offset - lineStart);
+            this.startOfLine = false;
+        }
+    }
 
 
-	/**
-	 * Ensure that the stream is CRLF terminated.
-	 *
-	 * @throws IOException
-	 *                 if an error occurs writing the byte
-	 */
-	public void checkCRLFTerminator() throws IOException {
-		if (this.statusLast == LAST_WAS_OTHER) {
-			this.out.write('\r');
-			this.out.write('\n');
-			this.statusLast = LAST_WAS_CR;
-		}
-	}
+    /**
+     * Ensure that the stream is CRLF terminated.
+     *
+     * @throws IOException
+     *                 if an error occurs writing the byte
+     */
+    public void checkCRLFTerminator() throws IOException {
+        if (this.statusLast == LAST_WAS_OTHER) {
+            this.out.write('\r');
+            this.out.write('\n');
+            this.statusLast = LAST_WAS_CR;
+        }
+    }
 }

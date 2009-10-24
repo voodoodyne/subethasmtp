@@ -4,15 +4,10 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.net.InetSocketAddress;
 import java.net.ServerSocket;
-import java.net.Socket;
 import java.net.UnknownHostException;
-
-import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.Version;
@@ -48,7 +43,7 @@ public class SMTPServer implements Runnable
 {
 	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
-	/** Hostname used if we can't find one */
+	/** Hostame used if we can't find one */
 	private final static String UNKNOWN_HOSTNAME = "localhost";
 
 	private InetAddress bindAddress = null;	// default to all interfaces
@@ -70,8 +65,6 @@ public class SMTPServer implements Runnable
 
 	/** If true, TLS is not announced */
 	private boolean hideTLS = false;
-	/** If true, a TLS handshake is required */
-	private boolean requireTLS;
 
 	/**
 	 * set a hard limit on the maximum number of connections this server will accept
@@ -89,15 +82,6 @@ public class SMTPServer implements Runnable
 	 * The maximal number of recipients that this server accepts per message delivery request.
 	 */
 	private int maxRecipients = 1000;
-
-	/**
-	 * The maximum size of a message that the server will accept. This value is advertised
-	 * during the EHLO phase if it is larger than 0. If the message size specified by the client
-	 * during the MAIL phase, the message will be rejected at that time. (RFC 1870)
-	 * Default is 0.  Note this doesn't actually enforce any limits on the message being
-	 * read; you must do that yourself when reading data.
-	 */
-	private int maxMessageSize = 0;
 
 	/**
 	 * The primary constructor.
@@ -206,8 +190,7 @@ public class SMTPServer implements Runnable
 	 */
 	public synchronized void start()
 	{
-		if (log.isInfoEnabled())
-			log.info("SMTP server {} starting", getDisplayableLocalSocketAddress());
+		log.info("SMTP server starting");
 
 		if (this.serverThread != null)
 			throw new IllegalStateException("SMTPServer already started");
@@ -235,8 +218,7 @@ public class SMTPServer implements Runnable
 	 */
 	public synchronized void stop()
 	{
-		if (log.isInfoEnabled())
-			log.info("SMTP server {} stopping", getDisplayableLocalSocketAddress());
+		log.info("SMTP server stopping");
 
 		// First make sure we aren't accepting any new connections
 		this.stopServerThread();
@@ -314,32 +296,6 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * Create a SSL socket that wraps the existing socket. This method
-	 * is called after the client issued the STARTTLS command.
-	 * <p>
-	 * Subclasses may override this method to configure the key stores, enabled protocols/
-	 * cipher suites, enforce client authentication, etc.
-	 *
-	 * @param socket the existing socket as created by {@link #createServerSocket()} (not null)
-	 * @return a SSLSocket
-	 * @throws IOException when creating the socket failed
-	 */
-	public SSLSocket createSSLSocket(Socket socket) throws IOException
-	{
-		SSLSocketFactory sf = ((SSLSocketFactory) SSLSocketFactory.getDefault());
-		InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
-		SSLSocket s = (SSLSocket) (sf.createSocket(socket, remoteAddress.getHostName(), socket.getPort(), true));
-
-		// we are a server
-		s.setUseClientMode(false);
-
-		// allow all supported cipher suites
-		s.setEnabledCipherSuites(s.getSupportedCipherSuites());
-
-		return s;
-	}
-
-	/**
 	 * Shuts down the server thread and the associated server socket in an orderly fashion.
 	 */
 	protected void stopServerThread()
@@ -356,12 +312,6 @@ public class SMTPServer implements Runnable
 	 */
 	public void run()
 	{
-		if (log.isInfoEnabled())
-		{
-			MDC.put("smtpServerLocalSocketAddress", getDisplayableLocalSocketAddress());
-			log.info("SMTP server {} started", getDisplayableLocalSocketAddress());
-		}
-		
 		while (!this.shuttingDown)
 		{
 			// This deals with a race condition; a start followed by a quick stop
@@ -394,11 +344,7 @@ public class SMTPServer implements Runnable
 		this.serverSocket = null;
 		this.serverThread = null;
 
-		if (log.isInfoEnabled())
-		{
-			log.info("SMTP server {} stopped", getDisplayableLocalSocketAddress());
-			MDC.remove("smtpServerLocalSocketAddress");
-		}
+		log.info("SMTP server stopped");
 	}
 
 	/** */
@@ -411,11 +357,6 @@ public class SMTPServer implements Runnable
 	public String getNameVersion()
 	{
 		return this.getName() + " " + Version.getSpecification();
-	}
-
-	private String getDisplayableLocalSocketAddress()
-	{
-		return (this.bindAddress == null ? "*" : this.bindAddress) + ":" + this.port;
 	}
 
 	/**
@@ -542,37 +483,4 @@ public class SMTPServer implements Runnable
 	{
 		this.hideTLS = value;
 	}
-
-	/** */
-	public boolean getRequireTLS()
-	{
-		return this.requireTLS;
-	}
-
-	/**
-	 * @param requireTLS true to require a TLS handshake, false to allow operation
-	 *   with or without TLS
-	 *   Default is false.
-	 */
-	public void setRequireTLS(boolean requireTLS)
-	{
-		this.requireTLS = requireTLS;
-	}
-
-	/**
-	 * @return the maxMessageSize
-	 */
-	public int getMaxMessageSize()
-	{
-		return maxMessageSize;
-	}
-
-	/**
-	 * @param maxMessageSize the maxMessageSize to set
-	 */
-	public void setMaxMessageSize(int maxMessageSize)
-	{
-		this.maxMessageSize = maxMessageSize;
-	}
-
 }

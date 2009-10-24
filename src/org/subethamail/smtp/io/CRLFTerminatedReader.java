@@ -37,7 +37,7 @@ public class CRLFTerminatedReader extends Reader
 	static int MAX_LINE_LENGTH = 998;
 
 	@SuppressWarnings("serial")
-	public class TerminationException extends IOException
+    public class TerminationException extends IOException
 	{
 		private int where;
 
@@ -60,7 +60,7 @@ public class CRLFTerminatedReader extends Reader
 	}
 
 	@SuppressWarnings("serial")
-	public class MaxLineLengthException extends IOException
+    public class MaxLineLengthException extends IOException
 	{
 		public MaxLineLengthException()
 		{
@@ -73,7 +73,7 @@ public class CRLFTerminatedReader extends Reader
 		}
 	}
 
-	/**
+    /**
 	 * Constructs this CRLFTerminatedReader.
 	 *
 	 * @param in
@@ -84,9 +84,9 @@ public class CRLFTerminatedReader extends Reader
 	 * @throws UnsupportedEncodingException
 	 *             if the named charset is not supported
 	 */
-	InputStream in;
+    InputStream in;
 
-	public CRLFTerminatedReader(InputStream in)
+    public CRLFTerminatedReader(InputStream in)
 	{
 		this.in = in;
 	}
@@ -97,40 +97,40 @@ public class CRLFTerminatedReader extends Reader
 		this(in);
 	}
 
-	private StringBuffer lineBuffer = new StringBuffer();
-	private final int
-			EOF = -1,
-			CR  = 13,
-			LF  = 10;
+    private StringBuffer lineBuffer = new StringBuffer();
+    private final int
+            EOF = -1,
+            CR  = 13,
+            LF  = 10;
 
-	private int tainted = -1;
+    private int tainted = -1;
 
-	/**
-	 * Read a line of text which is terminated by CRLF.  The concluding
-	 * CRLF characters are not returned with the String, but if either CR
-	 * or LF appears in the text in any other sequence it is returned
-	 * in the String like any other character.  Some characters at the
-	 * end of the stream may be lost if they are in a "line" not
-	 * terminated by CRLF.
-	 *
-	 * @return either a String containing the contents of a
-	 * line which must end with CRLF, or null if the end of the
-	 * stream has been reached, possibly discarding some characters
-	 * in a line not terminated with CRLF.
-	 * @throws IOException if an I/O error occurs.
-	 */
-	public String readLine() throws IOException
+    /**
+     * Read a line of text which is terminated by CRLF.  The concluding
+     * CRLF characters are not returned with the String, but if either CR
+     * or LF appears in the text in any other sequence it is returned
+     * in the String like any other character.  Some characters at the
+     * end of the stream may be lost if they are in a "line" not
+     * terminated by CRLF.
+     *
+     * @return either a String containing the contents of a
+     * line which must end with CRLF, or null if the end of the
+     * stream has been reached, possibly discarding some characters
+     * in a line not terminated with CRLF.
+     * @throws IOException if an I/O error occurs.
+     */
+    public String readLine() throws IOException
 	{
-		//start with the StringBuffer empty
-		this.lineBuffer.delete(0, this.lineBuffer.length());
+        //start with the StringBuffer empty
+        this.lineBuffer.delete(0, this.lineBuffer.length());
 
-		/* This boolean tells which state we are in,
-		 * depending upon whether or not we got a CR
-		 * in the preceding read().
-		 */
-		boolean cr_just_received = false;
+        /* This boolean tells which state we are in,
+         * depending upon whether or not we got a CR
+         * in the preceding read().
+         */
+        boolean cr_just_received = false;
 
-		while (true)
+        while (true)
 		{
 			int inChar = this.read();
 
@@ -188,19 +188,19 @@ public class CRLFTerminatedReader extends Reader
 		}
 	}
 
-	@Override
+    @Override
 	public int read() throws IOException
 	{
 		return this.in.read();
 	}
 
-	@Override
+    @Override
 	public boolean ready() throws IOException
 	{
 		return this.in.available() > 0;
 	}
 
-	@Override
+    @Override
 	public int read(char[] cbuf, int off, int len) throws IOException
 	{
 		byte[] temp = new byte[len];

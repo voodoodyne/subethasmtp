@@ -28,45 +28,45 @@ import java.io.OutputStream;
  */
 public class ExtraDotOutputStream extends CRLFOutputStream {
 
-	/**
-	 * Constructor that wraps an OutputStream.
-	 *
-	 * @param out the OutputStream to be wrapped
-	 */
-	public ExtraDotOutputStream(OutputStream out) {
-		super(out);
-	}
+    /**
+     * Constructor that wraps an OutputStream.
+     *
+     * @param out the OutputStream to be wrapped
+     */
+    public ExtraDotOutputStream(OutputStream out) {
+        super(out);
+    }
 
-	/**
-	 * Overrides super writeChunk in order to add a "." if the previous chunk ended with
-	 * a new line and a new chunk starts with "."
-	 *
-	 * @see CRLFOutputStream#writeChunk(byte[], int, int)
-	 */
-	@Override
+    /**
+     * Overrides super writeChunk in order to add a "." if the previous chunk ended with
+     * a new line and a new chunk starts with "."
+     *
+     * @see CRLFOutputStream#writeChunk(byte[], int, int)
+     */
+    @Override
 	protected void writeChunk(byte buffer[], int offset, int length) throws IOException {
-		if (length > 0 && buffer[offset] == '.' && this.startOfLine) {
-			// add extra dot (the first of the pair)
-			this.out.write('.');
-		}
-		super.writeChunk(buffer, offset, length);
-	}
+        if (length > 0 && buffer[offset] == '.' && this.startOfLine) {
+            // add extra dot (the first of the pair)
+            this.out.write('.');
+        }
+        super.writeChunk(buffer, offset, length);
+    }
 
-	/**
-	 * Writes a byte to the stream, adding dots where appropriate.
-	 * Also fixes any naked CR or LF to the RFC 2821 mandated CRLF
-	 * pairing.
-	 *
-	 * @param b the byte to write
-	 *
-	 * @throws IOException if an error occurs writing the byte
-	 */
-	@Override
+    /**
+     * Writes a byte to the stream, adding dots where appropriate.
+     * Also fixes any naked CR or LF to the RFC 2821 mandated CRLF
+     * pairing.
+     *
+     * @param b the byte to write
+     *
+     * @throws IOException if an error occurs writing the byte
+     */
+    @Override
 	public void write(int b) throws IOException {
-		if (b == '.' && this.statusLast != LAST_WAS_OTHER) {
-			// add extra dot (the first of the pair)
-			this.out.write('.');
-		}
-		super.write(b);
-	}
+        if (b == '.' && this.statusLast != LAST_WAS_OTHER) {
+            // add extra dot (the first of the pair)
+            this.out.write('.');
+        }
+        super.write(b);
+    }
 }

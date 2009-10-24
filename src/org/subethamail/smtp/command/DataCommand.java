@@ -18,11 +18,11 @@ import org.subethamail.smtp.server.Session;
  */
 public class DataCommand extends BaseCommand
 {
-	private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
-	private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
+    private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
+    private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
 
 	/** */
-	public DataCommand()
+    public DataCommand()
 	{
 		super("DATA",
 				"Following text is collected as the message.\n"

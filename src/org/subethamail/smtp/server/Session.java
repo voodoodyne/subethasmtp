@@ -3,8 +3,9 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.*;
-import java.security.cert.Certificate;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,16 +50,6 @@ public class Session extends Thread implements MessageContext
 	private int recipientCount;
 
 	/**
-	 * If the client told us the size of the message, this is the value.
-	 * If they didn't, the value will be 0.
-	 */
-	private int declaredMessageSize = 0;
-
-	/** Some more state information */
-	private boolean tlsStarted;
-	private Certificate[] tlsPeerCertificates;
-
-	/**
 	 * Creates (but does not start) the thread object.
 	 *
 	 * @param server a link to our parent
@@ -68,8 +59,7 @@ public class Session extends Thread implements MessageContext
 	public Session(SMTPServer server, Socket socket)
 		throws IOException
 	{
-		super(server.getSessionGroup(), Session.class.getName()
-				+ "-" + socket.getInetAddress() + ":" + socket.getPort());
+		super(server.getSessionGroup(), Session.class.getName());
 
 		this.server = server;
 
@@ -91,12 +81,7 @@ public class Session extends Thread implements MessageContext
 	public void run()
 	{
 		if (log.isDebugEnabled())
-		{
-			InetAddress remoteInetAddress = this.getRemoteAddress().getAddress();
-			remoteInetAddress.getHostName();	// Causes future toString() to print the name too
-
-			log.debug("SMTP connection from {}, new connection count: {}", remoteInetAddress, this.server.getNumberOfConnections());
-		}
+			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
 
 		try
 		{
@@ -117,21 +102,7 @@ public class Session extends Thread implements MessageContext
 			{
 				try
 				{
-					String line = null;
-					try
-					{
-						line = this.reader.readLine();
-					}
-					catch (SocketException ex)
-					{
-						// Lots of clients just "hang up" rather than issuing QUIT, which would
-						// fill our logs with the warning in the outer catch.
-						if (log.isDebugEnabled())
-							log.debug("Error reading client command: " + ex.getMessage(), ex);
-
-						return;
-					}
-
+					String line = this.reader.readLine();
 					if (line == null)
 					{
 						log.debug("no more lines from client");
@@ -184,7 +155,7 @@ public class Session extends Thread implements MessageContext
 				}
 				catch (IOException e) {}
 
-				if (log.isWarnEnabled())
+				if (log.isDebugEnabled())
 					log.warn("Exception during SMTP transaction", e1);
 			}
 		}
@@ -245,7 +216,7 @@ public class Session extends Thread implements MessageContext
 	/** Close the client socket if it is open */
 	public void closeSocket() throws IOException
 	{
-		if ((this.socket != null) && this.socket.isBound() && !this.socket.isClosed())
+		if (this.socket != null && this.socket.isBound() && !this.socket.isClosed())
 			this.socket.close();
 	}
 
@@ -276,7 +247,7 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/* (non-Javadoc)
-	 * @see org.subethamail.smtp.MessageContext#getRemoteAddress()
+	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
 	 */
 	public InetSocketAddress getRemoteAddress()
 	{
@@ -357,22 +328,6 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
-	 * @return the maxMessageSize
-	 */
-	public int getDeclaredMessageSize()
-	{
-		return this.declaredMessageSize;
-	}
-
-	/**
-	 * @param declaredMessageSize the size that the client says the message will be
-	 */
-	public void setDeclaredMessageSize(int declaredMessageSize)
-	{
-		this.declaredMessageSize = declaredMessageSize;
-	}
-
-	/**
 	 * Some state is associated with each particular message (senders, recipients, the message handler).
 	 * Some state is not; seeing hello, TLS, authentication.
 	 */
@@ -383,7 +338,6 @@ public class Session extends Thread implements MessageContext
 		this.helo = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
-		this.declaredMessageSize = 0;
 	}
 
 	/** Safely calls done() on a message hander, if one exists */
@@ -409,34 +363,5 @@ public class Session extends Thread implements MessageContext
 	{
 		this.quitting = true;
 		this.closeConnection();
-	}
-
-	/**
-	 * @return true when the TLS handshake was completed, false otherwise
-	 */
-	public boolean isTLSStarted()
-	{
-		return tlsStarted;
-	}
-
-	/**
-	 * @param tlsStarted true when the TLS handshake was completed, false otherwise
-	 */
-	public void setTlsStarted(boolean tlsStarted)
-	{
-		this.tlsStarted = tlsStarted;
-	}
-
-	public void setTlsPeerCertificates(Certificate[] tlsPeerCertificates)
-	{
-		this.tlsPeerCertificates = tlsPeerCertificates;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Certificate[] getTlsPeerCertificates()
-	{
-		return tlsPeerCertificates;
 	}
 }

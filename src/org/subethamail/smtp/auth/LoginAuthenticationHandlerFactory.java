@@ -8,7 +8,6 @@ import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.util.Base64;
-import org.subethamail.smtp.util.TextUtils;
 
 /**
  * Implements the SMTP AUTH LOGIN mechanism.<br>
@@ -73,7 +72,7 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 					throw new RejectException(535, "Initial response not allowed in AUTH LOGIN");
 				}
 
-				return "334 " + Base64.encodeToString(TextUtils.getAsciiBytes("Username:"), false);
+				return "334 " + Base64.encodeToString("Username:".getBytes(), false);
 			}
 
 			if (this.username == null)

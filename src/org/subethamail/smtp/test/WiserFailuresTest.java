@@ -286,7 +286,7 @@ public class WiserFailuresTest extends TestCase
 	}
 
 	/** */
-	private void sendMessageWithCharset(int port, String from, String subject, String body, String to, String charset)
+    private void sendMessageWithCharset(int port, String from, String subject, String body, String to, String charset)
 		throws MessagingException
 	{
 		Properties mailProps = this.getMailProperties(port);
