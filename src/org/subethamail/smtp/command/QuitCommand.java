@@ -12,13 +12,11 @@ import org.subethamail.smtp.server.Session;
  */
 public class QuitCommand extends BaseCommand
 {
-	/** */
 	public QuitCommand()
 	{
 		super("QUIT", "Exit the SMTP session.");
 	}
 
-	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{

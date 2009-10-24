@@ -13,7 +13,7 @@ import org.subethamail.wiser.Wiser;
 
 /**
  * A simple command-line tool that lets us practice with the smtp library.
- *
+ * 
  * @author Jeff Schnitzer
  */
 public class Practice
@@ -21,7 +21,7 @@ public class Practice
 	/** */
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(Practice.class);
-
+	
 	/** */
 	public static final int PORT = 2566;
 
@@ -36,15 +36,15 @@ public class Practice
 
 		String line;
 		BufferedReader in = new BufferedReader(new InputStreamReader(System.in));
-
+		
 		do
 		{
 			line = in.readLine();
 			line = line.trim();
-
+			
 			if ("dump".equals(line));
 				wiser.dumpMessages(System.out);
-
+				
 			if (line.startsWith("dump "))
 			{
 				line = line.substring("dump ".length());
@@ -55,7 +55,7 @@ public class Practice
 			}
 		}
 		while (!"quit".equals(line));
-
+		
 		wiser.stop();
 	}
 }

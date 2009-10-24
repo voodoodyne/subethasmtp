@@ -8,13 +8,12 @@ import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.util.Base64;
-import org.subethamail.smtp.util.TextUtils;
 
 /**
  * Implements the SMTP AUTH LOGIN mechanism.<br>
  * You are only required to plug your UsernamePasswordValidator implementation
  * for username and password validation to take effect.
- *
+ * 
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
  * @author Jeff Schnitzer
  */
@@ -24,7 +23,7 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 	static {
 		MECHANISMS.add("LOGIN");
 	}
-
+	
 	private UsernamePasswordValidator helper;
 
 	/** */
@@ -44,15 +43,16 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 	{
 		return new Handler();
 	}
-
+	
 	/**
 	 */
 	class Handler implements AuthenticationHandler
 	{
 		private String username;
 		private String password;
-
+		
 		/* */
+		@Override
 		public String auth(String clientInput) throws RejectException
 		{
 			StringTokenizer stk = new StringTokenizer(clientInput);
@@ -66,16 +66,16 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 					// Mechanism mismatch
 					throw new RejectException(504, "AUTH mechanism mismatch");
 				}
-
+				
 				if (stk.hasMoreTokens())
 				{
 					// the client submitted an initial response
 					throw new RejectException(535, "Initial response not allowed in AUTH LOGIN");
 				}
-
-				return "334 " + Base64.encodeToString(TextUtils.getAsciiBytes("Username:"), false);
+				
+				return "334 " + Base64.encodeToString("Username:".getBytes(), false);
 			}
-
+			
 			if (this.username == null)
 			{
 				byte[] decoded = Base64.decode(clientInput);
@@ -83,32 +83,33 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 				{
 					throw new RejectException();
 				}
-
+				
 				this.username = new String(decoded);
-
+				
 				return "334 " + Base64.encodeToString("Password:".getBytes(), false);
 			}
-
+	
 			byte[] decoded = Base64.decode(clientInput);
 			if (decoded == null)
 			{
 				throw new RejectException();
 			}
-
+	
 			this.password = new String(decoded);
 			try
 			{
-				LoginAuthenticationHandlerFactory.this.helper.login(this.username, this.password);
+				helper.login(username, password);
 			}
 			catch (LoginFailedException lfe)
 			{
 				throw new RejectException();
 			}
-
+			
 			return null;
 		}
 
 		/* */
+		@Override
 		public Object getIdentity()
 		{
 			return this.username;

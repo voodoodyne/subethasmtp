@@ -1,7 +1,6 @@
 package org.subethamail.smtp.client;
 
 import java.io.IOException;
-import java.net.SocketAddress;
 import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
@@ -10,44 +9,34 @@ import org.slf4j.LoggerFactory;
 /**
  * A somewhat smarter abstraction of an SMTP client which doesn't require knowing
  * anything about the nitty gritty of SMTP.
- *
+ * 
  * @author Jeff Schnitzer
  */
 public class SmartClient extends SMTPClient
 {
 	/** */
 	private static Logger log = LoggerFactory.getLogger(SmartClient.class);
+	
+	/** */
+    private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
 
 	/** */
-	private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
-
-	/** */
-	boolean sentFrom;
-	int recipientCount;
-
+    boolean sentFrom;
+    int recipientCount;
+	
 	/**
 	 * @throws UnknownHostException if problem looking up hostname
-	 * @throws SMTPException if problem reported by the server
+	 * @throws SMTPException if problem reported by the server 
 	 * @throws IOException if problem communicating with host
 	 */
 	public SmartClient(String host, int port, String myHost) throws UnknownHostException, IOException, SMTPException
 	{
-		this(host, port, null, myHost);
-	}
-
-	/**
-	 * @throws UnknownHostException if problem looking up hostname
-	 * @throws SMTPException if problem reported by the server
-	 * @throws IOException if problem communicating with host
-	 */
-	public SmartClient(String host, int port, SocketAddress bindpoint, String myHost) throws UnknownHostException, IOException, SMTPException
-	{
-		super(host, port, bindpoint);
-
+		super(host, port);
+		
 		this.receiveAndCheck();	// The server announces itself first
 		this.sendAndCheck("HELO " + myHost);
 	}
-
+	
 	/** */
 	public void from(String from) throws IOException, SMTPException
 	{
@@ -61,7 +50,7 @@ public class SmartClient extends SMTPClient
 		this.sendAndCheck("RCPT TO: <" + to + ">");
 		this.recipientCount++;
 	}
-
+	
 	/**
 	 * Prelude to writing data
 	 */
@@ -69,7 +58,7 @@ public class SmartClient extends SMTPClient
 	{
 		this.sendAndCheck("DATA");
 	}
-
+	
 	/**
 	 * Actually write some data
 	 */
@@ -77,7 +66,7 @@ public class SmartClient extends SMTPClient
 	{
 		this.dataOutput.write(data, 0, numBytes);
 	}
-
+	
 	/**
 	 * Last step after writing data
 	 */
@@ -86,10 +75,10 @@ public class SmartClient extends SMTPClient
 		this.dataOutput.flush();
 		this.rawOutput.write(SMTP_TERMINATOR);
 		this.rawOutput.flush();
-
+		
 		this.receiveAndCheck();
 	}
-
+	
 	/**
 	 * Quit and close down the connection.  Ignore any errors.
 	 */
@@ -103,10 +92,10 @@ public class SmartClient extends SMTPClient
 		{
 			log.warn("Failed to issue QUIT to " + this.hostPort);
 		}
-
+		
 		this.close();
 	}
-
+	
 	/**
 	 * @return true if we have already specified from()
 	 */
@@ -114,7 +103,7 @@ public class SmartClient extends SMTPClient
 	{
 		return this.sentFrom;
 	}
-
+	
 	/**
 	 * @return true if we have already specified to()
 	 */
@@ -122,7 +111,7 @@ public class SmartClient extends SMTPClient
 	{
 		return this.recipientCount > 0;
 	}
-
+	
 	/**
 	 * @return the number of recipients that have been accepted by the server
 	 */

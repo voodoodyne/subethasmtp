@@ -16,13 +16,11 @@ import org.subethamail.smtp.util.TextUtils;
  */
 public class EhloCommand extends BaseCommand
 {
-	/** */
 	public EhloCommand()
 	{
 		super("EHLO", "Introduce yourself.", "<hostname>");
 	}
 
-	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
@@ -32,7 +30,7 @@ public class EhloCommand extends BaseCommand
 			sess.sendResponse("501 Syntax: EHLO hostname");
 			return;
 		}
-
+		
 		sess.setHelo(args[1]);
 
 //		postfix returns...
@@ -52,13 +50,6 @@ public class EhloCommand extends BaseCommand
 		response.append("250-");
 		response.append(sess.getServer().getHostName());
 		response.append("\r\n" + "250-8BITMIME");
-
-		int maxSize = sess.getServer().getMaxMessageSize();
-		if (maxSize > 0)
-		{
-			response.append("\r\n" + "250-SIZE ");
-			response.append(maxSize);
-		}
 
 		// Hiding TLS is a server setting
 		if (!sess.getServer().getHideTLS())

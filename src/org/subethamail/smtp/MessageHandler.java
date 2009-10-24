@@ -10,13 +10,13 @@ import java.io.InputStream;
 /**
  * The interface that defines the conversational exchange of a single message
  * on an SMTP connection.  The methods will be called in the following order:
- *
+ * 
  * <ol>
  * <li><code>from()</code></li>
  * <li><code>recipient()</code> (possibly more than once)</li>
  * <li><code>data()</code></li>
  * </ol>
- *
+ * 
  * If multiple messages are delivered on a single connection (ie, using the RSET command)
  * then multiple message handlers will be instantiated.  Each handler services one
  * and only one message.
@@ -34,7 +34,7 @@ public interface MessageHandler
 	 * @throws RejectException if the sender should be denied.
 	 */
 	public void from(String from) throws RejectException;
-
+	
 	/**
 	 * Called once for every RCPT TO during a SMTP exchange.
 	 * This will occur after a from() call.
@@ -44,11 +44,11 @@ public interface MessageHandler
 	 * @throws RejectException if the recipient should be denied.
 	 */
 	public void recipient(String recipient) throws RejectException;
-
+	
 	/**
 	 * Called when the DATA part of the SMTP exchange begins.  This
 	 * will occur after all recipient() calls are complete.
-	 *
+	 * 
 	 * Note: If you do not read all the data, it will be read for you
 	 * after this method completes.
 	 *
@@ -61,7 +61,7 @@ public interface MessageHandler
 	 * @throws IOException if there is an IO error reading the input data.
 	 */
 	public void data(InputStream data) throws RejectException, TooMuchDataException, IOException;
-
+	
 	/**
 	 * Called after all other methods are completed.  Note that this method
 	 * will be called even if the client never triggered any of the other callbacks.

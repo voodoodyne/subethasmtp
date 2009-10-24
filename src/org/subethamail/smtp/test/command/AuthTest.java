@@ -6,7 +6,6 @@ import org.subethamail.smtp.auth.UsernamePasswordValidator;
 import org.subethamail.smtp.test.util.Client;
 import org.subethamail.smtp.test.util.ServerTestCase;
 import org.subethamail.smtp.util.Base64;
-import org.subethamail.smtp.util.TextUtils;
 
 /**
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
@@ -16,7 +15,7 @@ public class AuthTest extends ServerTestCase
 {
 	static final String REQUIRED_USERNAME = "myUserName";
 	static final String REQUIRED_PASSWORD = "mySecret01";
-
+	
 	class RequiredUsernamePasswordValidator implements UsernamePasswordValidator
 	{
 		public void login(String username, String password) throws LoginFailedException
@@ -36,38 +35,36 @@ public class AuthTest extends ServerTestCase
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.subethamail.smtp.test.ServerTestCase#setUp()
 	 */
-	@Override
 	protected void setUp() throws Exception
 	{
 		this.wiser = new TestWiser();
 		this.wiser.setHostname("localhost");
 		this.wiser.setPort(PORT);
-
+		
 		UsernamePasswordValidator validator = new RequiredUsernamePasswordValidator();
-
+		
 		EasyAuthenticationHandlerFactory fact = new EasyAuthenticationHandlerFactory(validator);
 		this.wiser.getServer().setAuthenticationHandlerFactory(fact);
-
+		
 		this.wiser.start();
 		this.c = new Client("localhost", PORT);
 	}
 
 	/*
 	 * (non-Javadoc)
-	 *
+	 * 
 	 * @see org.subethamail.smtp.test.ServerTestCase#tearDown()
 	 */
-	@Override
 	protected void tearDown() throws Exception
 	{
 		super.tearDown();
 	}
 
 	/**
-	 * Test method for AUTH PLAIN.
+	 * Test method for AUTH PLAIN. 
 	 * The sequence under test is as follows:
 	 * <ol>
 	 * <li>HELO test</li>
@@ -81,27 +78,27 @@ public class AuthTest extends ServerTestCase
 	 */
 	public void testAuthPlain() throws Exception
 	{
-		this.expect("220");
+		expect("220");
 
-		this.send("HELO foo.com");
-		this.expect("250");
+		send("HELO foo.com");
+		expect("250");
 
-		this.send("AUTH PLAIN");
-		this.expect("334");
-
+		send("AUTH PLAIN");
+		expect("334");
+		
 		String authString = new String(new byte[] {0}) + REQUIRED_USERNAME
 						+ new String(new byte[] {0}) + REQUIRED_PASSWORD;
 
-		String enc_authString = Base64.encodeToString(TextUtils.getAsciiBytes(authString), false);
-		this.send(enc_authString);
-		this.expect("235");
+		String enc_authString = Base64.encodeToString(authString.getBytes(), false);
+		send(enc_authString);
+		expect("235");
 
-		this.send("AUTH");
-		this.expect("503");
-	}
-
+		send("AUTH");
+		expect("503");
+	}	
+	
 	/**
-	 * Test method for AUTH LOGIN.
+	 * Test method for AUTH LOGIN. 
 	 * The sequence under test is as follows:
 	 * <ol>
 	 * <li>HELO test</li>
@@ -119,33 +116,33 @@ public class AuthTest extends ServerTestCase
 	 */
 	public void testAuthLogin() throws Exception
 	{
-		this.expect("220");
+		expect("220");
 
-		this.send("HELO foo.com");
-		this.expect("250");
+		send("HELO foo.com");
+		expect("250");
 
-		this.send("AUTH LOGIN");
-		this.expect("334");
+		send("AUTH LOGIN");
+		expect("334");
 
-		String enc_username = Base64.encodeToString(TextUtils.getAsciiBytes(REQUIRED_USERNAME), false);
+		String enc_username = Base64.encodeToString(REQUIRED_USERNAME.getBytes(), false);
 
-		this.send(enc_username);
-		this.expect("334");
+		send(enc_username);
+		expect("334");
 
-		this.send("*");
-		this.expect("501");
+		send("*");
+		expect("501");
 
-		this.send("AUTH LOGIN");
-		this.expect("334");
+		send("AUTH LOGIN");
+		expect("334");
 
-		this.send(enc_username);
-		this.expect("334");
+		send(enc_username);
+		expect("334");
 
-		String enc_pwd = Base64.encodeToString(TextUtils.getAsciiBytes(REQUIRED_PASSWORD), false);
-		this.send(enc_pwd);
-		this.expect("235");
+		String enc_pwd = Base64.encodeToString(REQUIRED_PASSWORD.getBytes(), false);
+		send(enc_pwd);
+		expect("235");
 
-		this.send("AUTH");
-		this.expect("503");
+		send("AUTH");
+		expect("503");
 	}
 }

@@ -65,7 +65,7 @@ public class Wiser implements SimpleMessageListener
 		this();
 		this.setPort(port);
 	}
-
+	
 	/**
 	 * The port that the server should listen on.
 	 * @param port
@@ -108,7 +108,7 @@ public class Wiser implements SimpleMessageListener
 	{
 		if (log.isDebugEnabled())
 			log.debug("Accepting mail from " + from + " to " + recipient);
-
+		
 		return true;
 	}
 
@@ -117,7 +117,7 @@ public class Wiser implements SimpleMessageListener
 	{
 		if (log.isDebugEnabled())
 			log.debug("Delivering mail from " + from + " to " + recipient);
-
+		
 		ByteArrayOutputStream out = new ByteArrayOutputStream();
 		data = new BufferedInputStream(data);
 
@@ -127,9 +127,9 @@ public class Wiser implements SimpleMessageListener
 		{
 			out.write(current);
 		}
-
+		
 		byte[] bytes = out.toByteArray();
-
+		
 		if (log.isDebugEnabled())
 			log.debug("Creating message from data with " + bytes.length + " bytes");
 
@@ -160,17 +160,17 @@ public class Wiser implements SimpleMessageListener
 	{
 		return this.server;
 	}
-
+	
 	/**
 	 * For debugging purposes, dumps a rough outline of the messages to the output stream.
 	 */
 	public void dumpMessages(PrintStream out) throws MessagingException
 	{
 		out.println("----- Start printing messages -----");
-
+		
 		for (WiserMessage wmsg: this.getMessages())
 			wmsg.dumpMessage(out);
-
+		
 		out.println("----- End printing messages -----");
 	}
 }

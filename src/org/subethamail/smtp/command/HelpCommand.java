@@ -4,19 +4,18 @@ import java.io.IOException;
 
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.CommandException;
-import org.subethamail.smtp.server.SMTPServer;
 import org.subethamail.smtp.server.Session;
+import org.subethamail.smtp.server.SMTPServer;
 
 /**
  * Provides a help <verb> system for people to interact with.
- *
+ * 
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jon Stevens
  * @author Scott Hernandez
  */
 public class HelpCommand extends BaseCommand
 {
-	/** */
 	public HelpCommand()
 	{
 		super("HELP",
@@ -25,14 +24,13 @@ public class HelpCommand extends BaseCommand
 				"[ <topic> ]");
 	}
 
-	/** */
 	@Override
 	public void execute(String commandString, Session context) throws IOException
 	{
-		String args = this.getArgPredicate(commandString);
+		String args = getArgPredicate(commandString);
 		if ("".equals(args))
 		{
-			context.sendResponse(this.getCommandMessage(context.getServer()));
+			context.sendResponse(getCommandMessage((SMTPServer)context.getServer()));
 			return;
 		}
 		try
@@ -45,7 +43,6 @@ public class HelpCommand extends BaseCommand
 		}
 	}
 
-	/** */
 	private String getCommandMessage(SMTPServer server)
 	{
 		return "214-This is the "
@@ -54,7 +51,7 @@ public class HelpCommand extends BaseCommand
 				+ server.getHostName()
 				+ "\r\n"
 				+ "214-Topics:\r\n"
-				+ this.getFormattedTopicList(server)
+				+ getFormattedTopicList(server)
 				+ "214-For more info use \"HELP <topic>\".\r\n"
 				+ "214-For more information about this server, visit:\r\n"
 				+ "214-    http://subetha.tigris.org\r\n"
@@ -64,7 +61,6 @@ public class HelpCommand extends BaseCommand
 				+ "214 End of HELP info";
 	}
 
-	/** */
 	protected String getFormattedTopicList(SMTPServer server)
 	{
 		StringBuilder sb = new StringBuilder();

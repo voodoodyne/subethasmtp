@@ -27,7 +27,7 @@ import org.subethamail.wiser.Wiser;
  * internally here) as well as harder to reach code within the SMTP
  * server that tests a roundtrip message through the DATA portion
  * of the SMTP spec.
- *
+ * 
  * @author Jon Stevens
  * @author Jeff Schnitzer
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
@@ -38,46 +38,44 @@ public class MessageContentTest extends TestCase
 	/** */
 	@SuppressWarnings("unused")
 	private static Logger log = LoggerFactory.getLogger(MessageContentTest.class);
-
+	
 	/** */
 	public static final int PORT = 2566;
 
 	/** */
 	protected Wiser wiser;
 	protected Session session;
-
+	
 	/** */
 	public MessageContentTest(String name) { super(name); }
-
+	
 	/** */
-	@Override
 	protected void setUp() throws Exception
 	{
 		super.setUp();
-
+		
 		Properties props = new Properties();
 		props.setProperty("mail.smtp.host", "localhost");
 		props.setProperty("mail.smtp.port", Integer.toString(PORT));
 		this.session = Session.getInstance(props);
-
+		
 		this.wiser = new Wiser();
 		this.wiser.setPort(PORT);
-
+		
 		this.wiser.start();
 	}
-
+	
 	/** */
-	@Override
 	protected void tearDown() throws Exception
 	{
 		this.wiser.stop();
 		this.wiser = null;
 
 		this.session = null;
-
+		
 		super.tearDown();
 	}
-
+	
 	/** */
 	public void testReceivedHeader() throws Exception
 	{
@@ -90,9 +88,9 @@ public class MessageContentTest extends TestCase
 		Transport.send(message);
 
 		assertEquals(1, this.wiser.getMessages().size());
-
+		
 		String[] receivedHeaders = this.wiser.getMessages().get(0).getMimeMessage().getHeader("Received");
-
+		
 		assertEquals(1, receivedHeaders.length);
 	}
 
@@ -122,21 +120,21 @@ public class MessageContentTest extends TestCase
 		message.setText("bodyalksdjflkasldfkasjldfkjalskdfjlaskjdflaksdjflkjasdlfkjl");
 
 		Transport.send(message);
-
+		
 		assertEquals(2, this.wiser.getMessages().size());
-
+		
 		assertEquals("barf", this.wiser.getMessages().get(0).getMimeMessage().getSubject());
 		assertEquals("barf", this.wiser.getMessages().get(1).getMimeMessage().getSubject());
 	}
-
+	
 
 	/** */
 	public void testUtf8EightBitMessage() throws Exception
 	{
 		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
-
+		
 		String body = "\u00a4uro ma\u00f1ana";
-		this.testEightBitMessage(body, "UTF-8");
+		testEightBitMessage(body, "UTF-8");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
@@ -145,18 +143,18 @@ public class MessageContentTest extends TestCase
 	public void testUtf16EightBitMessage() throws Exception
 	{
 		String body = "\u3042\u3044\u3046\u3048\u304a";
-		this.testEightBitMessage(body, "UTF-16");
+		testEightBitMessage(body, "UTF-16");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
-
+	
 	/** */
 	public void testIso88591EightBitMessage() throws Exception
 	{
 		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
 
 		String body = "ma\u00f1ana";	// spanish ene (ie, n with diacritical tilde)
-		this.testEightBitMessage(body, "ISO-8859-1");
+		testEightBitMessage(body, "ISO-8859-1");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
@@ -167,14 +165,14 @@ public class MessageContentTest extends TestCase
 		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
 
 		String body = "\u00a4uro";	// should be the euro symbol
-		this.testEightBitMessage(body, "ISO-8859-15");
+		testEightBitMessage(body, "ISO-8859-15");
 
 //		String content = (String)this.wiser.getMessages().get(0).getMimeMessage().getContent();
 //		for (int i=0; i<content.length(); i++)
 //		{
 //			log.info("Char is:  " + Integer.toString(content.codePointAt(i), 16));
 //		}
-
+		
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
 
@@ -191,21 +189,20 @@ public class MessageContentTest extends TestCase
 		Transport.send(message);
 	}
 
-	/** */
-	public void testIso2022JPEightBitMessage() throws Exception
+	public void testIso2022JPEightBitMessage() throws Exception 
   	{
 		String body = "\u3042\u3044\u3046\u3048\u304a"; // some Japanese letters
-		this.testEightBitMessage(body, "iso-2022-jp");
-
+		testEightBitMessage(body, "iso-2022-jp");
+		
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
-
+	
 	/** */
 	public void testBinaryEightBitMessage() throws Exception
 	{
 		byte[] body = new byte[64];
 		new Random().nextBytes(body);
-
+		
 		MimeMessage message = new MimeMessage(this.session);
 		message.addRecipient(Message.RecipientType.TO, new InternetAddress("anyone@anywhere.com"));
 		message.setFrom(new InternetAddress("someone@somewhereelse.com"));
@@ -224,10 +221,10 @@ public class MessageContentTest extends TestCase
 			tmp.write(buf, 0, n);
 		}
 		in.close();
-
+		
 		assertTrue(Arrays.equals(body, tmp.toByteArray()));
 	}
-
+	
 	/** */
 	public static Test suite()
 	{

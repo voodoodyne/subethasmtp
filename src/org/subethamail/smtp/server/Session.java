@@ -3,8 +3,9 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.*;
-import java.security.cert.Certificate;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketTimeoutException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -17,7 +18,7 @@ import org.subethamail.smtp.io.CRLFTerminatedReader;
  * The thread that handles a connection. This class
  * passes most of it's responsibilities off to the
  * CommandHandler.
- *
+ * 
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
@@ -39,7 +40,7 @@ public class Session extends Thread implements MessageContext
 
 	/** Might exist if the client has successfully authenticated */
 	private AuthenticationHandler authenticationHandler;
-
+	
 	/** Might exist if the client is giving us a message */
 	private MessageHandler messageHandler;
 
@@ -49,18 +50,8 @@ public class Session extends Thread implements MessageContext
 	private int recipientCount;
 
 	/**
-	 * If the client told us the size of the message, this is the value.
-	 * If they didn't, the value will be 0.
-	 */
-	private int declaredMessageSize = 0;
-
-	/** Some more state information */
-	private boolean tlsStarted;
-	private Certificate[] tlsPeerCertificates;
-
-	/**
 	 * Creates (but does not start) the thread object.
-	 *
+	 * 
 	 * @param server a link to our parent
 	 * @param socket is the socket to the client
 	 * @throws IOException
@@ -68,9 +59,8 @@ public class Session extends Thread implements MessageContext
 	public Session(SMTPServer server, Socket socket)
 		throws IOException
 	{
-		super(server.getSessionGroup(), Session.class.getName()
-				+ "-" + socket.getInetAddress() + ":" + socket.getPort());
-
+		super(server.getSessionGroup(), Session.class.getName());
+		
 		this.server = server;
 
 		this.setSocket(socket);
@@ -87,16 +77,10 @@ public class Session extends Thread implements MessageContext
 	/**
 	 * The thread for each session runs on this and shuts down when the shutdown member goes true.
 	 */
-	@Override
 	public void run()
 	{
 		if (log.isDebugEnabled())
-		{
-			InetAddress remoteInetAddress = this.getRemoteAddress().getAddress();
-			remoteInetAddress.getHostName();	// Causes future toString() to print the name too
-
-			log.debug("SMTP connection from {}, new connection count: {}", remoteInetAddress, this.server.getNumberOfConnections());
-		}
+			log.debug("SMTP connection count: " + this.server.getNumberOfConnections());
 
 		try
 		{
@@ -112,26 +96,12 @@ public class Session extends Thread implements MessageContext
 
 			// Start with fresh message state
 			this.resetMessageState();
-
+			
 			while (!this.quitting)
 			{
 				try
 				{
-					String line = null;
-					try
-					{
-						line = this.reader.readLine();
-					}
-					catch (SocketException ex)
-					{
-						// Lots of clients just "hang up" rather than issuing QUIT, which would
-						// fill our logs with the warning in the outer catch.
-						if (log.isDebugEnabled())
-							log.debug("Error reading client command: " + ex.getMessage(), ex);
-
-						return;
-					}
-
+					String line = this.reader.readLine();
 					if (line == null)
 					{
 						log.debug("no more lines from client");
@@ -178,13 +148,13 @@ public class Session extends Thread implements MessageContext
 			{
 				try
 				{
-					// Send a temporary failure back so that the server will try to resend
+					// Send a temporary failure back so that the server will try to resend 
 					// the message later.
 					this.sendResponse("450 Problem attempting to execute commands. Please try again later.");
 				}
 				catch (IOException e) {}
-
-				if (log.isWarnEnabled())
+				
+				if (log.isDebugEnabled())
 					log.warn("Exception during SMTP transaction", e1);
 			}
 		}
@@ -195,7 +165,7 @@ public class Session extends Thread implements MessageContext
 		}
 	}
 
-	/**
+	/** 
 	 * Close reader, writer, and socket, logging exceptions but otherwise ignoring them
 	 */
 	private void closeConnection()
@@ -230,7 +200,7 @@ public class Session extends Thread implements MessageContext
 		this.reader = new CRLFTerminatedReader(this.input);
 		this.writer = new PrintWriter(this.socket.getOutputStream());
 
-		this.socket.setSoTimeout(this.server.getConnectionTimeout());
+		this.socket.setSoTimeout(this.server.getConnectionTimeout());	
 	}
 
 	/**
@@ -245,7 +215,7 @@ public class Session extends Thread implements MessageContext
 	/** Close the client socket if it is open */
 	public void closeSocket() throws IOException
 	{
-		if ((this.socket != null) && this.socket.isBound() && !this.socket.isClosed())
+		if (this.socket != null && this.socket.isBound() && !this.socket.isClosed())
 			this.socket.close();
 	}
 
@@ -256,7 +226,7 @@ public class Session extends Thread implements MessageContext
 	{
 		return this.input;
 	}
-
+	
 	/**
 	 * @return the cooked CRLF-terminated reader from the client
 	 */
@@ -274,9 +244,9 @@ public class Session extends Thread implements MessageContext
 		this.writer.print(response + "\r\n");
 		this.writer.flush();
 	}
-
+	
 	/* (non-Javadoc)
-	 * @see org.subethamail.smtp.MessageContext#getRemoteAddress()
+	 * @see org.subethamail.smtp.SMTPContext#getRemoteAddress()
 	 */
 	public InetSocketAddress getRemoteAddress()
 	{
@@ -290,7 +260,7 @@ public class Session extends Thread implements MessageContext
 	{
 		return this.server;
 	}
-
+	
 	/**
 	 * @return the current message handler
 	 */
@@ -304,49 +274,42 @@ public class Session extends Thread implements MessageContext
 	{
 		return this.helo;
 	}
-
-	/** */
+	
 	public void setHelo(String value)
 	{
 		this.helo = value;
 	}
-
-	/** */
+	
 	public boolean getHasMailFrom()
 	{
 		return this.hasMailFrom;
 	}
 
-	/** */
 	public void setHasMailFrom(boolean value)
 	{
 		this.hasMailFrom = value;
 	}
 
-	/** */
 	public void addRecipient()
 	{
 		this.recipientCount++;
 	}
-
-	/** */
+	
 	public int getRecipientCount()
 	{
 		return this.recipientCount;
 	}
-
-	/** */
+	
 	public boolean isAuthenticated()
 	{
 		return this.authenticationHandler != null;
 	}
-
-	/** */
+	
 	public AuthenticationHandler getAuthenticationHandler()
 	{
 		return this.authenticationHandler;
 	}
-
+	
 	/**
 	 * This is called by the AuthCommand when a session is successfully authenticated.  The
 	 * handler will be an object created by the AuthenticationHandlerFactory.
@@ -355,23 +318,7 @@ public class Session extends Thread implements MessageContext
 	{
 		this.authenticationHandler = handler;
 	}
-
-	/**
-	 * @return the maxMessageSize
-	 */
-	public int getDeclaredMessageSize()
-	{
-		return this.declaredMessageSize;
-	}
-
-	/**
-	 * @param declaredMessageSize the size that the client says the message will be
-	 */
-	public void setDeclaredMessageSize(int declaredMessageSize)
-	{
-		this.declaredMessageSize = declaredMessageSize;
-	}
-
+	
 	/**
 	 * Some state is associated with each particular message (senders, recipients, the message handler).
 	 * Some state is not; seeing hello, TLS, authentication.
@@ -383,9 +330,8 @@ public class Session extends Thread implements MessageContext
 		this.helo = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
-		this.declaredMessageSize = 0;
 	}
-
+	
 	/** Safely calls done() on a message hander, if one exists */
 	protected void endMessageHandler()
 	{
@@ -401,7 +347,7 @@ public class Session extends Thread implements MessageContext
 			}
 		}
 	}
-
+	
 	/**
 	 * Triggers the shutdown of the thread and the closing of the connection.
 	 */
@@ -409,34 +355,5 @@ public class Session extends Thread implements MessageContext
 	{
 		this.quitting = true;
 		this.closeConnection();
-	}
-
-	/**
-	 * @return true when the TLS handshake was completed, false otherwise
-	 */
-	public boolean isTLSStarted()
-	{
-		return tlsStarted;
-	}
-
-	/**
-	 * @param tlsStarted true when the TLS handshake was completed, false otherwise
-	 */
-	public void setTlsStarted(boolean tlsStarted)
-	{
-		this.tlsStarted = tlsStarted;
-	}
-
-	public void setTlsPeerCertificates(Certificate[] tlsPeerCertificates)
-	{
-		this.tlsPeerCertificates = tlsPeerCertificates;
-	}
-
-	/**
-	 * {@inheritDoc}
-	 */
-	public Certificate[] getTlsPeerCertificates()
-	{
-		return tlsPeerCertificates;
 	}
 }

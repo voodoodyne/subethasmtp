@@ -14,9 +14,9 @@ public class CommandTest extends ServerTestCase
 
 	public void testCommandHandling() throws Exception
 	{
-		this.expect("220");
+		expect("220");
 
-		this.send("blah blah blah");
-		this.expect("500 Error: command not implemented");
+		send("blah blah blah");
+		expect("500 Error: command not implemented");
 	}
 }

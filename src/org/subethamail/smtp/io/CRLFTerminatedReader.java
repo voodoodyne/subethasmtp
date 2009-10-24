@@ -21,12 +21,13 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.Reader;
 import java.io.UnsupportedEncodingException;
+
 /**
  * A Reader for use with SMTP or other protocols in which lines
- * must end with CRLF.  Extends Reader and overrides its
+ * must end with CRLF.  Extends Reader and overrides its 
  * readLine() method.  The Reader readLine() method cannot
- * serve for SMTP because it ends lines with either CR or LF alone.
- *
+ * serve for SMTP because it ends lines with either CR or LF alone. 
+ * 
  * JSS: The readline() method of this class has been 'enchanced' from
  * the Apache JAMES version to throw an IOException if the line is
  * greater than or equal to MAX_LINE_LENGTH (998) which is defined
@@ -35,9 +36,9 @@ import java.io.UnsupportedEncodingException;
 public class CRLFTerminatedReader extends Reader
 {
 	static int MAX_LINE_LENGTH = 998;
-
+	
 	@SuppressWarnings("serial")
-	public class TerminationException extends IOException
+    public class TerminationException extends IOException
 	{
 		private int where;
 
@@ -55,12 +56,12 @@ public class CRLFTerminatedReader extends Reader
 
 		public int position()
 		{
-			return this.where;
+			return where;
 		}
 	}
 
 	@SuppressWarnings("serial")
-	public class MaxLineLengthException extends IOException
+    public class MaxLineLengthException extends IOException
 	{
 		public MaxLineLengthException()
 		{
@@ -72,10 +73,10 @@ public class CRLFTerminatedReader extends Reader
 			super(s);
 		}
 	}
-
-	/**
+	
+    /**
 	 * Constructs this CRLFTerminatedReader.
-	 *
+	 * 
 	 * @param in
 	 *            an InputStream
 	 * @param charsetName
@@ -84,9 +85,9 @@ public class CRLFTerminatedReader extends Reader
 	 * @throws UnsupportedEncodingException
 	 *             if the named charset is not supported
 	 */
-	InputStream in;
+    InputStream in;
 
-	public CRLFTerminatedReader(InputStream in)
+    public CRLFTerminatedReader(InputStream in)
 	{
 		this.in = in;
 	}
@@ -97,42 +98,42 @@ public class CRLFTerminatedReader extends Reader
 		this(in);
 	}
 
-	private StringBuffer lineBuffer = new StringBuffer();
-	private final int
-			EOF = -1,
-			CR  = 13,
-			LF  = 10;
+    private StringBuffer lineBuffer = new StringBuffer();
+    private final int
+            EOF = -1,
+            CR  = 13,
+            LF  = 10;
 
-	private int tainted = -1;
+    private int tainted = -1;
 
-	/**
-	 * Read a line of text which is terminated by CRLF.  The concluding
-	 * CRLF characters are not returned with the String, but if either CR
-	 * or LF appears in the text in any other sequence it is returned
-	 * in the String like any other character.  Some characters at the
-	 * end of the stream may be lost if they are in a "line" not
-	 * terminated by CRLF.
-	 *
-	 * @return either a String containing the contents of a
-	 * line which must end with CRLF, or null if the end of the
-	 * stream has been reached, possibly discarding some characters
-	 * in a line not terminated with CRLF.
-	 * @throws IOException if an I/O error occurs.
-	 */
-	public String readLine() throws IOException
+    /**
+     * Read a line of text which is terminated by CRLF.  The concluding
+     * CRLF characters are not returned with the String, but if either CR
+     * or LF appears in the text in any other sequence it is returned
+     * in the String like any other character.  Some characters at the 
+     * end of the stream may be lost if they are in a "line" not
+     * terminated by CRLF.
+     * 
+     * @return either a String containing the contents of a 
+     * line which must end with CRLF, or null if the end of the 
+     * stream has been reached, possibly discarding some characters 
+     * in a line not terminated with CRLF. 
+     * @throws IOException if an I/O error occurs.
+     */
+    public String readLine() throws IOException
 	{
-		//start with the StringBuffer empty
-		this.lineBuffer.delete(0, this.lineBuffer.length());
+        //start with the StringBuffer empty
+        lineBuffer.delete(0, lineBuffer.length());
 
-		/* This boolean tells which state we are in,
-		 * depending upon whether or not we got a CR
-		 * in the preceding read().
-		 */
-		boolean cr_just_received = false;
+        /* This boolean tells which state we are in,
+         * depending upon whether or not we got a CR
+         * in the preceding read().
+         */ 
+        boolean cr_just_received = false;
 
-		while (true)
+        while (true)
 		{
-			int inChar = this.read();
+			int inChar = read();
 
 			if (!cr_just_received)
 			{
@@ -145,11 +146,11 @@ public class CRLFTerminatedReader extends Reader
 					case EOF:
 						return null; // premature EOF -- discards data(?)
 					case LF: //the normal ending of a line
-						if (this.tainted == -1)
-							this.tainted = this.lineBuffer.length();
+						if (tainted == -1)
+							tainted = lineBuffer.length();
 					// intentional fall-through
 					default:
-						this.lineBuffer.append((char) inChar);
+						lineBuffer.append((char) inChar);
 				}
 			}
 			else
@@ -158,61 +159,57 @@ public class CRLFTerminatedReader extends Reader
 				switch (inChar)
 				{
 					case LF: // LF without a preceding CR
-						if (this.tainted != -1)
+						if (tainted != -1)
 						{
-							int pos = this.tainted;
-							this.tainted = -1;
+							int pos = tainted;
+							tainted = -1;
 							throw new TerminationException(
 									"\"bare\" CR or LF in data stream", pos);
 						}
-						return this.lineBuffer.toString();
+						return lineBuffer.toString();
 					case EOF:
 						return null; // premature EOF -- discards data(?)
 					case CR: //we got two (or more) CRs in a row
-						if (this.tainted == -1)
-							this.tainted = this.lineBuffer.length();
-						this.lineBuffer.append((char) this.CR);
+						if (tainted == -1)
+							tainted = lineBuffer.length();
+						lineBuffer.append((char) CR);
 						break;
 					default: //we got some other character following a CR
-						if (this.tainted == -1)
-							this.tainted = this.lineBuffer.length();
-						this.lineBuffer.append((char) this.CR);
-						this.lineBuffer.append((char) inChar);
+						if (tainted == -1)
+							tainted = lineBuffer.length();
+						lineBuffer.append((char) CR);
+						lineBuffer.append((char) inChar);
 						cr_just_received = false;
 				}
 			}
-			if (this.lineBuffer.length() >= MAX_LINE_LENGTH)
+			if (lineBuffer.length() >= MAX_LINE_LENGTH)
 			{
 				throw new MaxLineLengthException("Input line length is too long!");
 			}
 		}
 	}
 
-	@Override
-	public int read() throws IOException
+    public int read() throws IOException
 	{
-		return this.in.read();
+		return in.read();
 	}
 
-	@Override
-	public boolean ready() throws IOException
+    public boolean ready() throws IOException
 	{
-		return this.in.available() > 0;
+		return in.available() > 0;
 	}
 
-	@Override
-	public int read(char[] cbuf, int off, int len) throws IOException
+    public int read(char[] cbuf, int off, int len) throws IOException
 	{
 		byte[] temp = new byte[len];
-		int result = this.in.read(temp, 0, len);
+		int result = in.read(temp, 0, len);
 		for (int i = 0; i < result; i++)
 			cbuf[i] = (char) temp[i];
 		return result;
 	}
 
-	@Override
 	public void close() throws IOException
 	{
-		this.in.close();
+		in.close();
 	}
 }

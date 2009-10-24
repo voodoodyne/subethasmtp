@@ -1,13 +1,12 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
+import java.net.InetSocketAddress;
 import java.net.Socket;
-import java.util.Locale;
-import java.security.cert.Certificate;
 
 import javax.net.ssl.SSLHandshakeException;
 import javax.net.ssl.SSLSocket;
-import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -22,17 +21,15 @@ public class StartTLSCommand extends BaseCommand
 {
 	private final static Logger log = LoggerFactory.getLogger(StartTLSCommand.class);
 
-	/** */
 	public StartTLSCommand()
 	{
 		super("STARTTLS", "The starttls command");
 	}
 
-	/** */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
-		if (!commandString.trim().toUpperCase(Locale.ENGLISH).equals(this.getName()))
+		if (!commandString.trim().toUpperCase().equals(this.getName()))
 		{
 			sess.sendResponse("501 Syntax error (no parameters allowed)");
 			return;
@@ -49,25 +46,20 @@ public class StartTLSCommand extends BaseCommand
 
 			sess.sendResponse("220 Ready to start TLS");
 
-			SSLSocket s = sess.getServer().createSSLSocket(socket);
+			InetSocketAddress remoteAddress = (InetSocketAddress) socket.getRemoteSocketAddress();
+			SSLSocketFactory sf = ((SSLSocketFactory) SSLSocketFactory.getDefault());
+			SSLSocket s = (SSLSocket) (sf.createSocket(socket, remoteAddress.getHostName(), socket.getPort(), true));
+
+			// we are a server
+			s.setUseClientMode(false);
+
+			// allow all supported cipher suites
+			s.setEnabledCipherSuites(s.getSupportedCipherSuites());
+
 			s.startHandshake();
 
 			sess.setSocket(s);
 			sess.resetMessageState(); // clean slate
-			sess.setTlsStarted(true);
-
-			if (s.getNeedClientAuth())
-			{
-				try
-				{
-					Certificate[] peerCertificates = s.getSession().getPeerCertificates();
-					sess.setTlsPeerCertificates(peerCertificates);
-				}
-				catch (SSLPeerUnverifiedException e)
-				{
-					// IGNORE, just leave the certificate chain null
-				}
-			}
 		}
 		catch (SSLHandshakeException ex)
 		{

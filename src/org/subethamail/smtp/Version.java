@@ -7,7 +7,7 @@ package org.subethamail.smtp;
 
 /**
  * Provides version information from the manifest.
- *
+ * 
  * @author Jeff Schnitzer
  */
 public class Version
@@ -18,14 +18,14 @@ public class Version
 		Package pkg = Version.class.getPackage();
 		return (pkg == null) ? null : pkg.getSpecificationVersion();
 	}
-
+	
 	/** */
 	public static String getImplementation()
 	{
 		Package pkg = Version.class.getPackage();
 		return (pkg == null) ? null : pkg.getImplementationVersion();
 	}
-
+	
 	/**
 	 * A simple main method that prints the version and exits
 	 */

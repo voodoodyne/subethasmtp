@@ -1,5 +1,5 @@
 /*
- *
+ * 
  */
 package org.subethamail.smtp.io;
 
@@ -11,9 +11,6 @@ import java.net.InetAddress;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.Locale;
-
-import org.subethamail.smtp.util.TextUtils;
 
 /**
  * Prepends a Received: header at the beginning of the input stream.
@@ -21,29 +18,29 @@ import org.subethamail.smtp.util.TextUtils;
 public class ReceivedHeaderStream extends FilterInputStream
 {
 	ByteArrayInputStream header;
-
+	
 	/**
 	 */
 	public ReceivedHeaderStream(InputStream in, String heloHost, InetAddress host, String whoami)
 	{
 		super(in);
 
-/* Looks like:
+/* Looks like:	
 Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
         by mx.google.com with SMTP id 32si2669129wfa.13.2009.05.27.18.27.31;
         Wed, 27 May 2009 18:27:48 -0700 (PDT)
  */
-		DateFormat fmt = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z (z)", Locale.US);
+		DateFormat fmt = new SimpleDateFormat("EEE, dd MM yyyy HH:mm:ss Z (z)");
 		String timestamp = fmt.format(new Date());
 
-		String header =
+		String header = 
 			"Received: from " + heloHost + " (" + host.getCanonicalHostName() + " [" + host + "])\r\n" +
 			"        by " + whoami + " with SMTP;\r\n" +
 			"        " + timestamp + "\r\n";
 
-		this.header = new ByteArrayInputStream(TextUtils.getAsciiBytes(header));
+		this.header = new ByteArrayInputStream(header.getBytes());
 	}
-
+	
 	/* */
 	@Override
 	public int available() throws IOException
@@ -94,7 +91,7 @@ Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
 				// We need to add a little extra from the normal stream
 				int remainder = len - countRead;
 				int additionalRead = super.read(b, countRead, remainder);
-
+				
 				return countRead + additionalRead;
 			}
 			else

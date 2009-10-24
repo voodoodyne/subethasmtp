@@ -26,8 +26,8 @@
 
 	<property name="docs.dir" value="${build.dir}/docs" />
 	
-	<property name="ant.build.javac.target" value="1.5" />
-	<property name="ant.build.javac.source" value="1.5" />
+	<property name="ant.build.javac.target" value="1.6" />
+	<property name="ant.build.javac.source" value="1.6" />
 	<property name="ant.build.javac.encoding" value="UTF-8" />
 
 	<property name="retroweaver.version" value="2.0.7" />

@@ -15,9 +15,10 @@ import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
 
 /**
- * This class tests connection timeouts.
- *
- * @author Jeff Schnitzer
+ * This class attempts to quickly start/stop 10 Wiser servers. It makes sure that the socket bind address is correctly
+ * shut down.
+ * 
+ * @author Jon Stevens
  */
 public class TimeoutTest extends TestCase
 {
@@ -35,20 +36,17 @@ public class TimeoutTest extends TestCase
 	}
 
 	/** */
-	@Override
 	protected void setUp() throws Exception
 	{
 		super.setUp();
 	}
 
 	/** */
-	@Override
 	protected void tearDown() throws Exception
 	{
 		super.tearDown();
 	}
 
-	/** */
 	public void testTimeout() throws Exception
 	{
 		Wiser wiser = new Wiser();
@@ -60,15 +58,15 @@ public class TimeoutTest extends TestCase
 		Socket sock = new Socket(InetAddress.getLocalHost(), PORT);
 		OutputStream out = sock.getOutputStream();
 		PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-
+		
 		writer.print("HELO foo\r\n");
 		assert(!writer.checkError());
-
+		
 		Thread.sleep(2000);
-
+		
 		writer.print("HELO bar\r\n");
 		assert(writer.checkError());
-
+		
 		wiser.stop();
 	}
 

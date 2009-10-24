@@ -1,7 +1,6 @@
 package org.subethamail.smtp.command;
 
 import java.io.IOException;
-import java.util.Locale;
 
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
@@ -33,7 +32,6 @@ public class AuthCommand extends BaseCommand
 						+ "\t an optional base64-encoded response");
 	}
 
-	/** */
 	@Override
 	public void execute(String commandString, Session sess)
 			throws IOException
@@ -64,7 +62,7 @@ public class AuthCommand extends BaseCommand
 
 		// Let's check if we support the required authentication mechanism
 		String mechanism = args[1];
-		if (!authFactory.getAuthenticationMechanisms().contains(mechanism.toUpperCase(Locale.ENGLISH)))
+		if (!authFactory.getAuthenticationMechanisms().contains(mechanism.toUpperCase()))
 		{
 			sess.sendResponse("504 The requested authentication mechanism is not supported");
 			return;

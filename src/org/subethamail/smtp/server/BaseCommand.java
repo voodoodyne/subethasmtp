@@ -18,53 +18,48 @@ abstract public class BaseCommand implements Command
 {
 	@SuppressWarnings("unused")
 	private final static Logger log = LoggerFactory.getLogger(BaseCommand.class);
-
+		
 	/** Name of the command, ie HELO */
 	private String name;
 	/** The help message for this command*/
 	private HelpMessage helpMsg;
-
-	/** */
+	
 	protected BaseCommand(String name, String help)
 	{
 		this.name = name;
 		this.helpMsg = new HelpMessage(name, help);
 	}
-
-	/** */
+	
 	protected BaseCommand(String name, String help, String argumentDescription)
 	{
 		this.name = name;
 		this.helpMsg =  new HelpMessage(name, help, argumentDescription);
 	}
-
+	
 	/**
 	 * This is the main method that you need to override in order to implement a command.
 	 */
 	abstract public void execute(String commandString, Session context) throws IOException;
-
-	/** */
+	
 	public HelpMessage getHelp()
 	{
 		return this.helpMsg;
 	}
-
-	/** */
+	
+	
 	public String getName()
 	{
-		return this.name;
+		return name;
 	}
-
-	/** */
+	
 	protected String getArgPredicate(String commandString)
 	{
 		if (commandString == null || commandString.length() < 4)
 			return "";
-
+		
 		return commandString.substring(4).trim();
 	}
 
-	/** */
 	protected String[] getArgs(String commandString)
 	{
 		List<String> strings = new ArrayList<String>();
@@ -73,7 +68,7 @@ abstract public class BaseCommand implements Command
 		{
 			strings.add(stringTokenizer.nextToken());
 		}
-
+		
 		return strings.toArray(new String[strings.size()]);
-	}
+	}	
 }

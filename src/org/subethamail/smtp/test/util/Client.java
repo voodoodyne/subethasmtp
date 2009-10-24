@@ -7,10 +7,11 @@ import java.io.PrintWriter;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+
 /**
  * A crude telnet client that can be used to send SMTP messages and test
  * the responses.
- *
+ * 
  * @author Jeff Schnitzer
  * @author Jon Stevens
  */
@@ -22,27 +23,27 @@ public class Client
 
 	/**
 	 * Establishes a connection to host and port.
-	 * @throws IOException
-	 * @throws UnknownHostException
+	 * @throws IOException 
+	 * @throws UnknownHostException 
 	 */
 	public Client(String host, int port) throws UnknownHostException, IOException
 	{
-		this.socket = new Socket(host, port);
-		this.writer = new PrintWriter(this.socket.getOutputStream(), true);
-		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+		socket = new Socket(host, port);
+		writer = new PrintWriter(socket.getOutputStream(), true);
+		reader = new BufferedReader(new InputStreamReader(socket.getInputStream()));
 	}
-
-	/**
+	
+    /**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
-	 *
+	 * 
 	 * @throws an exception if the method cannot send for any reason
 	 */
 	public void send(String msg) throws Exception
 	{
 		// Force \r\n since println() behaves differently on different platforms
-		this.writer.print(msg + "\r\n");
-		this.writer.flush();
+		writer.print(msg + "\r\n");
+		writer.flush();
 	}
 
 	/**
@@ -55,18 +56,7 @@ public class Client
 		if (!response.startsWith(expect))
 			throw new Exception("Got: " + response + " Expected: " + expect);
 	}
-
-	/**
-	 * Throws an exception if the response does not contain
-	 * the specified string.
-	 */
-	public void expectContains(String expect) throws Exception
-	{
-	    String response = this.readResponse();
-	    if (!response.contains(expect))
-	        throw new Exception("Got: " + response + " Expected to contain: " + expect);
-	}
-
+	
 	/**
 	 * Get the complete response, including a multiline response.
 	 * Newlines are included.
@@ -80,18 +70,18 @@ public class Client
 			String line = this.reader.readLine();
 			if (line.charAt(3) != '-')
 				done = true;
-
+				
 			builder.append(line);
 			builder.append('\n');
 		}
-
+		
 		return builder.toString();
 	}
 
 	/** */
 	public void close() throws Exception
 	{
-		if (!this.socket.isClosed())
-			this.socket.close();
+		if (!socket.isClosed())
+			socket.close();
 	}
 }

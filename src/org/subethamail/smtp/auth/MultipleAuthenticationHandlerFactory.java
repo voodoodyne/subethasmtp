@@ -20,7 +20,7 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 {
 	/** Maps the auth type (eg "PLAIN") to a handler */
 	Map<String, AuthenticationHandlerFactory> plugins = new HashMap<String, AuthenticationHandlerFactory>();
-
+	
 	/** A more orderly list of the supported mechanisms */
 	List<String> mechanisms = new ArrayList<String>();
 
@@ -29,7 +29,7 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 	{
 		// Starting with an empty list is ok, let the user add them all
 	}
-
+	
 	/** */
 	public MultipleAuthenticationHandlerFactory(Collection<AuthenticationHandlerFactory> factories)
 	{
@@ -38,7 +38,7 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 			this.addFactory(fact);
 		}
 	}
-
+	
 	/** */
 	public void addFactory(AuthenticationHandlerFactory fact)
 	{
@@ -64,13 +64,13 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 	{
 		return new Handler();
 	}
-
+	
 	/**
 	 */
 	class Handler implements AuthenticationHandler
 	{
 		AuthenticationHandler active;
-
+		
 		/* */
 		public String auth(String clientInput) throws RejectException
 		{
@@ -80,20 +80,21 @@ public class MultipleAuthenticationHandlerFactory implements AuthenticationHandl
 				String auth = stk.nextToken();
 				if (!"AUTH".equals(auth))
 					throw new IllegalArgumentException("Not an AUTH command: " + clientInput);
-
+				
 				String method = stk.nextToken();
-				AuthenticationHandlerFactory fact = MultipleAuthenticationHandlerFactory.this.plugins.get(method);
-
+				AuthenticationHandlerFactory fact = plugins.get(method);
+				
 				if (fact == null)
 					throw new RejectException(504, "Method not supported");
-
+	
 				this.active = fact.create();
 			}
-
+			
 			return this.active.auth(clientInput);
 		}
 
 		/* */
+		@Override
 		public Object getIdentity()
 		{
 			return this.active.getIdentity();
