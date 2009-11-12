@@ -98,3 +98,7 @@ SubEthaSMTP is a multithreaded server.  You may change settings on a stopped ser
 == Using Port 25 on Unix ==
 
 On unix, it is possible to run SubEthatSMTP on port 25 without running the JVM as root. Please see the iptables/ipfw instructions here: [http://code.google.com/p/subetha/wiki/UsingPort25 UsingPort25]
+
+== SSL Configuration ==
+
+Erik van Oosten has written an excellent blog posting about [http://blog.jteam.nl/2009/11/10/securing-connections-with-tls/ how to configure this].
