@@ -104,7 +104,7 @@ public class Session extends Thread implements MessageContext
 			{
 				log.debug("SMTP Too many connections!");
 
-				this.sendResponse("554 Transaction failed. Too many connections.");
+				this.sendResponse("421 Too many connections, try again later");
 				return;
 			}
 
