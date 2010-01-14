@@ -61,15 +61,15 @@
 		</javac>
 		
 		<jar jarfile="${build.dir}/${name}-${build.version}.jar">
-			<fileset dir="${build.dir}/classes"/>
-			
 			<manifest>
 				<attribute name="Specification-Version" value="${build.version}" />
 				<attribute name="Implementation-Version" value="${TODAY}" />
 				<attribute name="Main-Class" value="org.subethamail.smtp.Version" />
 			</manifest>
 			
-			<exclude name="org/subethamail/smtp/test/**"/>
+			<fileset dir="${build.dir}/classes">
+				<exclude name="org/subethamail/smtp/test/**"/>
+			</fileset>
 		</jar>
 	</target>
 
