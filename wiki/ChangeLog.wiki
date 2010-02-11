@@ -3,6 +3,9 @@
 		
 == Changes ==
 
+=== 3.1.3 - February 11, 2010 ===
+ * [http://code.google.com/p/subethasmtp/issues/detail?id=28 Fix a bug in ReceivedHeaderStream]
+
 === 3.1.2 - October 24, 2009 ===
  * Much better TLS support
  * Added support for the SIZE extension
