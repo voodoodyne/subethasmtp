@@ -93,7 +93,7 @@ Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
 			{
 				// We need to add a little extra from the normal stream
 				int remainder = len - countRead;
-				int additionalRead = super.read(b, countRead, remainder);
+				int additionalRead = super.read(b, off + countRead, remainder);
 
 				return countRead + additionalRead;
 			}
