@@ -40,9 +40,6 @@
     <developer>
       <id>latchkey</id>
       <name>Jon Stevens</name>
-      <email>?</email>
-      <organization>?</organization>
-      <timezone>?</timezone>
       <roles>
         <role>Project Owner</role>
       </roles>
@@ -50,9 +47,6 @@
     <developer>
       <id>lhoriman</id>
       <name>Jeff Schnitzer</name>
-      <email>?</email>
-      <organization>?</organization>
-      <timezone>?</timezone>
       <roles>
         <role>Project Owner</role>
       </roles>
@@ -60,11 +54,17 @@
     <developer>
       <id>scotthernandez</id>
       <name>Scott Hernandez</name>
-      <email>?</email>
-      <organization>?</organization>
       <timezone>?</timezone>
       <roles>
         <role>Project Owner</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>jeffjjensen</id>
+      <name>Jeff Jensen</name>
+      <timezone>-6</timezone>
+      <roles>
+        <role>Committer</role>
       </roles>
     </developer>
   </developers>
@@ -176,7 +176,7 @@
     <repository>
       <id>sonatype-nexus-staging</id>
       <name>Nexus Release Repository</name>
-      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+      <url>http://oss.sonatype.org/service/local/staging/deploy/maven2</url>
     </repository>
   </distributionManagement>
   <properties>
