@@ -54,7 +54,6 @@
     <developer>
       <id>scotthernandez</id>
       <name>Scott Hernandez</name>
-      <timezone>?</timezone>
       <roles>
         <role>Project Owner</role>
       </roles>
@@ -165,6 +164,7 @@
       <artifactId>slf4j-simple</artifactId>
       <version>1.5.6</version>
       <type>jar</type>
+      <scope>test</scope>
     </dependency>
   </dependencies>
   <distributionManagement>
