@@ -38,6 +38,12 @@ public class StartTLSCommand extends BaseCommand
 			return;
 		}
 
+		if (sess.getServer().getDisableTLS())
+		{
+			sess.sendResponse("454 TLS not supported");
+			return;
+		}
+
 		try
 		{
 			Socket socket = sess.getSocket();

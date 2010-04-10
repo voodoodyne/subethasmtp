@@ -68,10 +68,20 @@ public class SMTPServer implements Runnable
 
 	private ThreadGroup sessionGroup;
 
-	/** If true, TLS is not announced */
+	/** 
+	 * TLS
+	 *  By default, TLS is supported (and announced) but not required.
+	 *  To override default behavior, only one of these need be specified:
+	 *   To disable TLS, set disableTLS=true; 
+	 *   To allow TLS but not announce it, set hideTLS=true; 
+	 *   To require TLS, set requireTLS=true.
+	 */
+	/** If true, TLS is disabled */
+	private boolean disableTLS = false;
+	/** If true, TLS is not announced; implied if disableTLS=true */
 	private boolean hideTLS = false;
-	/** If true, a TLS handshake is required */
-	private boolean requireTLS;
+	/** If true, a TLS handshake is required; ignored if disableTLS=true */
+	private boolean requireTLS = false;
 
 	/**
 	 * set a hard limit on the maximum number of connections this server will accept
@@ -529,6 +539,21 @@ public class SMTPServer implements Runnable
 	}
 
 	/** */
+	public boolean getDisableTLS()
+	{
+		return this.disableTLS;
+	}
+
+	/**
+	 * If set to true, TLS will not be announced or supported.
+	 * Default is false.
+	 */
+	public void setDisableTLS(boolean value)
+	{
+		this.disableTLS = value;
+	}
+
+	/** */
 	public boolean getHideTLS()
 	{
 		return this.hideTLS;
@@ -536,7 +561,7 @@ public class SMTPServer implements Runnable
 
 	/**
 	 * If set to true, TLS will not be advertised in the EHLO string.
-	 * Default is false.
+	 * Default is false; true implied when disableTLS=true.
 	 */
 	public void setHideTLS(boolean value)
 	{
@@ -550,9 +575,9 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * @param requireTLS true to require a TLS handshake, false to allow operation
-	 *   with or without TLS
-	 *   Default is false.
+	 * @param requireTLS true to require a TLS handshake, 
+	 *   false to allow operation with or without TLS.
+	 *   Default is false; ignored when disableTLS=true.
 	 */
 	public void setRequireTLS(boolean requireTLS)
 	{
