@@ -165,6 +165,7 @@
       <version>1.5.6</version>
       <type>jar</type>
       <scope>test</scope>
+      <optional>true</optional>
     </dependency>
   </dependencies>
   <distributionManagement>
