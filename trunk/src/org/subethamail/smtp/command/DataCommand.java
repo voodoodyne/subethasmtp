@@ -72,7 +72,7 @@ public class DataCommand extends BaseCommand
 		}
 		catch (RejectException ex)
 		{
-			sess.sendResponse(ex.getMessage());
+			sess.sendResponse(ex.getErrorResponse());
 		}
 
 		sess.resetMessageState(); // reset session, but don't require new HELO/EHLO

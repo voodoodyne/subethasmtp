@@ -63,7 +63,7 @@ public class ReceiptCommand extends BaseCommand
 			}
 			catch (RejectException ex)
 			{
-				sess.sendResponse(ex.getMessage());
+				sess.sendResponse(ex.getErrorResponse());
 			}
 		}
 	}
