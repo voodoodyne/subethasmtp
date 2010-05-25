@@ -4,6 +4,7 @@ import java.io.BufferedInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 
+import org.subethamail.smtp.DropConnectionException;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.io.CharTerminatedInputStream;
 import org.subethamail.smtp.io.DotUnstuffingInputStream;
@@ -64,6 +65,10 @@ public class DataCommand extends BaseCommand
 				stream.read();
 
 			sess.sendResponse("250 Ok");
+		}
+		catch (DropConnectionException ex)
+		{
+			throw ex; // Propagate this
 		}
 		catch (RejectException ex)
 		{

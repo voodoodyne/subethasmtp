@@ -3,6 +3,7 @@ package org.subethamail.smtp.command;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.subethamail.smtp.DropConnectionException;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
@@ -25,6 +26,9 @@ public class MailCommand extends BaseCommand
 	}
 
 	/** */
+	/* (non-Javadoc)
+	 * @see org.subethamail.smtp.server.BaseCommand#execute(java.lang.String, org.subethamail.smtp.server.Session)
+	 */
 	@Override
 	public void execute(String commandString, Session sess) throws IOException
 	{
@@ -81,6 +85,10 @@ public class MailCommand extends BaseCommand
 					sess.setDeclaredMessageSize(size);
 					sess.setHasMailFrom(true);
 					sess.sendResponse("250 Ok");
+				}
+				catch (DropConnectionException ex)
+				{
+					throw ex; // Propagate this
 				}
 				catch (RejectException ex)
 				{

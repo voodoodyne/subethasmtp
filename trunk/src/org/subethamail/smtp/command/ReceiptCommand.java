@@ -3,6 +3,7 @@ package org.subethamail.smtp.command;
 import java.io.IOException;
 import java.util.Locale;
 
+import org.subethamail.smtp.DropConnectionException;
 import org.subethamail.smtp.RejectException;
 import org.subethamail.smtp.server.BaseCommand;
 import org.subethamail.smtp.server.Session;
@@ -55,6 +56,10 @@ public class ReceiptCommand extends BaseCommand
 				sess.getMessageHandler().recipient(recipientAddress);
 				sess.addRecipient();
 				sess.sendResponse("250 Ok");
+			}
+			catch (DropConnectionException ex)
+			{
+				throw ex; // Propagate this
 			}
 			catch (RejectException ex)
 			{

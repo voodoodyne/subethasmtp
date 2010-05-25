@@ -32,6 +32,7 @@ public interface MessageHandler
 	 *  be a rfc822-compliant email address, already validated by
 	 *  the server.
 	 * @throws RejectException if the sender should be denied.
+	 * @throws DropConnectionException if the connection should be dropped
 	 */
 	public void from(String from) throws RejectException;
 
@@ -42,6 +43,7 @@ public interface MessageHandler
 	 * @param recipient is a rfc822-compliant email address,
 	 *  validated by the server.
 	 * @throws RejectException if the recipient should be denied.
+	 * @throws DropConnectionException if the connection should be dropped
 	 */
 	public void recipient(String recipient) throws RejectException;
 
@@ -56,6 +58,7 @@ public interface MessageHandler
 	 * 			data stream will be valid only for the duration of the call.
 	 *
 	 * @throws RejectException if at any point the data should be rejected.
+	 * @throws DropConnectionException if the connection should be dropped
 	 * @throws TooMuchDataException if the listener can't handle that much data.
 	 *         An error will be reported to the client.
 	 * @throws IOException if there is an IO error reading the input data.

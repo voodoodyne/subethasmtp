@@ -3,12 +3,17 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.PrintWriter;
-import java.net.*;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
+import java.net.Socket;
+import java.net.SocketException;
+import java.net.SocketTimeoutException;
 import java.security.cert.Certificate;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.smtp.AuthenticationHandler;
+import org.subethamail.smtp.DropConnectionException;
 import org.subethamail.smtp.MessageContext;
 import org.subethamail.smtp.MessageHandler;
 import org.subethamail.smtp.io.CRLFTerminatedReader;
@@ -142,6 +147,10 @@ public class Session extends Thread implements MessageContext
 						log.debug("Client: " + line);
 
 					this.server.getCommandHandler().handleCommand(this, line);
+				}
+				catch (DropConnectionException ex)
+				{
+					this.sendResponse(ex.getErrorResponse());
 				}
 				catch (SocketTimeoutException ex)
 				{
