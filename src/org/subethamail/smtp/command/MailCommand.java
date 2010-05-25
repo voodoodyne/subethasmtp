@@ -92,7 +92,7 @@ public class MailCommand extends BaseCommand
 				}
 				catch (RejectException ex)
 				{
-					sess.sendResponse(ex.getMessage());
+					sess.sendResponse(ex.getErrorResponse());
 				}
 			}
 			else
