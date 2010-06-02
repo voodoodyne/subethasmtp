@@ -55,6 +55,7 @@ public class SMTPServer implements Runnable
 	private int port = 25;	// default to 25
 	private String hostName;	// defaults to a lookup of the local address
 	private int backlog = 50;
+	private String softwareName = "SubEthaSMTP " + Version.getSpecification();
 
 	private MessageHandlerFactory messageHandlerFactory;
 	private AuthenticationHandlerFactory authenticationHandlerFactory;
@@ -176,6 +177,23 @@ public class SMTPServer implements Runnable
 	public void setPort(int port)
 	{
 		this.port = port;
+	}
+
+	/** 
+	 * The string reported to the public as the software running here.  Defaults
+	 * to SubEthaSTP and the version number. 
+	 */
+	public String getSoftwareName()
+	{
+		return this.softwareName;
+	}
+
+	/** 
+	 * Changes the publicly reported software information. 
+	 */
+	public void setSoftwareName(String value)
+	{
+		this.softwareName = value;
 	}
 
 	/**
@@ -409,18 +427,6 @@ public class SMTPServer implements Runnable
 			log.info("SMTP server {} stopped", getDisplayableLocalSocketAddress());
 			MDC.remove("smtpServerLocalSocketAddress");
 		}
-	}
-
-	/** */
-	public String getName()
-	{
-		return "SubEthaSMTP";
-	}
-
-	/** */
-	public String getNameVersion()
-	{
-		return this.getName() + " " + Version.getSpecification();
 	}
 
 	private String getDisplayableLocalSocketAddress()

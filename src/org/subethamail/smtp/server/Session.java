@@ -113,7 +113,7 @@ public class Session extends Thread implements MessageContext
 				return;
 			}
 
-			this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getName());
+			this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getSoftwareName());
 
 			// Start with fresh message state
 			this.resetMessageState();

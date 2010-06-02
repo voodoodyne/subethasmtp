@@ -48,19 +48,14 @@ public class HelpCommand extends BaseCommand
 	/** */
 	private String getCommandMessage(SMTPServer server)
 	{
-		return "214-This is the "
-				+ server.getNameVersion()
-				+ " server running on "
+		return "214-"
+				+ server.getSoftwareName()
+				+ " on "
 				+ server.getHostName()
 				+ "\r\n"
 				+ "214-Topics:\r\n"
 				+ this.getFormattedTopicList(server)
 				+ "214-For more info use \"HELP <topic>\".\r\n"
-				+ "214-For more information about this server, visit:\r\n"
-				+ "214-    http://subetha.tigris.org\r\n"
-				+ "214-To report bugs in the implementation, send email to:\r\n"
-				+ "214-    issues@subetha.tigris.org\r\n"
-				+ "214-For local information send email to Postmaster at your site.\r\n"
 				+ "214 End of HELP info";
 	}
 
