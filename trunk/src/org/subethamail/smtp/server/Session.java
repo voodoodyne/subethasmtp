@@ -151,6 +151,7 @@ public class Session extends Thread implements MessageContext
 				catch (DropConnectionException ex)
 				{
 					this.sendResponse(ex.getErrorResponse());
+					return;
 				}
 				catch (SocketTimeoutException ex)
 				{
