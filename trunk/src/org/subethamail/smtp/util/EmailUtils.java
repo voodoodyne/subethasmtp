@@ -55,4 +55,17 @@ public class EmailUtils
 		}
 		return address;
 	}
+
+	/**
+	 * Normalize the domain-part to lowercase.  If email address is missing
+	 * an '@' the email is returned as-is.
+	 */
+	public static String normalizeEmail(String email)
+	{
+		int atIndex = email.indexOf('@');
+		if (atIndex < 0)
+			return email;
+		else
+			return email.substring(0, atIndex) + email.substring(atIndex).toLowerCase();
+	}
 }
