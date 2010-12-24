@@ -47,7 +47,7 @@ public class Wiser implements SimpleMessageListener
 	SMTPServer server;
 
 	/** */
-	List<WiserMessage> messages = Collections.synchronizedList(new ArrayList<WiserMessage>());
+	protected List<WiserMessage> messages = Collections.synchronizedList(new ArrayList<WiserMessage>());
 
 	/**
 	 * Create a new SMTP server with this class as the listener.
