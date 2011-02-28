@@ -1,6 +1,6 @@
 #summary Java code conventions for the source
 
-Eclipse Java Code Style Formatter profile: [eclipse-code-style.xml download]
+Eclipse Java Code Style Formatter profile: [http://subethasmtp.googlecode.com/svn/wiki-attachments/eclipse-code-style.xml download]
 
 Eclipse Clean Up settings screenshot: 
-{{{<img src="eclipse-save-actions-setup.png">}}}
+http://subethasmtp.googlecode.com/svn/wiki-attachments/eclipse-save-actions-setup.png
