@@ -51,7 +51,11 @@ public class DataCommand extends BaseCommand
 		stream = new BufferedInputStream(stream, BUFFER_SIZE);
 		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
 		stream = new DotUnstuffingInputStream(stream);
-		stream = new ReceivedHeaderStream(stream, sess.getHelo(), sess.getRemoteAddress().getAddress(), sess.getServer().getHostName());
+		if (!sess.getServer().getDisableReceivedHeaders())
+		{
+			stream = new ReceivedHeaderStream(stream, sess.getHelo(), sess.getRemoteAddress().getAddress(), sess
+					.getServer().getHostName());
+		}
 
 		try
 		{
