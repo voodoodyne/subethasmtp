@@ -3,7 +3,7 @@
 		
 == Changes ==
 
-=== 3.1.5 v393 - not yet released ===
+=== 3.1.5 - February 28, 2011 ===
 
  * Issue 36: !PlainAuthenticationHandlerFactory should accept non-null authorization identity. Patch is provided by Ian White.
  * Issue 35: Addition of Received headers is configurable. Patch is provided by rwiermer.
