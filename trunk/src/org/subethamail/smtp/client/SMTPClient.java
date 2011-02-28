@@ -23,6 +23,12 @@ import org.subethamail.smtp.io.ExtraDotOutputStream;
  */
 public class SMTPClient
 {
+	/** 5 minutes */
+	private static final int CONNECT_TIMEOUT = 300 * 1000;
+
+	/** 10 minutes */
+	private static final int REPLY_TIMEOUT = 600 * 1000;
+
 	/** */
 	private static Logger log = LoggerFactory.getLogger(SMTPClient.class);
 
@@ -99,7 +105,8 @@ public class SMTPClient
 
 		this.socket = new Socket();
 		this.socket.bind(bindpoint);
-		this.socket.connect(new InetSocketAddress(host, port));
+		this.socket.setSoTimeout(REPLY_TIMEOUT);
+		this.socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT);
 		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
 		this.rawOutput = this.socket.getOutputStream();
