@@ -16,6 +16,7 @@ import org.subethamail.smtp.util.Base64;
  *
  * @author Marco Trevisan <mrctrevisan@yahoo.it>
  * @author Jeff Schnitzer
+ * @author Ian White <ibwhite@gmail.com>
  */
 public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerFactory
 {
@@ -82,18 +83,40 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 			if (decodedSecret == null)
 				throw new RejectException();
 
-			int usernameStop = -1;
-			for (int i = 1; (i < decodedSecret.length) && (usernameStop < 0); i++)
+			/*
+			 * RFC4616: The client presents the authorization identity (identity
+			 * to act as), followed by a NUL (U+0000) character, followed by the
+			 * authentication identity (identity whose password will be used),
+			 * followed by a NUL (U+0000) character, followed by the clear-text
+			 * password.
+			 */
+
+			int i, j;
+			for (i = 0; i < decodedSecret.length && decodedSecret[i] != 0; i++)
+				;
+			if (i >= decodedSecret.length)
 			{
-				if (decodedSecret[i] == 0)
-				{
-					usernameStop = i;
-				}
+				throw new RejectException();
 			}
 
-			this.username = new String(decodedSecret, 1, usernameStop - 1);
-			this.password = new String(decodedSecret, usernameStop + 1,
-					decodedSecret.length - usernameStop - 1);
+			for (j = i + 1; j < decodedSecret.length && decodedSecret[j] != 0; j++)
+				;
+			if (j >= decodedSecret.length)
+			{
+				throw new RejectException();
+			}
+
+			@SuppressWarnings("unused")
+			String authorizationId = new String(decodedSecret, 0, i);
+			String authenticationId = new String(decodedSecret, i + 1, j - i - 1);
+			String passwd = new String(decodedSecret, j + 1, decodedSecret.length - j - 1);
+
+			// might be nice to do something with authorizationId, but for
+			// purposes of the UsernamePasswordValidator, we just want to use
+			// authenticationId
+
+			this.username = authenticationId;
+			this.password = passwd;
 			try
 			{
 				PlainAuthenticationHandlerFactory.this.helper.login(this.username.toString(), this.password);
