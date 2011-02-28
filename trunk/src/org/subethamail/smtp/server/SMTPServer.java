@@ -83,6 +83,8 @@ public class SMTPServer implements Runnable
 	private boolean hideTLS = false;
 	/** If true, a TLS handshake is required; ignored if disableTLS=true */
 	private boolean requireTLS = false;
+	/** If true, no Received headers will be inserted */
+	private boolean disableReceivedHeaders = false;
 
 	/**
 	 * set a hard limit on the maximum number of connections this server will accept
@@ -596,6 +598,21 @@ public class SMTPServer implements Runnable
 	public int getMaxMessageSize()
 	{
 		return maxMessageSize;
+	}
+
+	/** */
+	public boolean getDisableReceivedHeaders()
+	{
+		return disableReceivedHeaders;
+	}
+
+	/**
+	 * @param disableReceivedHeaders
+	 *            false to include Received headers. Default is false.
+	 */
+	public void setDisableReceivedHeaders(boolean disableReceivedHeaders)
+	{
+		this.disableReceivedHeaders = disableReceivedHeaders;
 	}
 
 	/**
