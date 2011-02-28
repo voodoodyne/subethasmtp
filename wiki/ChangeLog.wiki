@@ -3,6 +3,13 @@
 		
 == Changes ==
 
+=== 3.1.5 v393 - not yet released ===
+
+ * Issue 36: !PlainAuthenticationHandlerFactory should accept non-null authorization identity. Patch is provided by Ian White.
+ * Issue 35: Addition of Received headers is configurable. Patch is provided by rwiermer.
+ * Issue 30: Client timeouts if the server does not respond
+ * Wiser.messages is now protected so subclasses can override
+
 === 3.1.4 - June 1, 2010 ===
  * Added the ability to drop connections by throwing a DropConnectionException
  * RejectException is now a RuntimeException
