@@ -19,9 +19,6 @@ public class SmartClient extends SMTPClient
 	private static Logger log = LoggerFactory.getLogger(SmartClient.class);
 
 	/** */
-	private final static byte[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
-
-	/** */
 	boolean sentFrom;
 	int recipientCount;
 
@@ -84,8 +81,8 @@ public class SmartClient extends SMTPClient
 	public void dataEnd() throws IOException, SMTPException
 	{
 		this.dataOutput.flush();
-		this.rawOutput.write(SMTP_TERMINATOR);
-		this.rawOutput.flush();
+		this.dotTerminatedOutput.writeTerminatingSequence();
+		this.dotTerminatedOutput.flush();
 
 		this.receiveAndCheck();
 	}

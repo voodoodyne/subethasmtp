@@ -12,6 +12,7 @@ import java.net.UnknownHostException;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.subethamail.smtp.io.DotTerminatedOutputStream;
 import org.subethamail.smtp.io.ExtraDotOutputStream;
 
 
@@ -43,6 +44,16 @@ public class SMTPClient
 
 	/** Output streams used for data */
 	OutputStream rawOutput;
+	/**
+	 * A stream which wraps {@link #rawOutput} and is used to write out the DOT
+	 * CR LF terminating sequence in the DATA command, if necessary
+	 * complementing the message content with a closing CR LF.
+	 */
+	DotTerminatedOutputStream dotTerminatedOutput;
+	/**
+	 * This stream wraps {@link #dotTerminatedOutput} and it does the dot
+	 * stuffing for the SMTP DATA command.
+	 */
 	ExtraDotOutputStream dataOutput;
 
 	/** Note we bypass this during DATA */
@@ -110,7 +121,8 @@ public class SMTPClient
 		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
 		this.rawOutput = this.socket.getOutputStream();
-		this.dataOutput = new ExtraDotOutputStream(this.rawOutput);
+		this.dotTerminatedOutput = new DotTerminatedOutputStream(this.rawOutput);
+		this.dataOutput = new ExtraDotOutputStream(this.dotTerminatedOutput);
 		this.writer = new PrintWriter(this.rawOutput, true);
 	}
 
