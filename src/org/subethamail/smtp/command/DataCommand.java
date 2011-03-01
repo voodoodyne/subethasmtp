@@ -6,7 +6,7 @@ import java.io.InputStream;
 
 import org.subethamail.smtp.DropConnectionException;
 import org.subethamail.smtp.RejectException;
-import org.subethamail.smtp.io.CharTerminatedInputStream;
+import org.subethamail.smtp.io.DotTerminatedInputStream;
 import org.subethamail.smtp.io.DotUnstuffingInputStream;
 import org.subethamail.smtp.io.ReceivedHeaderStream;
 import org.subethamail.smtp.server.BaseCommand;
@@ -19,7 +19,6 @@ import org.subethamail.smtp.server.Session;
  */
 public class DataCommand extends BaseCommand
 {
-	private final static char[] SMTP_TERMINATOR = { '\r', '\n', '.', '\r', '\n' };
 	private final static int BUFFER_SIZE = 1024 * 32;	// 32k seems reasonable
 
 	/** */
@@ -49,7 +48,7 @@ public class DataCommand extends BaseCommand
 
 		InputStream stream = sess.getRawInput();
 		stream = new BufferedInputStream(stream, BUFFER_SIZE);
-		stream = new CharTerminatedInputStream(stream, SMTP_TERMINATOR);
+		stream = new DotTerminatedInputStream(stream);
 		stream = new DotUnstuffingInputStream(stream);
 		if (!sess.getServer().getDisableReceivedHeaders())
 		{
