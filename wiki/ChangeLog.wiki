@@ -12,7 +12,7 @@
 
 === 3.1.4 - June 1, 2010 ===
  * Added the ability to drop connections by throwing a DropConnectionException
- * RejectException is now a RuntimeException
+ * RejectException is now a RuntimeException *NOTE this might be a breaking change for your app*
  * TLS can be disabled
  * Publicly reported name of server can be controlled with a "softwareName" property
 
