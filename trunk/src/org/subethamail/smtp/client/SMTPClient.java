@@ -166,6 +166,8 @@ public class SMTPClient
 			if (log.isDebugEnabled())
 				log.debug("Server: " + line);
 
+			if (line.length() < 4)
+				throw new IOException("Malformed SMTP reply: " + line);
 			builder.append(line.substring(4));
 
 			if (line.charAt(3) == '-')
@@ -174,9 +176,18 @@ public class SMTPClient
 				done = true;
 		}
 
-		String code = line.substring(0, 3);
+		int code;
+		String codeString = line.substring(0, 3);
+		try
+		{
+			code = Integer.parseInt(codeString);
+		}
+		catch (NumberFormatException e)
+		{
+			throw new IOException("Malformed SMTP reply: " + line, e);
+		}
 
-		return new Response(Integer.parseInt(code), builder.toString());
+		return new Response(code, builder.toString());
 	}
 
 	/**
