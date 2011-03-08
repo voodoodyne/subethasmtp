@@ -54,7 +54,7 @@ public class ReceiptCommand extends BaseCommand
 			try
 			{
 				sess.getMessageHandler().recipient(recipientAddress);
-				sess.addRecipient();
+				sess.addRecipient(recipientAddress);
 				sess.sendResponse("250 Ok");
 			}
 			catch (DropConnectionException ex)
