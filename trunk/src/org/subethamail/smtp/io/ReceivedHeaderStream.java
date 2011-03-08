@@ -36,12 +36,31 @@ Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
 		DateFormat fmt = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss Z (z)", Locale.US);
 		String timestamp = fmt.format(new Date());
 
-		String header =
-			"Received: from " + heloHost + " (" + host.getCanonicalHostName() + " [" + host + "])\r\n" +
-			"        by " + whoami + " with SMTP;\r\n" +
-			"        " + timestamp + "\r\n";
+		String header = "Received: from " + heloHost + " (" + constructTcpInfo(host) + ")\r\n" + "        by " + whoami
+				+ " with SMTP;\r\n" + "        " + timestamp + "\r\n";
 
 		this.header = new ByteArrayInputStream(TextUtils.getAsciiBytes(header));
+	}
+
+	/**
+	 * Returns a formatted TCP-info element, depending on the success of the IP
+	 * address name resolution either with domain name or only the address
+	 * literal.
+	 * 
+	 * @param host
+	 *            the address of the remote SMTP client.
+	 * @return the formatted TCP-info element as defined by RFC 5321
+	 */
+	private String constructTcpInfo(InetAddress host)
+	{
+		// if it is not successful it just returns the address
+		String domain = host.getCanonicalHostName();
+		String address = host.getHostAddress();
+		// check whether the host name resolution was successful
+		if (domain.equals(address))
+			return "[" + address + "]";
+		else
+			return domain + " [" + address + "]";
 	}
 
 	/* */
