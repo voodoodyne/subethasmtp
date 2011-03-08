@@ -52,6 +52,14 @@ public class Session extends Thread implements MessageContext
 	private String helo;
 	private boolean hasMailFrom;
 	private int recipientCount;
+	/**
+	 * The recipient address in the first accepted RCPT command, but only if
+	 * there is exactly one such accepted recipient. If there is no accepted
+	 * recipient yet, or if there are more than one, then this value is null.
+	 * This information is useful in the construction of the FOR clause of the
+	 * Received header.
+	 */
+	private String singleRecipient;
 
 	/**
 	 * If the client told us the size of the message, this is the value.
@@ -334,15 +342,25 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/** */
-	public void addRecipient()
+	public void addRecipient(String recipientAddress)
 	{
 		this.recipientCount++;
+		this.singleRecipient = this.recipientCount == 1 ? recipientAddress : null;
 	}
 
 	/** */
 	public int getRecipientCount()
 	{
 		return this.recipientCount;
+	}
+
+	/**
+	 * Returns the first accepted recipient if there is exactly one accepted
+	 * recipient, otherwise it returns null.
+	 */
+	public String getSingleRecipient()
+	{
+		return singleRecipient;
 	}
 
 	/** */
@@ -393,6 +411,7 @@ public class Session extends Thread implements MessageContext
 		this.helo = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
+		this.singleRecipient = null;
 		this.declaredMessageSize = 0;
 	}
 
