@@ -1,6 +1,7 @@
 package org.subethamail.smtp.client;
 
 import java.io.BufferedReader;
+import java.io.EOFException;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
@@ -159,9 +160,16 @@ public class SMTPClient
 		String line = null;
 
 		boolean done = false;
-		while (!done)
+		do
 		{
 			line = this.reader.readLine();
+			if (line == null)
+			{
+				if (builder.length() == 0)
+					throw new EOFException("Server disconnected unexpectedly, no reply received");
+				else
+					throw new IOException("Malformed SMTP reply: " + builder);
+			}
 
 			if (log.isDebugEnabled())
 				log.debug("Server: " + line);
@@ -175,6 +183,7 @@ public class SMTPClient
 			else
 				done = true;
 		}
+		while (!done);
 
 		int code;
 		String codeString = line.substring(0, 3);
