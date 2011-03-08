@@ -230,7 +230,8 @@
 		
 	</target>
 
-	<target name="dist" depends="clean, formal-build, build-docs, javadoc">
+	<target name="dist" depends="clean, formal-build, build-docs, javadoc" 
+	        description="creates the distribution archive after a clean build">
 		<property name="build.dist.dir" location="${build.dir}/${name}-${build.version}"/>
 		<property name="build.dist.zip" location="${build.dir}/${name}-${build.version}.zip"/>
 
