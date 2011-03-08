@@ -320,6 +320,11 @@ public class SMTPServer implements Runnable
 		serverSocket.setReuseAddress(true);
 		serverSocket.bind(isa, this.backlog);
 
+		if (this.port == 0)
+		{
+			this.port = serverSocket.getLocalPort();
+		}
+
 		return serverSocket;
 	}
 
