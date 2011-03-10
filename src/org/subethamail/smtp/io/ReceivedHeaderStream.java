@@ -23,11 +23,15 @@ public class ReceivedHeaderStream extends FilterInputStream
 	ByteArrayInputStream header;
 
 	/**
+	 * @param softwareName
+	 *            A software name and version, or null if this information
+	 *            should not be printed
 	 * @param singleRecipient
-	 *            the single recipient of the message. If there are more than
+	 *            The single recipient of the message. If there are more than
 	 *            one recipients then this must be null.
 	 */
-	public ReceivedHeaderStream(InputStream in, String heloHost, InetAddress host, String whoami, String singleRecipient)
+	public ReceivedHeaderStream(InputStream in, String heloHost, InetAddress host, String whoami, String softwareName,
+			String singleRecipient)
 	{
 		super(in);
 
@@ -42,6 +46,8 @@ Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
 		StringBuilder header = new StringBuilder();
 		header.append("Received: from " + heloHost + " (" + constructTcpInfo(host) + ")\r\n");
 		header.append("        by " + whoami + " with SMTP");
+		if (softwareName != null)
+			header.append(" (" + softwareName + ")");
 		if (singleRecipient != null)
 			header.append("\r\n        for " + singleRecipient);
 		header.append(";\r\n");
