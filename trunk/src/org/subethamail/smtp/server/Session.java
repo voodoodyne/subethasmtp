@@ -98,7 +98,8 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
-	 * The thread for each session runs on this and shuts down when the shutdown member goes true.
+	 * The thread for each session runs on this and shuts down when the quitting
+	 * member goes true.
 	 */
 	@Override
 	public void run()
@@ -113,82 +114,7 @@ public class Session extends Thread implements MessageContext
 
 		try
 		{
-			if (this.server.hasTooManyConnections())
-			{
-				log.debug("SMTP Too many connections!");
-
-				this.sendResponse("421 Too many connections, try again later");
-				return;
-			}
-
-			this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getSoftwareName());
-
-			// Start with fresh message state
-			this.resetMessageState();
-
-			while (!this.quitting)
-			{
-				try
-				{
-					String line = null;
-					try
-					{
-						line = this.reader.readLine();
-					}
-					catch (SocketException ex)
-					{
-						// Lots of clients just "hang up" rather than issuing QUIT, which would
-						// fill our logs with the warning in the outer catch.
-						if (log.isDebugEnabled())
-							log.debug("Error reading client command: " + ex.getMessage(), ex);
-
-						return;
-					}
-
-					if (line == null)
-					{
-						log.debug("no more lines from client");
-						return;
-					}
-
-					if (log.isDebugEnabled())
-						log.debug("Client: " + line);
-
-					this.server.getCommandHandler().handleCommand(this, line);
-				}
-				catch (DropConnectionException ex)
-				{
-					this.sendResponse(ex.getErrorResponse());
-					return;
-				}
-				catch (SocketTimeoutException ex)
-				{
-					this.sendResponse("421 Timeout waiting for data from client.");
-					return;
-				}
-				catch (CRLFTerminatedReader.TerminationException te)
-				{
-					String msg = "501 Syntax error at character position "
-						+ te.position()
-						+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.";
-
-					log.debug(msg);
-					this.sendResponse(msg);
-
-					// if people are screwing with things, close connection
-					return;
-				}
-				catch (CRLFTerminatedReader.MaxLineLengthException mlle)
-				{
-					String msg = "501 " + mlle.getMessage();
-
-					log.debug(msg);
-					this.sendResponse(msg);
-
-					// if people are screwing with things, close connection
-					return;
-				}
-			}
+			runCommandLoop();
 		}
 		catch (IOException e1)
 		{
@@ -198,7 +124,7 @@ public class Session extends Thread implements MessageContext
 				{
 					// Send a temporary failure back so that the server will try to resend
 					// the message later.
-					this.sendResponse("450 Problem attempting to execute commands. Please try again later.");
+					this.sendResponse("421 4.4.0 Problem attempting to execute commands. Please try again later.");
 				}
 				catch (IOException e) {}
 
@@ -206,10 +132,117 @@ public class Session extends Thread implements MessageContext
 					log.warn("Exception during SMTP transaction", e1);
 			}
 		}
+		catch (Throwable e)
+		{
+			log.error("Unexpected error in the SMTP handler thread", e);
+			try
+			{
+				this.sendResponse("421 4.3.0 Mail system failure, closing transmission channel");
+			}
+			catch (IOException e1)
+			{
+				// just swallow this, the outer exception is the real problem.
+			}
+			if (e instanceof RuntimeException)
+				throw (RuntimeException) e;
+			else if (e instanceof Error)
+				throw (Error) e;
+			else
+				throw new RuntimeException("Unexpected exception", e);
+		}
 		finally
 		{
 			this.closeConnection();
 			this.endMessageHandler();
+		}
+	}
+
+	/**
+	 * Sends the welcome message and starts receiving and processing client
+	 * commands. It quits when {@link #quitting} becomes true or when it can be
+	 * noticed or at least assumed that the client no longer sends valid
+	 * commands, for example on timeout.
+	 * 
+	 * @throws IOException
+	 *             if sending to or receiving from the client fails.
+	 */
+	private void runCommandLoop() throws IOException
+	{
+		if (this.server.hasTooManyConnections())
+		{
+			log.debug("SMTP Too many connections!");
+
+			this.sendResponse("421 Too many connections, try again later");
+			return;
+		}
+
+		this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getSoftwareName());
+
+		// Start with fresh message state
+		this.resetMessageState();
+
+		while (!this.quitting)
+		{
+			try
+			{
+				String line = null;
+				try
+				{
+					line = this.reader.readLine();
+				}
+				catch (SocketException ex)
+				{
+					// Lots of clients just "hang up" rather than issuing QUIT,
+					// which would
+					// fill our logs with the warning in the outer catch.
+					if (log.isDebugEnabled())
+						log.debug("Error reading client command: " + ex.getMessage(), ex);
+
+					return;
+				}
+
+				if (line == null)
+				{
+					log.debug("no more lines from client");
+					return;
+				}
+
+				if (log.isDebugEnabled())
+					log.debug("Client: " + line);
+
+				this.server.getCommandHandler().handleCommand(this, line);
+			}
+			catch (DropConnectionException ex)
+			{
+				this.sendResponse(ex.getErrorResponse());
+				return;
+			}
+			catch (SocketTimeoutException ex)
+			{
+				this.sendResponse("421 Timeout waiting for data from client.");
+				return;
+			}
+			catch (CRLFTerminatedReader.TerminationException te)
+			{
+				String msg = "501 Syntax error at character position " + te.position()
+						+ ". CR and LF must be CRLF paired.  See RFC 2821 #2.7.1.";
+
+				log.debug(msg);
+				this.sendResponse(msg);
+
+				// if people are screwing with things, close connection
+				return;
+			}
+			catch (CRLFTerminatedReader.MaxLineLengthException mlle)
+			{
+				String msg = "501 " + mlle.getMessage();
+
+				log.debug(msg);
+				this.sendResponse(msg);
+
+				// if people are screwing with things, close connection
+				return;
+			}
 		}
 	}
 
@@ -424,7 +457,7 @@ public class Session extends Thread implements MessageContext
 			{
 				this.messageHandler.done();
 			}
-			catch (Exception ex)
+			catch (Throwable ex)
 			{
 				log.error("done() threw exception", ex);
 			}
