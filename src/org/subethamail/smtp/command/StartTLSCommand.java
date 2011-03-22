@@ -2,12 +2,12 @@ package org.subethamail.smtp.command;
 
 import java.io.IOException;
 import java.net.Socket;
-import java.util.Locale;
 import java.security.cert.Certificate;
+import java.util.Locale;
 
 import javax.net.ssl.SSLHandshakeException;
-import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLPeerUnverifiedException;
+import javax.net.ssl.SSLSocket;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,6 +57,7 @@ public class StartTLSCommand extends BaseCommand
 
 			SSLSocket s = sess.getServer().createSSLSocket(socket);
 			s.startHandshake();
+			log.debug("Cipher suite: " + s.getSession().getCipherSuite());
 
 			sess.setSocket(s);
 			sess.resetMessageState(); // clean slate
