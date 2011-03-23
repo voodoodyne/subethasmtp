@@ -60,8 +60,8 @@ public class EhloCommand extends BaseCommand
 			response.append(maxSize);
 		}
 
-		// Disabling / Hiding TLS is a server setting
-		if (!sess.getServer().getDisableTLS() && !sess.getServer().getHideTLS())
+		// Enabling / Hiding TLS is a server setting
+		if (sess.getServer().getEnableTLS() && !sess.getServer().getHideTLS())
 		{
 			response.append("\r\n" + "250-STARTTLS");
 		}

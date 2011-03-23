@@ -69,20 +69,13 @@ public class SMTPServer implements Runnable
 
 	private ThreadGroup sessionGroup;
 
-	/** 
-	 * TLS
-	 *  By default, TLS is supported (and announced) but not required.
-	 *  To override default behavior, only one of these need be specified:
-	 *   To disable TLS, set disableTLS=true; 
-	 *   To allow TLS but not announce it, set hideTLS=true; 
-	 *   To require TLS, set requireTLS=true.
-	 */
-	/** If true, TLS is disabled */
-	private boolean disableTLS = false;
-	/** If true, TLS is not announced; implied if disableTLS=true */
+	/** If true, TLS is enabled */
+	private boolean enableTLS = false;
+	/** If true, TLS is not announced; ignored if enableTLS=false */
 	private boolean hideTLS = false;
-	/** If true, a TLS handshake is required; ignored if disableTLS=true */
+	/** If true, a TLS handshake is required; ignored if enableTLS=false */
 	private boolean requireTLS = false;
+
 	/** If true, no Received headers will be inserted */
 	private boolean disableReceivedHeaders = false;
 
@@ -551,19 +544,51 @@ public class SMTPServer implements Runnable
 		this.maxRecipients = maxRecipients;
 	}
 
-	/** */
-	public boolean getDisableTLS()
+	/**
+	 * If set to true, TLS will be supported.
+	 * <p>
+	 * The minimal JSSE configuration necessary for a working TLS support on
+	 * Oracle JRE 6:
+	 * <ul>
+	 * <li>javax.net.ssl.keyStore system property must refer to a file
+	 * containing a JKS keystore with the private key.
+	 * <li>javax.net.ssl.keyStorePassword system property must specify the
+	 * keystore password.
+	 * </ul>
+	 * <p>
+	 * Up to SubEthaSMTP 3.1.5 the default was true, i.e. TLS was enabled.
+	 * 
+	 * @see <a
+	 *      href="http://blog.jteam.nl/2009/11/10/securing-connections-with-tls/">Securing
+	 *      Connections with TLS</a>
+	 */
+	public void setEnableTLS(boolean enableTLS)
 	{
-		return this.disableTLS;
+		this.enableTLS = enableTLS;
+	}
+
+	/** */
+	public boolean getEnableTLS()
+	{
+		return enableTLS;
 	}
 
 	/**
-	 * If set to true, TLS will not be announced or supported.
-	 * Default is false.
+	 * @deprecated use {@link #enableTLS}
 	 */
+	@Deprecated
+	public boolean getDisableTLS()
+	{
+		return !this.enableTLS;
+	}
+
+	/**
+	 * @deprecated use {@link #setEnableTLS(boolean)}
+	 */
+	@Deprecated
 	public void setDisableTLS(boolean value)
 	{
-		this.disableTLS = value;
+		this.enableTLS = !value;
 	}
 
 	/** */
@@ -605,6 +630,15 @@ public class SMTPServer implements Runnable
 		return maxMessageSize;
 	}
 
+	/**
+	 * @param maxMessageSize
+	 *            the maxMessageSize to set
+	 */
+	public void setMaxMessageSize(int maxMessageSize)
+	{
+		this.maxMessageSize = maxMessageSize;
+	}
+
 	/** */
 	public boolean getDisableReceivedHeaders()
 	{
@@ -618,14 +652,6 @@ public class SMTPServer implements Runnable
 	public void setDisableReceivedHeaders(boolean disableReceivedHeaders)
 	{
 		this.disableReceivedHeaders = disableReceivedHeaders;
-	}
-
-	/**
-	 * @param maxMessageSize the maxMessageSize to set
-	 */
-	public void setMaxMessageSize(int maxMessageSize)
-	{
-		this.maxMessageSize = maxMessageSize;
 	}
 
 }
