@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.subethamail</groupId>
   <artifactId>subethasmtp</artifactId>
-  <version>3.1.4</version>
+  <version>3.1.5</version>
   <name>SubEtha SMTP</name>
   <description>SubEtha SMTP is an easy-to-use server-side SMTP library
     for Java.</description>
@@ -100,11 +100,11 @@
               <packageName>org.subethamail.smtp</packageName>
             </manifest>
             <manifestEntries>
-              <Specification-Version>${pom.version}
+              <Specification-Version>${project.version}
               </Specification-Version>
               <Implementation-Version>${maven.build.timestamp}
               </Implementation-Version>
-              <url>${pom.url}</url>
+              <url>${project.url}</url>
             </manifestEntries>
           </archive>
         </configuration>
