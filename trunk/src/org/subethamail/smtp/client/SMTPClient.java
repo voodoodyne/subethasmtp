@@ -128,6 +128,12 @@ public class SMTPClient
 		connect(host, port);
 	}
 
+	/**
+	 * Establishes a connection to host and port.
+	 * 
+	 * @throws IOException
+	 *             if there is a problem connecting to the port
+	 */
 	public void connect(String host, int port) throws IOException
 	{
 		if (socket != null)
@@ -277,7 +283,7 @@ public class SMTPClient
 	/** Logs but otherwise ignores errors */
 	public void close()
 	{
-		if (!this.socket.isClosed())
+		if (this.socket != null && !this.socket.isClosed())
 		{
 			try
 			{
