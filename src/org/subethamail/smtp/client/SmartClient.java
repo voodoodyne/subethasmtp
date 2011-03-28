@@ -21,8 +21,20 @@ public class SmartClient extends SMTPClient
 	/** */
 	boolean sentFrom;
 	int recipientCount;
+	/** The host name which is sent in the HELO and EHLO commands */
+	private String heloHost;
 
 	/**
+	 * Creates an unconnected client.
+	 */
+	public SmartClient()
+	{
+		// nothing to do
+	}
+	
+	/**
+	 * Connects to the specified server and issues the initial HELO command.
+	 * 
 	 * @throws UnknownHostException if problem looking up hostname
 	 * @throws SMTPException if problem reported by the server
 	 * @throws IOException if problem communicating with host
@@ -33,16 +45,31 @@ public class SmartClient extends SMTPClient
 	}
 
 	/**
+	 * Connects to the specified server and issues the initial HELO command.
+	 * 
 	 * @throws UnknownHostException if problem looking up hostname
 	 * @throws SMTPException if problem reported by the server
 	 * @throws IOException if problem communicating with host
 	 */
 	public SmartClient(String host, int port, SocketAddress bindpoint, String myHost) throws UnknownHostException, IOException, SMTPException
 	{
-		super(host, port, bindpoint);
+		this.setBindpoint(bindpoint);
+		this.setHeloHost(myHost);
+		connect(host, port);
+	}
 
-		this.receiveAndCheck();	// The server announces itself first
-		this.sendAndCheck("HELO " + myHost);
+	/**
+	 * Connects to the specified server and issues the initial HELO command.
+	 */
+	@Override
+	public void connect(String host, int port) throws IOException, SMTPException
+	{
+		if (heloHost == null)
+			throw new IllegalStateException("Helo host must be specified before connectiong");
+
+		super.connect(host, port);
+		this.receiveAndCheck(); // The server announces itself first
+		this.sendAndCheck("HELO " + heloHost);
 	}
 
 	/** */
@@ -126,5 +153,23 @@ public class SmartClient extends SMTPClient
 	public int getRecipientCount()
 	{
 		return this.recipientCount;
+	}
+
+	/**
+	 * Sets the domain name or address literal of this system, which name will
+	 * be sent to the server in the parameter of the HELO and EHLO commands.
+	 * This has no default and is required.
+	 */
+	public void setHeloHost(String myHost)
+	{
+		this.heloHost = myHost;
+	}
+
+	/**
+	 * Returns the HELO name of this system.
+	 */
+	public String getHeloHost()
+	{
+		return heloHost;
 	}
 }

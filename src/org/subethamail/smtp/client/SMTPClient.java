@@ -34,6 +34,9 @@ public class SMTPClient
 	/** */
 	private static Logger log = LoggerFactory.getLogger(SMTPClient.class);
 
+	/** the local socket address */
+	private SocketAddress bindpoint;
+
 	/** Just for display purposes */
 	String hostPort;
 
@@ -87,11 +90,20 @@ public class SMTPClient
 	}
 
 	/**
-	 * Establishes a connection to host and port and negotiate the initial EHLO
-	 * exchange.
-	 *
-	 * @throws UnknownHostException if the hostname cannot be resolved
-	 * @throws IOException if there is a problem connecting to the port
+	 * Creates an unconnected client.
+	 */
+	public SMTPClient()
+	{
+		// nothing to do
+	}
+
+	/**
+	 * Establishes a connection to host and port.
+	 * 
+	 * @throws UnknownHostException
+	 *             if the hostname cannot be resolved
+	 * @throws IOException
+	 *             if there is a problem connecting to the port
 	 */
 	public SMTPClient(String host, int port) throws UnknownHostException, IOException
 	{
@@ -100,31 +112,66 @@ public class SMTPClient
 
 	/**
 	 * Establishes a connection to host and port from the specified local socket
-	 * address and negotiate the initial EHLO exchange.
-	 *
-	 * @param bindpoint the local socket address. If null, the system will pick
-	 *            up an ephemeral port and a valid local address.
-	 *
-	 * @throws UnknownHostException if the hostname cannot be resolved
-	 * @throws IOException if there is a problem connecting to the port
+	 * address.
+	 * 
+	 * @param bindpoint
+	 *            the local socket address. If null, the system will pick up an
+	 *            ephemeral port and a valid local address.
+	 * @throws UnknownHostException
+	 *             if the hostname cannot be resolved
+	 * @throws IOException
+	 *             if there is a problem connecting to the port
 	 */
 	public SMTPClient(String host, int port, SocketAddress bindpoint) throws UnknownHostException, IOException
 	{
+		this.bindpoint = bindpoint;
+		connect(host, port);
+	}
+
+	public void connect(String host, int port) throws IOException
+	{
+		if (socket != null)
+			throw new IllegalStateException("Already connected");
+
 		this.hostPort = host + ":" + port;
 
 		if (log.isDebugEnabled())
 			log.debug("Connecting to " + this.hostPort);
 
-		this.socket = new Socket();
-		this.socket.bind(bindpoint);
+		this.socket = createSocket();
+		this.socket.bind(this.bindpoint);
 		this.socket.setSoTimeout(REPLY_TIMEOUT);
 		this.socket.connect(new InetSocketAddress(host, port), CONNECT_TIMEOUT);
-		this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
 
-		this.rawOutput = this.socket.getOutputStream();
-		this.dotTerminatedOutput = new DotTerminatedOutputStream(this.rawOutput);
-		this.dataOutput = new ExtraDotOutputStream(this.dotTerminatedOutput);
-		this.writer = new PrintWriter(this.rawOutput, true);
+		try
+		{
+			this.bindpoint = this.socket.getLocalSocketAddress();
+
+			this.reader = new BufferedReader(new InputStreamReader(this.socket.getInputStream()));
+
+			this.rawOutput = this.socket.getOutputStream();
+			this.dotTerminatedOutput = new DotTerminatedOutputStream(this.rawOutput);
+			this.dataOutput = new ExtraDotOutputStream(this.dotTerminatedOutput);
+			this.writer = new PrintWriter(this.rawOutput, true);
+		}
+		catch (IOException e)
+		{
+			close();
+			throw e;
+		}
+	}
+
+	/**
+	 * Returns a new unconnected socket.
+	 * <p>
+	 * Implementation notice for subclasses: This function is called by the
+	 * constructors which open the connection immediately. In these cases the
+	 * subclass is not yet initialized, therefore subclasses overriding this
+	 * function shouldn't use those constructors.
+	 */
+	protected Socket createSocket()
+	{
+		return new Socket();
 	}
 
 	/**
@@ -251,5 +298,22 @@ public class SMTPClient
 	public String toString()
 	{
 		return this.getClass().getSimpleName() + " { " + this.hostPort + "}";
+	}
+
+	/**
+	 * Sets the local socket address. If null, the system will pick up an
+	 * ephemeral port and a valid local address. Default is null.
+	 */
+	public void setBindpoint(SocketAddress bindpoint)
+	{
+		this.bindpoint = bindpoint;
+	}
+
+	/**
+	 * Returns the local socket address.
+	 */
+	public SocketAddress getBindpoint()
+	{
+		return bindpoint;
 	}
 }
