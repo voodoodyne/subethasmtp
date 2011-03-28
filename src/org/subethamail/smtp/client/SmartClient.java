@@ -25,6 +25,13 @@ public class SmartClient extends SMTPClient
 	private String heloHost;
 
 	/**
+	 * True if the server sent a 421
+	 * "Service not available, closing transmission channel" response. In this
+	 * case the QUIT command should not be sent.
+	 */
+	private boolean serverClosingTransmissionChannel = false;
+
+	/**
 	 * Creates an unconnected client.
 	 */
 	public SmartClient()
@@ -51,15 +58,18 @@ public class SmartClient extends SMTPClient
 	 * @throws SMTPException if problem reported by the server
 	 * @throws IOException if problem communicating with host
 	 */
-	public SmartClient(String host, int port, SocketAddress bindpoint, String myHost) throws UnknownHostException, IOException, SMTPException
+	public SmartClient(String host, int port, SocketAddress bindpoint, String myHost) throws UnknownHostException,
+			IOException, SMTPException
 	{
 		this.setBindpoint(bindpoint);
 		this.setHeloHost(myHost);
-		connect(host, port);
+		this.connect(host, port);
 	}
 
 	/**
-	 * Connects to the specified server and issues the initial HELO command.
+	 * Connects to the specified server and issues the initial HELO command. It
+	 * gracefully closes the connection if it could be established but
+	 * subsequently it fails or if the server does not accept messages.
 	 */
 	@Override
 	public void connect(String host, int port) throws IOException, SMTPException
@@ -68,8 +78,34 @@ public class SmartClient extends SMTPClient
 			throw new IllegalStateException("Helo host must be specified before connectiong");
 
 		super.connect(host, port);
-		this.receiveAndCheck(); // The server announces itself first
-		this.sendAndCheck("HELO " + heloHost);
+		try
+		{
+			this.receiveAndCheck(); // The server announces itself first
+			this.sendAndCheck("HELO " + heloHost);
+		}
+		catch (SMTPException e)
+		{
+			this.quit();
+			throw e;
+		}
+		catch (IOException e)
+		{
+			this.close(); // just close the socket, issuing QUIT is hopeless now
+			throw e;
+		}
+	}
+
+	/**
+	 * Returns the server response. It takes note of a 421 response code, so
+	 * QUIT will not be issued unnecessarily.
+	 */
+	@Override
+	protected Response receive() throws IOException
+	{
+		Response response = super.receive();
+		if (response.getCode() == 421)
+			serverClosingTransmissionChannel = true;
+		return response;
 	}
 
 	/** */
@@ -115,13 +151,21 @@ public class SmartClient extends SMTPClient
 	}
 
 	/**
-	 * Quit and close down the connection.  Ignore any errors.
+	 * Quit and close down the connection. Ignore any errors.
+	 * <p>
+	 * It still closes the connection, but it does not send the QUIT command if
+	 * a 421 Service closing transmission channel is received previously. In
+	 * these cases QUIT would fail anyway.
+	 * 
+	 * @see <a href="http://tools.ietf.org/html/rfc5321#section-3.8">RFC 5321
+	 *      Terminating Sessions and Connections</a>
 	 */
 	public void quit()
 	{
 		try
 		{
-			this.sendAndCheck("QUIT");
+			if (!this.serverClosingTransmissionChannel)
+				this.sendAndCheck("QUIT");
 		}
 		catch (IOException ex)
 		{
