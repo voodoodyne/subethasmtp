@@ -75,7 +75,7 @@ public class SmartClient extends SMTPClient
 	public void connect(String host, int port) throws IOException, SMTPException
 	{
 		if (heloHost == null)
-			throw new IllegalStateException("Helo host must be specified before connectiong");
+			throw new IllegalStateException("Helo host must be specified before connecting");
 
 		super.connect(host, port);
 		try
