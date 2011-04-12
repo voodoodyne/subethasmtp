@@ -33,6 +33,12 @@ public class Session extends Thread implements MessageContext
 	/** A link to our parent server */
 	private SMTPServer server;
 
+	/**
+	 * A link to our parent server thread, which must be notified when this
+	 * connection is finished.
+	 */
+	private ServerThread serverThread;
+
 	/** Set this true when doing an ordered shutdown */
 	private boolean quitting = false;
 
@@ -78,13 +84,14 @@ public class Session extends Thread implements MessageContext
 	 * @param socket is the socket to the client
 	 * @throws IOException
 	 */
-	public Session(SMTPServer server, Socket socket)
+	public Session(SMTPServer server, ServerThread serverThread, Socket socket)
 		throws IOException
 	{
-		super(server.getSessionGroup(), Session.class.getName()
+		super(Session.class.getName()
 				+ "-" + socket.getInetAddress() + ":" + socket.getPort());
 
 		this.server = server;
+		this.serverThread = serverThread;
 
 		this.setSocket(socket);
 	}
@@ -109,7 +116,8 @@ public class Session extends Thread implements MessageContext
 			InetAddress remoteInetAddress = this.getRemoteAddress().getAddress();
 			remoteInetAddress.getHostName();	// Causes future toString() to print the name too
 
-			log.debug("SMTP connection from {}, new connection count: {}", remoteInetAddress, this.server.getNumberOfConnections());
+			log.debug("SMTP connection from {}, new connection count: {}", remoteInetAddress,
+					this.serverThread.getNumberOfConnections());
 		}
 
 		try
@@ -154,6 +162,7 @@ public class Session extends Thread implements MessageContext
 		{
 			this.closeConnection();
 			this.endMessageHandler();
+			serverThread.sessionEnded(this);
 		}
 	}
 
@@ -168,7 +177,7 @@ public class Session extends Thread implements MessageContext
 	 */
 	private void runCommandLoop() throws IOException
 	{
-		if (this.server.hasTooManyConnections())
+		if (this.serverThread.hasTooManyConnections())
 		{
 			log.debug("SMTP Too many connections!");
 

@@ -7,12 +7,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 
+import javax.annotation.concurrent.GuardedBy;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.slf4j.MDC;
 import org.subethamail.smtp.AuthenticationHandlerFactory;
 import org.subethamail.smtp.MessageHandlerFactory;
 import org.subethamail.smtp.Version;
@@ -44,7 +44,7 @@ import org.subethamail.smtp.Version;
  * @author Ian McFarland &lt;ian@neo.com&gt;
  * @author Jeff Schnitzer
  */
-public class SMTPServer implements Runnable
+public class SMTPServer
 {
 	private final static Logger log = LoggerFactory.getLogger(SMTPServer.class);
 
@@ -62,12 +62,9 @@ public class SMTPServer implements Runnable
 
 	private CommandHandler commandHandler;
 
-	private ServerSocket serverSocket;
-	private boolean shuttingDown;
-
-	private Thread serverThread;
-
-	private ThreadGroup sessionGroup;
+	/** The thread listening on the server socket. */
+	@GuardedBy("this")
+	private ServerThread serverThread;
 
 	/** If true, TLS is enabled */
 	private boolean enableTLS = false;
@@ -131,8 +128,6 @@ public class SMTPServer implements Runnable
 		}
 
 		this.commandHandler = new CommandHandler();
-
-		this.sessionGroup = new ThreadGroup(SMTPServer.class.getName() + " Session Group");
 	}
 
 	/** @return the host name that will be reported to SMTP clients */
@@ -194,7 +189,7 @@ public class SMTPServer implements Runnable
 	/**
 	 * Is the server running after start() has been called?
 	 */
-	public boolean isRunning()
+	public synchronized boolean isRunning()
 	{
 		return this.serverThread != null;
 	}
@@ -236,20 +231,17 @@ public class SMTPServer implements Runnable
 			throw new IllegalStateException("SMTPServer already started");
 
 		// Create our server socket here.
+		ServerSocket serverSocket;
 		try
 		{
-			this.serverSocket = this.createServerSocket();
+			serverSocket = this.createServerSocket();
 		}
 		catch (Exception e)
 		{
 			throw new RuntimeException(e);
 		}
 
-		this.serverThread = new Thread(this, SMTPServer.class.getName());
-
-		this.shuttingDown = false;
-
-		// Now this.run() will be called
+		this.serverThread = new ServerThread(this, serverSocket);
 		this.serverThread.start();
 	}
 
@@ -260,33 +252,11 @@ public class SMTPServer implements Runnable
 	{
 		if (log.isInfoEnabled())
 			log.info("SMTP server {} stopping", getDisplayableLocalSocketAddress());
+		if (this.serverThread == null)
+			return;
 
-		// First make sure we aren't accepting any new connections
-		this.stopServerThread();
-
-		// Shut down any open connections.
-		this.stopAllSessions();
-	}
-
-	/**
-	 * Grabs all instances of Sessions and attempts to close the
-	 * socket if it is still open.  Note this must be called after
-	 * the main server socket is shut down, otherwise new sessions
-	 * could be created while we are shutting them down.
-	 */
-	protected void stopAllSessions()
-	{
-		Thread[] groupThreads = new Thread[this.getSessionGroup().activeCount()];
-
-		this.getSessionGroup().enumerate(groupThreads);
-		for (Thread thread : groupThreads)
-		{
-			if (thread instanceof Session)
-			{
-				Session handler = (Session)thread;
-				handler.quit();
-			}
-		}
+		this.serverThread.shutdown();
+		this.serverThread = null;
 	}
 
 	/**
@@ -322,26 +292,6 @@ public class SMTPServer implements Runnable
 	}
 
 	/**
-	 * Closes the serverSocket in an orderly way
-	 */
-	protected void closeServerSocket()
-	{
-		try
-		{
-			if ((this.serverSocket != null) && !this.serverSocket.isClosed())
-				this.serverSocket.close();
-
-			log.debug("SMTP Server socket shut down");
-		}
-		catch (IOException e)
-		{
-			log.error("Failed to close server socket.", e);
-		}
-
-		this.serverSocket = null;
-	}
-
-	/**
 	 * Create a SSL socket that wraps the existing socket. This method
 	 * is called after the client issued the STARTTLS command.
 	 * <p>
@@ -367,69 +317,7 @@ public class SMTPServer implements Runnable
 		return s;
 	}
 
-	/**
-	 * Shuts down the server thread and the associated server socket in an orderly fashion.
-	 */
-	protected void stopServerThread()
-	{
-		this.shuttingDown = true;
-		this.closeServerSocket();
-
-		this.serverThread = null;
-	}
-
-	/**
-	 * This method is called by this thread when it starts up.  To safely cause this to
-	 * exit, call stopServerThread().
-	 */
-	public void run()
-	{
-		if (log.isInfoEnabled())
-		{
-			MDC.put("smtpServerLocalSocketAddress", getDisplayableLocalSocketAddress());
-			log.info("SMTP server {} started", getDisplayableLocalSocketAddress());
-		}
-		
-		while (!this.shuttingDown)
-		{
-			// This deals with a race condition; a start followed by a quick stop
-			// that clears the serversocket in the key moments between the while loop
-			// check and the accept() call.  In that case, the socket will be invalid,
-			// but the accept() will throw an exception and we will be fine.
-			ServerSocket server;
-			synchronized(this) { server = this.serverSocket; }
-
-			if (server != null)
-			{
-				try
-				{
-					Session sess = new Session(this, server.accept());
-					sess.start();
-				}
-				catch (IOException ioe)
-				{
-					if (!this.shuttingDown)
-						log.error("Error accepting connections", ioe);
-				}
-			}
-		}
-
-		// Normally we get here because we're shutting down and we've close()ed the
-		// serverSocket.  If some other IOException brought us here, let's make sure
-		// thing is shut down properly.
-		this.closeServerSocket();
-
-		this.serverSocket = null;
-		this.serverThread = null;
-
-		if (log.isInfoEnabled())
-		{
-			log.info("SMTP server {} stopped", getDisplayableLocalSocketAddress());
-			MDC.remove("smtpServerLocalSocketAddress");
-		}
-	}
-
-	private String getDisplayableLocalSocketAddress()
+	public String getDisplayableLocalSocketAddress()
 	{
 		return (this.bindAddress == null ? "*" : this.bindAddress) + ":" + this.port;
 	}
@@ -474,36 +362,14 @@ public class SMTPServer implements Runnable
 	}
 
 	/** */
-	protected ThreadGroup getSessionGroup()
-	{
-		return this.sessionGroup;
-	}
-
-	/** */
-	public int getNumberOfConnections()
-	{
-		return this.sessionGroup.activeCount();
-	}
-
-	/** */
-	public boolean hasTooManyConnections()
-	{
-		if (this.maxConnections < 0)
-			return false;
-		else
-			return (this.getNumberOfConnections() >= this.maxConnections);
-	}
-
-	/** */
 	public int getMaxConnections()
 	{
 		return this.maxConnections;
 	}
 
 	/**
-	 * Set's the maximum number of connections this server instance will
-	 * accept. A value of -1 means "unlimited".
-	 *
+	 * Set's the maximum number of connections this server instance will accept.
+	 * 
 	 * @param maxConnections
 	 */
 	public void setMaxConnections(int maxConnections)
