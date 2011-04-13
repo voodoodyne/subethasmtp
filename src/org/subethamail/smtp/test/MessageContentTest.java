@@ -135,17 +135,8 @@ public class MessageContentTest extends TestCase
 	{
 		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
 
-		String body = "\u00a4uro ma\u00f1ana";
+		String body = "\u00a4uro ma\u00f1ana\r\n";
 		this.testEightBitMessage(body, "UTF-8");
-
-		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
-	}
-
-	/** */
-	public void testUtf16EightBitMessage() throws Exception
-	{
-		String body = "\u3042\u3044\u3046\u3048\u304a";
-		this.testEightBitMessage(body, "UTF-16");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
 	}
@@ -155,7 +146,7 @@ public class MessageContentTest extends TestCase
 	{
 		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
 
-		String body = "ma\u00f1ana";	// spanish ene (ie, n with diacritical tilde)
+		String body = "ma\u00f1ana\r\n";	// spanish ene (ie, n with diacritical tilde)
 		this.testEightBitMessage(body, "ISO-8859-1");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
@@ -166,7 +157,7 @@ public class MessageContentTest extends TestCase
 	{
 		// Beware editor/compiler character encoding issues; safest to put unicode escapes here
 
-		String body = "\u00a4uro";	// should be the euro symbol
+		String body = "\u0080uro\r\n"; // should be the euro symbol
 		this.testEightBitMessage(body, "ISO-8859-15");
 
 //		String content = (String)this.wiser.getMessages().get(0).getMimeMessage().getContent();
@@ -194,7 +185,7 @@ public class MessageContentTest extends TestCase
 	/** */
 	public void testIso2022JPEightBitMessage() throws Exception
   	{
-		String body = "\u3042\u3044\u3046\u3048\u304a"; // some Japanese letters
+		String body = "\u3042\u3044\u3046\u3048\u304a\r\n"; // some Japanese letters
 		this.testEightBitMessage(body, "iso-2022-jp");
 
 		assertEquals(body, this.wiser.getMessages().get(0).getMimeMessage().getContent());
