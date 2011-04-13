@@ -162,10 +162,17 @@ public class ServerThread extends Thread
 	}
 
 	/**
-	 * Closes the serverSocket in an orderly way
+	 * Closes the serverSocket in an orderly way.
 	 */
-	private void closeServerSocket()
+	private synchronized void closeServerSocket()
 	{
+		// method synchronization is used here only to avoid a race condition
+		// between isClosed and close.
+
+		// Avoid logging of close more than once
+		if (this.serverSocket.isClosed())
+			return;
+
 		try
 		{
 			this.serverSocket.close();
