@@ -24,6 +24,7 @@ import javax.mail.internet.MimeMultipart;
 
 import junit.framework.TestCase;
 
+import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.subethamail.wiser.Wiser;
@@ -37,6 +38,7 @@ import com.sun.mail.smtp.SMTPTransport;
  *
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
+@Ignore("requires manual setup")
 public class BigAttachmentTest extends TestCase
 {
 	private final static Logger log = LoggerFactory.getLogger(BigAttachmentTest.class);

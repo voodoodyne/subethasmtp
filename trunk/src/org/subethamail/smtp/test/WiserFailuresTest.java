@@ -92,7 +92,7 @@ public class WiserFailuresTest extends TestCase
 		assertEquals(1, this.server.getMessages().size());
 		Iterator<WiserMessage> emailIter = this.server.getMessages().iterator();
 		WiserMessage email = emailIter.next();
-		assertEquals("Body", email.getMimeMessage().getContent().toString());
+		assertEquals("Body" + "\r\n", email.getMimeMessage().getContent().toString());
 	}
 
 	/**
@@ -114,7 +114,7 @@ public class WiserFailuresTest extends TestCase
 		assertEquals(1, this.server.getMessages().size());
 		Iterator<WiserMessage> emailIter = this.server.getMessages().iterator();
 		WiserMessage email = emailIter.next();
-		assertEquals("Body", email.getMimeMessage().getContent().toString());
+		assertEquals("Body" + "\r\n", email.getMimeMessage().getContent().toString());
 	}
 
 	/** */
@@ -137,7 +137,7 @@ public class WiserFailuresTest extends TestCase
 		assertEquals(1, this.server.getMessages().size());
 		Iterator<WiserMessage> emailIter = this.server.getMessages().iterator();
 		WiserMessage email = emailIter.next();
-		assertEquals(body, email.getMimeMessage().getContent().toString());
+		assertEquals(body + "\r\n", email.getMimeMessage().getContent().toString());
 	}
 
 	/** */
@@ -247,8 +247,8 @@ public class WiserFailuresTest extends TestCase
 		Iterator<WiserMessage> emailIter = this.server.getMessages().iterator();
 		WiserMessage email = emailIter.next();
 		MimeMessage mime = email.getMimeMessage();
-		assertTrue(mime.getHeader("Subject")[0].equals("Test"));
-		assertTrue(mime.getContent().toString().equals("Test Body"));
+		assertEquals("Test", mime.getHeader("Subject")[0]);
+		assertEquals("Test Body" + "\r\n", mime.getContent().toString());
 	}
 
 	/** */
