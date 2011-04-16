@@ -18,7 +18,7 @@ import org.slf4j.MDC;
  * {@link Session} thread for each connection which will handle the connection.
  * On shutdown it terminates not only this thread, but the session threads too.
  */
-public class ServerThread extends Thread
+class ServerThread extends Thread
 {
 	private final Logger log = LoggerFactory.getLogger(ServerThread.class);
 	private final SMTPServer server;
@@ -54,17 +54,40 @@ public class ServerThread extends Thread
 
 	/**
 	 * This method is called by this thread when it starts up. To safely cause
-	 * this to exit, call stopServerThread().
+	 * this to exit, call {@link #shutdown()}.
 	 */
 	@Override
 	public void run()
 	{
-		if (log.isInfoEnabled())
-		{
-			MDC.put("smtpServerLocalSocketAddress", server.getDisplayableLocalSocketAddress());
-			log.info("SMTP server {} started", server.getDisplayableLocalSocketAddress());
-		}
+		MDC.put("smtpServerLocalSocketAddress", server.getDisplayableLocalSocketAddress());
+		log.info("SMTP server {} started", server.getDisplayableLocalSocketAddress());
 
+		try
+		{
+			runAcceptLoop();
+			log.info("SMTP server {} stopped", server.getDisplayableLocalSocketAddress());
+		}
+		catch (RuntimeException e)
+		{
+			log.error("Unexpected exception in server socket thread, server is stopped", e);
+			throw e;
+		}
+		catch (Error e)
+		{
+			log.error("Unexpected error in server socket thread, server is stopped", e);
+			throw e;
+		}
+		finally
+		{
+			MDC.remove("smtpServerLocalSocketAddress");
+		}
+	}
+
+	/**
+	 * Accept connections and run them in session threads until shutdown.
+	 */
+	private void runAcceptLoop()
+	{
 		while (!this.shuttingDown)
 		{
 			try
@@ -72,24 +95,21 @@ public class ServerThread extends Thread
 				// block if too many connections are open
 				connectionPermits.acquire();
 			}
-			catch (InterruptedException e)
+			catch (InterruptedException consumed)
 			{
-				if (!shuttingDown)
-					log.debug("Server socket thread was interrupted unexpectedly", e);
-				Thread.currentThread().interrupt();
-				break;
+				continue; // exit or retry
 			}
-			Session sessionThread;
+
 			Socket socket = null;
 			try
 			{
-				socket = serverSocket.accept();
+				socket = this.serverSocket.accept();
 			}
 			catch (IOException e)
 			{
 				connectionPermits.release();
 				// it also happens during shutdown, when the socket is closed
-				if (!shuttingDown)
+				if (!this.shuttingDown)
 				{
 					log.error("Error accepting connection", e);
 					// prevent a possible loop causing 100% processor usage
@@ -97,13 +117,15 @@ public class ServerThread extends Thread
 					{
 						Thread.sleep(1000);
 					}
-					catch (InterruptedException e1)
+					catch (InterruptedException consumed)
 					{
-						Thread.currentThread().interrupt();
+						// fall through
 					}
 				}
 				continue;
 			}
+
+			Session sessionThread;
 			try
 			{
 				sessionThread = new Session(server, this, socket);
@@ -126,20 +148,9 @@ public class ServerThread extends Thread
 			// because it will check the count of sessions
 			synchronized (this)
 			{
-				sessionThreads.add(sessionThread);
+				this.sessionThreads.add(sessionThread);
 			}
 			sessionThread.start();
-		}
-
-		// Normally we get here because we're shutting down and we've close()ed
-		// the serverSocket. If some other InterruptedException brought us here,
-		// let's make sure thing is shut down properly.
-		this.closeServerSocket();
-
-		if (log.isInfoEnabled())
-		{
-			log.info("SMTP server {} stopped", server.getDisplayableLocalSocketAddress());
-			MDC.remove("smtpServerLocalSocketAddress");
 		}
 	}
 
@@ -164,15 +175,8 @@ public class ServerThread extends Thread
 	/**
 	 * Closes the serverSocket in an orderly way.
 	 */
-	private synchronized void closeServerSocket()
+	private void closeServerSocket()
 	{
-		// method synchronization is used here only to avoid a race condition
-		// between isClosed and close.
-
-		// Avoid logging of close more than once
-		if (this.serverSocket.isClosed())
-			return;
-
 		try
 		{
 			this.serverSocket.close();
