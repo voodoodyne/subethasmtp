@@ -16,6 +16,8 @@ public interface Command
 	/** */
 	public HelpMessage getHelp() throws CommandException;
 
-	/** */
+	/**
+	 * Returns the name of the command in upper case. For example "QUIT".
+	 */
 	public String getName();
 }

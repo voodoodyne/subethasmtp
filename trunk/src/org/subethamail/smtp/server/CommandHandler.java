@@ -22,6 +22,10 @@ public class CommandHandler
 {
 	private final static Logger log = LoggerFactory.getLogger(CommandHandler.class);
 
+	/**
+	 * The map of known SMTP commands. Keys are upper case names of the
+	 * commands.
+	 */
 	private Map<String, Command> commandMap = new HashMap<String, Command>();
 
 	/** */
@@ -48,7 +52,9 @@ public class CommandHandler
 		}
 	}
 
-	/** */
+	/**
+	 * Adds or replaces the specified command.
+	 */
 	public void addCommand(Command command)
 	{
 		if (log.isDebugEnabled())
@@ -57,11 +63,25 @@ public class CommandHandler
 		this.commandMap.put(command.getName(), command);
 	}
 
+	/**
+	 * Returns the command object corresponding to the specified command name.
+	 * 
+	 * @param commandName
+	 *            case insensitive name of the command.
+	 * @return the command object, or null, if the command is unknown.
+	 */
+	public Command getCommand(String commandName)
+	{
+		String upperCaseCommandName = commandName.toUpperCase(Locale.ENGLISH);
+		return this.commandMap.get(upperCaseCommandName);
+	}
+
 	/** */
 	public boolean containsCommand(String command)
 	{
 		return this.commandMap.containsKey(command);
 	}
+
 	/** */
 	public Set<String> getVerbs()
 	{
