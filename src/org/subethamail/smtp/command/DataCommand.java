@@ -64,8 +64,8 @@ public class DataCommand extends BaseCommand
 			// suck it up so it doesn't pollute further exchanges.  This code used to
 			// throw an exception, but this seems an arbitrary part of the contract that
 			// we might as well relax.
-			while (stream.available() > 0)
-				stream.read();
+			while (stream.read() != -1)
+				;
 
 			sess.sendResponse("250 Ok");
 		}
