@@ -7,8 +7,8 @@ import java.io.OutputStream;
  * DotTerminatedOutputStream makes possible to end mail data with a
  * "CRLF . CRLF" sequence in such a way that no unnecessary beginning CRLF pair
  * is added if the original output already ends with it.
- * 
- * @See RFC 5321 4.1.1.4. second paragraph
+ *
+ * See RFC 5321 4.1.1.4. second paragraph
  */
 public class DotTerminatedOutputStream extends OutputStream
 {
@@ -66,7 +66,7 @@ public class DotTerminatedOutputStream extends OutputStream
 	/**
 	 * Writes ". CR LF" to the wrapped stream, but prefixes it with another CR
 	 * LF sequence if it is missing from the end.
-	 * 
+	 *
 	 * @throws IOException
 	 */
 	public void writeTerminatingSequence() throws IOException
