@@ -3,6 +3,27 @@
 		
 == Changes ==
 
+=== 3.1.6 - June 23, 2011 ===
+
+ * Issue 39
+ * Issue 40
+ * More error handling in SMTPClient when a broken server does not send a reply at all
+ * Received header now does not contain a second source domain name string in the address part, so it conforms to the RFC. In addition, if the address cannot be resolved to a domain name then it does not print the address in place of the domain name, but simply omits that part according to the RFC.
+ * ReceivedHeaderStream adds a FOR Single-recipient clause to the Received header when there is only a single accepted recipient in the mail transaction.
+ * ReceivedHeaderStream shows sofware name and version, as they are set in SMTPServer
+ * Logging of RuntimeException and Error throwables in the session thread. This is in addition to the UncaughtExceptionHandler which is set by the JRE or by the application. The default handler installed in the JRE prints such exceptions to STDERR.
+ * Log the name of the selected cipher suite after a successful TLS negotiation. This makes it possible to check if an appropriate cipher suite was selected. Moreover, this log message is a good indicator of a successful TLS handshake.
+ * Added documentation about the steps necessary for the simplest working TLS configuration. The default status of TLS support is changed: now TLS is disabled by default. This is an incompatible change! TLS should not be enabled without explicit consent, because it requires a considerable amount of configuration. An enabled TLS without a configured JSSE causes that some mails will not be delivered.
+ * Issue 42
+ * Issue 32
+ * Issue 34
+ * bugfix: avoid logging of socket close twice
+ * Upgrade mail.jar. The old version has a bug affecting unit tests, it added an unnecessary line end to mail bodies.
+ * Revision 417 fixes tests
+ * unexpected errors are logged in the server socket thread; external interrupts are ignored
+ * Now the handler is not required to consume all mail content bytes. This was intended already, but the code did not really allowed it.
+ * A method is added to make easier the wrapping of existing SMTP command objects by code outside of SubEthaSMTP.
+
 === 3.1.5 - February 28, 2011 ===
 
  * Issue 36: !PlainAuthenticationHandlerFactory should accept non-null authorization identity. Patch is provided by Ian White.
