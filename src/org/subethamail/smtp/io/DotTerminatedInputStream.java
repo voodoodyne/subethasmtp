@@ -43,11 +43,9 @@ public class DotTerminatedInputStream extends InputStream
 	/**
 	 * A constructor for this object that takes a stream to be wrapped and a
 	 * terminating character sequence.
-	 * 
+	 *
 	 * @param in
 	 *            the <code>InputStream</code> to be wrapped
-	 * @param terminator
-	 *            the array of characters that will terminate the stream.
 	 * @throws IllegalArgumentException
 	 *             if the terminator array is null or empty
 	 */
