@@ -86,9 +86,7 @@ public class DotUnstuffingInputStream extends FilterInputStream {
 			if (c == -1) {
 				break;
 			}
-			if (b != null) {
-				b[off + i] = (byte)c;
-			}
+			b[off + i] = (byte)c;
 		}
 
 		return i;
