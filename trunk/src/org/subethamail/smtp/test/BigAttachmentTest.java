@@ -153,9 +153,6 @@ public class BigAttachmentTest extends TestCase
 		MessageDigest md1 = MessageDigest.getInstance("MD5");
 		MessageDigest md2 = MessageDigest.getInstance("MD5");
 
-		if (ins == null || ind == null)
-			return false;
-
 		int r = 0;
 		byte[] buf1 = new byte[BUFFER_SIZE];
 		byte[] buf2 = new byte[BUFFER_SIZE];
