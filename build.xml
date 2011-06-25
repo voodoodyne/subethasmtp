@@ -18,7 +18,8 @@
 	<property file="build.properties" />
 
 	<property name="build.dir" location="target" />
-	<property name="src.dir" location="src" />
+	<property name="src.dir" location="src/main/java" />
+   	<property name="test.src.dir" location="src/test/java" />
 	<property name="lib.dir" location="lib" />
 	
 	<property name="build.debug" value="on" />
@@ -67,9 +68,7 @@
 				<attribute name="Main-Class" value="org.subethamail.smtp.Version" />
 			</manifest>
 			
-			<fileset dir="${build.dir}/classes">
-				<exclude name="org/subethamail/smtp/test/**"/>
-			</fileset>
+			<fileset dir="${build.dir}/classes" />
 		</jar>
 	</target>
 
@@ -95,15 +94,24 @@
 	</target>
 
 	<target name="rtest-jar" depends="init, jar">
+		<mkdir dir="${build.dir}/test" />
+
+		<javac srcdir="${test.src.dir}" destdir="${build.dir}/test"
+				includeAntRuntime="false" debug="${build.debug}"
+				deprecation="${build.deprecation}">
+				
+			<classpath refid="classpath"/>
+			<classpath location="${build.dir}/classes"/>
+		</javac>
+	        
 		<jar jarfile="${build.dir}/rtest.jar">
 			<fileset dir="${build.dir}/classes"/>
+			<fileset dir="${build.dir}/test"/>
 			
 			<manifest>
 				<attribute name="Specification-Version" value="${build.version}" />
 				<attribute name="Implementation-Version" value="${TODAY}" />
 			</manifest>
-			
-			<include name="org/subethamail/smtp/test/**"/>
 		</jar>
 	</target>
 	
@@ -119,7 +127,7 @@
 			<formatter type="plain"/>
 			
 			<batchtest todir="${build.dir}">
-				<fileset dir="${build.dir}/classes">
+				<fileset dir="${build.dir}/test">
 					<include name="**/*Test.class"/>
 				</fileset>
 			</batchtest>
@@ -139,7 +147,7 @@
 			<formatter type="plain" />
 			
 			<batchtest todir="${build.dir}">
-				<fileset dir="${build.dir}/classes">
+				<fileset dir="${build.dir}/test">
 					<include name="${junit.special.tests}" />
 				</fileset>
 			</batchtest>
