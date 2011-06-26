@@ -3,7 +3,9 @@ package org.subethamail.smtp.server;
 import java.io.IOException;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Semaphore;
 
@@ -170,6 +172,11 @@ class ServerThread extends Thread
 		shuttingDown = true;
 		closeServerSocket();
 		interrupt();
+		try {
+			join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 
 	/**
@@ -188,11 +195,20 @@ class ServerThread extends Thread
 		}
 	}
 
-	private synchronized void shutdownSessions()
+	private void shutdownSessions()
 	{
-		for (Session sessionThread : sessionThreads)
+		// Copy the sessionThreads collection so the guarding lock on this
+		// instance can be released before calling the Session.shutdown methods.
+		// This is necessary to avoid a deadlock, because the terminating
+		// session threads call back the sessionEnded function in this instance,
+		// which locks this instance.
+		List<Session> sessionsToBeClosed;
+		synchronized (this) {
+			sessionsToBeClosed = new ArrayList<Session>(sessionThreads);
+		}
+		for (Session sessionThread : sessionsToBeClosed)
 		{
-			sessionThread.quit();
+			sessionThread.shutdown();
 		}
 	}
 

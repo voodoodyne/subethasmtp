@@ -474,6 +474,20 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
+	 * Shuts down the connection abruptly and waits until the connection thread
+	 * exits.
+	 */
+	public void shutdown()
+	{
+		quit();
+		try {
+			this.join();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
+	}
+
+	/**
 	 * Triggers the shutdown of the thread and the closing of the connection.
 	 */
 	public void quit()
