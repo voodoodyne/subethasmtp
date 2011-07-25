@@ -45,4 +45,44 @@ public class TextUtils
 	{
 		return getBytes(str, "US-ASCII");
 	}
+
+	/** @return the string as UTF-8 bytes */
+	public static byte[] getUtf8Bytes(String str)
+	{
+		return getBytes(str, "UTF-8");
+	}
+
+	/**
+	 * Converts the specified byte array to a string using the specified
+	 * encoding but without throwing a checked exception. This is useful if the
+	 * specified encoding is required to be available by the JRE specification,
+	 * so the exception would be guaranteed to be not thrown anyway.
+	 */
+	private static String getString(byte[] bytes, String charset)
+	{
+		try
+		{
+			return new String(bytes, charset);
+		}
+		catch (UnsupportedEncodingException e)
+		{
+			throw new IllegalArgumentException(e);
+		}
+	}
+
+	/**
+	 * Converts the specified bytes to String using US-ASCII encoding.
+	 */
+	public static String getStringAscii(byte[] bytes)
+	{
+		return getString(bytes, "US-ASCII");
+	}
+
+	/**
+	 * Converts the specified bytes to String using UTF-8 encoding.
+	 */
+	public static String getStringUtf8(byte[] bytes)
+	{
+		return getString(bytes, "UTF-8");
+	}
 }
