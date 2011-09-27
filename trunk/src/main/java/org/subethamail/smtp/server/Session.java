@@ -443,6 +443,15 @@ public class Session extends Thread implements MessageContext
 	}
 
 	/**
+	 * Reset the SMTP protocol to the initial state, which is the state after 
+	 * a server issues a 220 service ready greeting. 
+	 */
+	public void resetSmtpProtocol() {
+		resetMessageState();
+		this.helo = null;
+	}
+	
+	/**
 	 * Some state is associated with each particular message (senders, recipients, the message handler).
 	 * Some state is not; seeing hello, TLS, authentication.
 	 */

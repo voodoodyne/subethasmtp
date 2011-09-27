@@ -60,7 +60,7 @@ public class StartTLSCommand extends BaseCommand
 			log.debug("Cipher suite: " + s.getSession().getCipherSuite());
 
 			sess.setSocket(s);
-			sess.resetMessageState(); // clean slate
+			sess.resetSmtpProtocol(); // clean state
 			sess.setTlsStarted(true);
 
 			if (s.getNeedClientAuth())
