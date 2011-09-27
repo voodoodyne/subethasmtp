@@ -450,7 +450,6 @@ public class Session extends Thread implements MessageContext
 	{
 		this.endMessageHandler();
 		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
-		this.helo = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
 		this.singleRecipient = null;
