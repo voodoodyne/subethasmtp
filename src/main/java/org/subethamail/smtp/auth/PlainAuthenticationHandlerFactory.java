@@ -81,7 +81,8 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 
 			byte[] decodedSecret = Base64.decode(secret);
 			if (decodedSecret == null)
-				throw new RejectException();
+				throw new RejectException(501, /*5.5.4*/
+						"Invalid command argument, not a valid Base64 string");
 
 			/*
 			 * RFC4616: The client presents the authorization identity (identity
@@ -96,14 +97,16 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 				;
 			if (i >= decodedSecret.length)
 			{
-				throw new RejectException();
+				throw new RejectException(501, /*5.5.4*/
+						"Invalid command argument, does not contain NUL");
 			}
 
 			for (j = i + 1; j < decodedSecret.length && decodedSecret[j] != 0; j++)
 				;
 			if (j >= decodedSecret.length)
 			{
-				throw new RejectException();
+				throw new RejectException(501, /*5.5.4*/
+						"Invalid command argument, does not contain the second NUL");
 			}
 
 			@SuppressWarnings("unused")
@@ -123,7 +126,8 @@ public class PlainAuthenticationHandlerFactory implements AuthenticationHandlerF
 			}
 			catch (LoginFailedException lfe)
 			{
-				throw new RejectException();
+				throw new RejectException(535, /*5.7.8*/
+						"Authentication credentials invalid");
 			}
 
 			return null;

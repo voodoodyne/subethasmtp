@@ -85,8 +85,8 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 					// authentication this way (and this way only).
 					byte[] decoded = Base64.decode(stk.nextToken());
 					if (decoded == null)
-						throw new RejectException(501, // 5.5.4
-								"Parameter does not conform to Base64"); 
+						throw new RejectException(501, /*5.5.4*/
+								"Invalid command argument, not a valid Base64 string"); 
 					username = TextUtils.getStringUtf8(decoded);
 
 					return "334 "
@@ -105,7 +105,8 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 				byte[] decoded = Base64.decode(clientInput);
 				if (decoded == null)
 				{
-					throw new RejectException();
+					throw new RejectException(501, /*5.5.4*/
+							"Invalid command argument, not a valid Base64 string");
 				}
 
 				this.username = TextUtils.getStringUtf8(decoded);
@@ -118,8 +119,8 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 			byte[] decoded = Base64.decode(clientInput);
 			if (decoded == null)
 			{
-				throw new RejectException(501, // 5.5.4
-						"Parameter does not conform to Base64");
+				throw new RejectException(501, /*5.5.4*/
+						"Invalid command argument, not a valid Base64 string");
 			}
 
 			this.password = TextUtils.getStringUtf8(decoded);
@@ -129,7 +130,8 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 			}
 			catch (LoginFailedException lfe)
 			{
-				throw new RejectException();
+				throw new RejectException(535, /*5.7.8*/
+						"Authentication credentials invalid");
 			}
 
 			return null;
