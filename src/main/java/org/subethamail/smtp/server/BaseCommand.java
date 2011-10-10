@@ -7,6 +7,7 @@ import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.subethamail.smtp.DropConnectionException;
 
 /**
  * @author Ian McFarland &lt;ian@neo.com&gt;
@@ -41,7 +42,8 @@ abstract public class BaseCommand implements Command
 	/**
 	 * This is the main method that you need to override in order to implement a command.
 	 */
-	abstract public void execute(String commandString, Session context) throws IOException;
+	abstract public void execute(String commandString, Session context)
+			throws IOException, DropConnectionException;
 
 	/** */
 	public HelpMessage getHelp()

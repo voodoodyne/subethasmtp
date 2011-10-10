@@ -26,7 +26,8 @@ public class ReceiptCommand extends BaseCommand
 
 	/** */
 	@Override
-	public void execute(String commandString, Session sess) throws IOException
+	public void execute(String commandString, Session sess) 
+			throws IOException, DropConnectionException
 	{
 		if (!sess.getHasMailFrom())
 		{
