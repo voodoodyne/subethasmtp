@@ -83,8 +83,11 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 					// the username.
 					// .Net's built in System.Net.Mail.SmtpClient sends its
 					// authentication this way (and this way only).
-					username = TextUtils.getStringUtf8(Base64.decode(stk
-							.nextToken()));
+					byte[] decoded = Base64.decode(stk.nextToken());
+					if (decoded == null)
+						throw new RejectException(501, // 5.5.4
+								"Parameter does not conform to Base64"); 
+					username = TextUtils.getStringUtf8(decoded);
 
 					return "334 "
 							+ Base64.encodeToString(
@@ -115,7 +118,8 @@ public class LoginAuthenticationHandlerFactory implements AuthenticationHandlerF
 			byte[] decoded = Base64.decode(clientInput);
 			if (decoded == null)
 			{
-				throw new RejectException();
+				throw new RejectException(501, // 5.5.4
+						"Parameter does not conform to Base64");
 			}
 
 			this.password = TextUtils.getStringUtf8(decoded);
