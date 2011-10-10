@@ -2,6 +2,8 @@ package org.subethamail.smtp.server;
 
 import java.io.IOException;
 
+import org.subethamail.smtp.DropConnectionException;
+
 /**
  * Describes a SMTP command
  *
@@ -11,7 +13,8 @@ import java.io.IOException;
 public interface Command
 {
 	/** */
-	public void execute(String commandString, Session sess) throws IOException;
+	public void execute(String commandString, Session sess) throws IOException, 
+			DropConnectionException;
 
 	/** */
 	public HelpMessage getHelp() throws CommandException;

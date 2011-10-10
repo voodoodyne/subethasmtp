@@ -30,7 +30,8 @@ public class MailCommand extends BaseCommand
 	 * @see org.subethamail.smtp.server.BaseCommand#execute(java.lang.String, org.subethamail.smtp.server.Session)
 	 */
 	@Override
-	public void execute(String commandString, Session sess) throws IOException
+	public void execute(String commandString, Session sess) throws IOException,
+			DropConnectionException
 	{
 		if (sess.getHasMailFrom())
 		{

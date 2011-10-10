@@ -11,6 +11,7 @@ import java.util.StringTokenizer;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.subethamail.smtp.DropConnectionException;
 
 /**
  * This class manages execution of a SMTP command.
@@ -90,7 +91,7 @@ public class CommandHandler
 
 	/** */
 	public void handleCommand(Session context, String commandString)
-		throws SocketTimeoutException, IOException
+		throws SocketTimeoutException, IOException, DropConnectionException
 	{
 		try
 		{

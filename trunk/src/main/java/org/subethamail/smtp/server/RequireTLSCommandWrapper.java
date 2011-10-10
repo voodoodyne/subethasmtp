@@ -2,6 +2,8 @@ package org.subethamail.smtp.server;
 
 import java.io.IOException;
 
+import org.subethamail.smtp.DropConnectionException;
+
 /**
  * Verifies the presence of a TLS connection if TLS is required.
  * The wrapped command is executed when the test succeeds.
@@ -21,7 +23,8 @@ public class RequireTLSCommandWrapper implements Command
 		this.wrapped = wrapped;
 	}
 
-	public void execute(String commandString, Session sess) throws IOException
+	public void execute(String commandString, Session sess) 
+			throws IOException, DropConnectionException
 	{
 		if (!sess.getServer().getRequireTLS() || sess.isTLSStarted())
 			wrapped.execute(commandString, sess);
