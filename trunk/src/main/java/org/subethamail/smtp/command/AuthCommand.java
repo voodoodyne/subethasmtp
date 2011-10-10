@@ -107,7 +107,7 @@ public class AuthCommand extends BaseCommand
 		}
 		catch (RejectException authFailed)
 		{
-			sess.sendResponse("535 Authentication failure.");
+			sess.sendResponse(authFailed.getErrorResponse());
 		}
 	}
 }
