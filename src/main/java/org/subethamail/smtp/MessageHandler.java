@@ -8,8 +8,10 @@ import java.io.IOException;
 import java.io.InputStream;
 
 /**
- * The interface that defines the conversational exchange of a single message
- * on an SMTP connection.  The methods will be called in the following order:
+ * The interface that defines the conversational exchange of a single message on
+ * an SMTP connection. Using the term "mail transaction", as defined by RFC 
+ * 5321, implementing classes of this interface track a single mail transaction. 
+ * The methods will be called in the following order:
  *
  * <ol>
  * <li><code>from()</code></li>

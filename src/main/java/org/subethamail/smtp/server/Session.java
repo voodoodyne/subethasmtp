@@ -458,11 +458,19 @@ public class Session extends Thread implements MessageContext
 	public void resetMessageState()
 	{
 		this.endMessageHandler();
-		this.messageHandler = this.server.getMessageHandlerFactory().create(this);
+		this.messageHandler = null;
 		this.hasMailFrom = false;
 		this.recipientCount = 0;
 		this.singleRecipient = null;
 		this.declaredMessageSize = 0;
+	}
+	
+	public void startMailTransaction() {
+		if (this.messageHandler != null) 
+			throw new IllegalStateException(
+					"Mail transaction is already in progress");
+		this.messageHandler = this.server.getMessageHandlerFactory().create(
+				this);
 	}
 
 	/** Safely calls done() on a message hander, if one exists */

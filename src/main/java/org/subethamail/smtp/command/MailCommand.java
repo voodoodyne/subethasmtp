@@ -82,6 +82,7 @@ public class MailCommand extends BaseCommand
 				
 				try
 				{
+					sess.startMailTransaction();
 					sess.getMessageHandler().from(emailAddress);
 					sess.setDeclaredMessageSize(size);
 					sess.setHasMailFrom(true);
