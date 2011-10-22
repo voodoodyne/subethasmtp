@@ -46,9 +46,10 @@
 	</typedef>
 	
 	<path id="classpath">
-		<fileset dir="${lib.dir}">
-			<include name="**/*.jar"/>
-		</fileset>
+		<!-- jmockit.jar must precede junit.jar -->
+		<pathelement location="${lib.dir}/buildonly/jmockit/*.jar"/>
+		<fileset dir="${lib.dir}" includes="*.jar"/>
+		<fileset dir="${lib.dir}/buildonly" includes="*.jar"/>
 	</path>
 		
 	<target name="jar" depends="init">
