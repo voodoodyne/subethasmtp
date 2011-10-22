@@ -1,80 +1,41 @@
 package org.subethamail.smtp;
 
-import java.io.OutputStream;
-import java.io.OutputStreamWriter;
-import java.io.PrintWriter;
-import java.net.InetAddress;
-import java.net.Socket;
+import static org.junit.Assert.fail;
 
-import junit.framework.Test;
-import junit.framework.TestCase;
-import junit.framework.TestSuite;
+import java.net.SocketException;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.junit.Test;
+import org.subethamail.smtp.client.SMTPClient;
 import org.subethamail.wiser.Wiser;
 
 /**
  * This class tests connection timeouts.
- *
+ * 
  * @author Jeff Schnitzer
  */
-public class TimeoutTest extends TestCase
-{
-	/** */
-	@SuppressWarnings("unused")
-	private static Logger log = LoggerFactory.getLogger(TimeoutTest.class);
-
+public class TimeoutTest {
 	/** */
 	public static final int PORT = 2566;
 
 	/** */
-	public TimeoutTest(String name)
-	{
-		super(name);
-	}
-
-	/** */
-	@Override
-	protected void setUp() throws Exception
-	{
-		super.setUp();
-	}
-
-	/** */
-	@Override
-	protected void tearDown() throws Exception
-	{
-		super.tearDown();
-	}
-
-	/** */
-	public void testTimeout() throws Exception
-	{
+	@Test
+	public void testTimeout() throws Exception {
 		Wiser wiser = new Wiser();
 		wiser.setPort(PORT);
 		wiser.getServer().setConnectionTimeout(1000);
-
 		wiser.start();
 
-		Socket sock = new Socket(InetAddress.getLocalHost(), PORT);
-		OutputStream out = sock.getOutputStream();
-		PrintWriter writer = new PrintWriter(new OutputStreamWriter(out));
-
-		writer.print("HELO foo\r\n");
-		assert(!writer.checkError());
-
+		SMTPClient client = new SMTPClient("localhost", PORT);
+		client.sendReceive("HELO foo");
 		Thread.sleep(2000);
-
-		writer.print("HELO bar\r\n");
-		assert(writer.checkError());
-
-		wiser.stop();
+		try {
+			client.sendReceive("HELO bar");
+			fail();
+		} catch (SocketException e) {
+			// expected
+		} finally {
+			wiser.stop();
+		}
 	}
 
-	/** */
-	public static Test suite()
-	{
-		return new TestSuite(TimeoutTest.class);
-	}
 }
