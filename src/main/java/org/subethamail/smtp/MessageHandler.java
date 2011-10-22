@@ -17,6 +17,7 @@ import java.io.InputStream;
  * <li><code>from()</code></li>
  * <li><code>recipient()</code> (possibly more than once)</li>
  * <li><code>data()</code></li>
+ * <li><code>done()</code></li>
  * </ol>
  *
  * If multiple messages are delivered on a single connection (ie, using the RSET command)
@@ -28,7 +29,9 @@ import java.io.InputStream;
 public interface MessageHandler
 {
 	/**
-	 * Called first, after the MAIL FROM during a SMTP exchange.
+	 * Called first, after the MAIL FROM during a SMTP exchange. A 
+	 * MessageHandler is created after the MAIL command is received, so this 
+	 * function is always called, even if the mail transaction is aborted later.
 	 *
 	 * @param from is the sender as specified by the client.  It will
 	 *  be a rfc822-compliant email address, already validated by
@@ -69,7 +72,8 @@ public interface MessageHandler
 
 	/**
 	 * Called after all other methods are completed.  Note that this method
-	 * will be called even if the client never triggered any of the other callbacks.
+	 * will be called even if the mail transaction is aborted at some point 
+	 * after the initial from() call. 
 	 */
 	public void done();
 }
