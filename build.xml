@@ -47,7 +47,7 @@
 	
 	<path id="classpath">
 		<!-- jmockit.jar must precede junit.jar -->
-		<pathelement location="${lib.dir}/buildonly/jmockit/*.jar"/>
+		<fileset dir="${lib.dir}/buildonly/jmockit" includes="*.jar"/>
 		<fileset dir="${lib.dir}" includes="*.jar"/>
 		<fileset dir="${lib.dir}/buildonly" includes="*.jar"/>
 	</path>
