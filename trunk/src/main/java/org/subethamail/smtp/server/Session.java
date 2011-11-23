@@ -26,7 +26,7 @@ import org.subethamail.smtp.io.CRLFTerminatedReader;
  * @author Jon Stevens
  * @author Jeff Schnitzer
  */
-public class Session extends Thread implements MessageContext
+public class Session implements Runnable, MessageContext
 {
 	private final static Logger log = LoggerFactory.getLogger(Session.class);
 
@@ -78,7 +78,7 @@ public class Session extends Thread implements MessageContext
 	private Certificate[] tlsPeerCertificates;
 
 	/**
-	 * Creates (but does not start) the thread object.
+	 * Creates the Runnable Session object.
 	 *
 	 * @param server a link to our parent
 	 * @param socket is the socket to the client
@@ -87,9 +87,6 @@ public class Session extends Thread implements MessageContext
 	public Session(SMTPServer server, ServerThread serverThread, Socket socket)
 		throws IOException
 	{
-		super(Session.class.getName()
-				+ "-" + socket.getInetAddress() + ":" + socket.getPort());
-
 		this.server = server;
 		this.serverThread = serverThread;
 
@@ -111,6 +108,11 @@ public class Session extends Thread implements MessageContext
 	@Override
 	public void run()
 	{
+		final String originalName = Thread.currentThread().getName();
+		Thread.currentThread().setName(
+				Session.class.getName() + "-" + socket.getInetAddress() + ":"
+						+ socket.getPort());
+
 		if (log.isDebugEnabled())
 		{
 			InetAddress remoteInetAddress = this.getRemoteAddress().getAddress();
@@ -163,6 +165,7 @@ public class Session extends Thread implements MessageContext
 			this.closeConnection();
 			this.endMessageHandler();
 			serverThread.sessionEnded(this);
+			Thread.currentThread().setName(originalName);
 		}
 	}
 
@@ -486,20 +489,6 @@ public class Session extends Thread implements MessageContext
 			{
 				log.error("done() threw exception", ex);
 			}
-		}
-	}
-
-	/**
-	 * Shuts down the connection abruptly and waits until the connection thread
-	 * exits.
-	 */
-	public void shutdown()
-	{
-		quit();
-		try {
-			this.join();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
 		}
 	}
 

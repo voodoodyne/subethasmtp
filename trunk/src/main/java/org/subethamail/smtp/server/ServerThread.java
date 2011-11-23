@@ -7,7 +7,9 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 
 import javax.annotation.concurrent.GuardedBy;
 
@@ -127,10 +129,10 @@ class ServerThread extends Thread
 				continue;
 			}
 
-			Session sessionThread;
+			Session session = null;
 			try
 			{
-				sessionThread = new Session(server, this, socket);
+				session = new Session(server, this, socket);
 			}
 			catch (IOException e)
 			{
@@ -146,13 +148,34 @@ class ServerThread extends Thread
 				}
 				continue;
 			}
+
 			// add thread before starting it,
 			// because it will check the count of sessions
 			synchronized (this)
 			{
-				this.sessionThreads.add(sessionThread);
+				this.sessionThreads.add(session);
 			}
-			sessionThread.start();
+
+			try {
+				server.getExecutorService().execute(session);
+			}
+			catch (RejectedExecutionException e) {
+				connectionPermits.release();
+				synchronized (this)
+				{
+					this.sessionThreads.remove(session);
+				}
+				log.error("Error while executing a session", e);
+				try
+				{
+					socket.close();
+				}
+				catch (IOException e1)
+				{
+					log.debug("Cannot close socket after exception", e1);
+				}
+				continue;
+			}
 		}
 	}
 
@@ -208,7 +231,17 @@ class ServerThread extends Thread
 		}
 		for (Session sessionThread : sessionsToBeClosed)
 		{
-			sessionThread.shutdown();
+			sessionThread.quit();
+		}
+
+		server.getExecutorService().shutdown();
+		try {
+			server.getExecutorService().awaitTermination(Long.MAX_VALUE,
+					TimeUnit.NANOSECONDS);
+		} catch (InterruptedException e) {
+			log.warn("Interrupted waiting for termination of session threads",
+					e);
+			Thread.currentThread().interrupt();
 		}
 	}
 
