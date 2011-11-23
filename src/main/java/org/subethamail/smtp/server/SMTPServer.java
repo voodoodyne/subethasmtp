@@ -6,6 +6,8 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import javax.annotation.concurrent.GuardedBy;
 import javax.net.ssl.SSLSocket;
@@ -59,12 +61,20 @@ public class SMTPServer
 
 	private MessageHandlerFactory messageHandlerFactory;
 	private AuthenticationHandlerFactory authenticationHandlerFactory;
+	private ExecutorService executorService;
 
 	private CommandHandler commandHandler;
 
 	/** The thread listening on the server socket. */
 	@GuardedBy("this")
 	private ServerThread serverThread;
+
+	/**
+	 * True if this SMTPServer was started. It remains true even if the
+	 * SMTPServer has been stopped since.
+	 **/
+	@GuardedBy("this")
+	private boolean started = false;
 
 	/** If true, TLS is enabled */
 	private boolean enableTLS = false;
@@ -103,20 +113,44 @@ public class SMTPServer
 	private int maxMessageSize = 0;
 
 	/**
-	 * The primary constructor.
+	 * Simple constructor.
 	 */
 	public SMTPServer(MessageHandlerFactory handlerFactory)
 	{
-		this(handlerFactory, null);
+		this(handlerFactory, null, null);
 	}
 
 	/**
-	 * The primary constructor.
+	 * Constructor with {@link AuthenticationHandlerFactory}.
 	 */
-	public SMTPServer(MessageHandlerFactory msgHandlerFact, AuthenticationHandlerFactory authHandlerFact)
+	public SMTPServer(MessageHandlerFactory handlerFactory, AuthenticationHandlerFactory authHandlerFact)
+	{
+	    this(handlerFactory, authHandlerFact, null);
+	}
+
+	/**
+	 * Complex constructor.
+	 * 
+	 * @param authHandlerFact
+	 *            the {@link AuthenticationHandlerFactory} which performs
+	 *            authentication. If null, authentication is not supported.
+	 * @param executorService
+	 *            the ExecutorService which will handle client connections, one
+	 *            task per connection. The SMTPServer will shut down this
+	 *            ExecutorService when the SMTPServer itself stops. If null, a
+	 *            default one is created by {@link
+	 *            Executors.newCachedThreadPool()}.
+	 */
+	public SMTPServer(MessageHandlerFactory msgHandlerFact, AuthenticationHandlerFactory authHandlerFact, ExecutorService executorService)
 	{
 		this.messageHandlerFactory = msgHandlerFact;
 		this.authenticationHandlerFactory = authHandlerFact;
+
+		if (executorService != null) {
+			this.executorService = executorService;
+		} else {
+			this.executorService = Executors.newCachedThreadPool();
+		}
 
 		try
 		{
@@ -187,6 +221,13 @@ public class SMTPServer
 	}
 
 	/**
+	 * @return the ExecutorService handling client connections
+	 */
+	public ExecutorService getExecutorService() {
+		return executorService;
+	}
+
+	/**
 	 * Is the server running after start() has been called?
 	 */
 	public synchronized boolean isRunning()
@@ -227,8 +268,9 @@ public class SMTPServer
 		if (log.isInfoEnabled())
 			log.info("SMTP server {} starting", getDisplayableLocalSocketAddress());
 
-		if (this.serverThread != null)
-			throw new IllegalStateException("SMTPServer already started");
+		if (this.started)
+			throw new IllegalStateException(
+					"SMTPServer can only be started once");
 
 		// Create our server socket here.
 		ServerSocket serverSocket;
@@ -243,6 +285,7 @@ public class SMTPServer
 
 		this.serverThread = new ServerThread(this, serverSocket);
 		this.serverThread.start();
+		this.started = true;
 	}
 
 	/**
