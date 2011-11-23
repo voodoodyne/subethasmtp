@@ -40,7 +40,7 @@ public class Session implements Runnable, MessageContext
 	private ServerThread serverThread;
 
 	/** Set this true when doing an ordered shutdown */
-	private boolean quitting = false;
+	private volatile boolean quitting = false;
 
 	/** I/O to the client */
 	private Socket socket;
