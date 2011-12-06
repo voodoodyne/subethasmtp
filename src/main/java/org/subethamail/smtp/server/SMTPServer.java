@@ -322,8 +322,6 @@ public class SMTPServer
 		}
 
 		ServerSocket serverSocket = new ServerSocket();
-		// http://java.sun.com/j2se/1.5.0/docs/api/java/net/ServerSocket.html#setReuseAddress(boolean)
-		serverSocket.setReuseAddress(true);
 		serverSocket.bind(isa, this.backlog);
 
 		if (this.port == 0)
