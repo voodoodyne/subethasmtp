@@ -1,5 +1,9 @@
 package org.subethamail.smtp;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotSame;
+import static org.junit.Assert.assertTrue;
+
 import java.io.BufferedInputStream;
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,8 +26,8 @@ import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
 
-import junit.framework.TestCase;
-
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Ignore;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,7 +43,7 @@ import com.sun.mail.smtp.SMTPTransport;
  * @author De Oliveira Edouard &lt;doe_wanted@yahoo.fr&gt;
  */
 @Ignore("requires manual setup")
-public class BigAttachmentTest extends TestCase
+public class BigAttachmentTest
 {
 	private final static Logger log = LoggerFactory.getLogger(BigAttachmentTest.class);
 
@@ -53,26 +57,18 @@ public class BigAttachmentTest extends TestCase
 	private Wiser server;
 
 	/** */
-	public BigAttachmentTest(String name)
-	{
-		super(name);
-	}
-
-	/** */
-	@Override
+	@Before
 	protected void setUp() throws Exception
 	{
-		super.setUp();
 		this.server = new Wiser();
 		this.server.setPort(SMTP_PORT);
 		this.server.start();
 	}
 
 	/** */
-	@Override
+	@After
 	protected void tearDown() throws Exception
 	{
-		super.tearDown();
 		try
 		{
 			this.server.stop();
