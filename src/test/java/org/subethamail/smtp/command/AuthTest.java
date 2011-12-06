@@ -148,4 +148,14 @@ public class AuthTest extends ServerTestCase
 		this.send("AUTH");
 		this.expect("503");
 	}
+	
+	public void testMailBeforeAuth() throws Exception {
+		this.expect("220");
+
+		this.send("HELO foo.com");
+		this.expect("250");
+		
+		this.send("MAIL FROM: <john@example.com>");
+		this.expect("250");
+	}
 }
