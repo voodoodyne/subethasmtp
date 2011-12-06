@@ -118,6 +118,7 @@
 	
 	<target name="junit" depends="rtest-jar">
 		<junit printsummary="yes" showoutput="yes" haltonfailure="true" fork="yes" maxmemory="512m">
+			<jvmarg value="-javaagent:lib/buildonly/jmockit/jmockit.jar"/>
 			<classpath refid="classpath" />
 			<classpath>
 				<fileset dir="${build.dir}">
