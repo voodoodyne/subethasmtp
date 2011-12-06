@@ -133,7 +133,14 @@ public class SMTPServer
 	 * 
 	 * @param authHandlerFact
 	 *            the {@link AuthenticationHandlerFactory} which performs
-	 *            authentication. If null, authentication is not supported.
+	 *            authentication in the SMTP AUTH command. If null,
+	 *            authentication is not supported. Note that setting an
+	 *            authentication handler does not enforce authentication, it
+	 *            only makes authentication possible. Enforcing authentication
+	 *            is the responsibility of the client application, which usually
+	 *            enforces it only selectively. Use
+	 *            {@link Session#isAuthenticated} to check whether the client
+	 *            was authenticated in the session.
 	 * @param executorService
 	 *            the ExecutorService which will handle client connections, one
 	 *            task per connection. The SMTPServer will shut down this
