@@ -9,9 +9,11 @@ import java.net.Socket;
 import java.net.SocketException;
 import java.net.SocketTimeoutException;
 import java.security.cert.Certificate;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.slf4j.MDC;
 import org.subethamail.smtp.AuthenticationHandler;
 import org.subethamail.smtp.DropConnectionException;
 import org.subethamail.smtp.MessageContext;
@@ -38,6 +40,13 @@ public class Session implements Runnable, MessageContext
 	 * connection is finished.
 	 */
 	private ServerThread serverThread;
+	
+	/**
+	 * Saved SLF4J mapped diagnostic context of the parent thread. The parent
+	 * thread is the one which calls the constructor. MDC is usually inherited
+	 * by new threads, but this mechanism does not work with executors.
+	 */
+	private final Map<?, ?> parentLoggingMdcContext = MDC.getCopyOfContextMap();
 
 	/** Set this true when doing an ordered shutdown */
 	private volatile boolean quitting = false;
@@ -108,6 +117,7 @@ public class Session implements Runnable, MessageContext
 	@Override
 	public void run()
 	{
+		MDC.setContextMap(parentLoggingMdcContext);
 		final String originalName = Thread.currentThread().getName();
 		Thread.currentThread().setName(
 				Session.class.getName() + "-" + socket.getInetAddress() + ":"
@@ -166,6 +176,7 @@ public class Session implements Runnable, MessageContext
 			this.endMessageHandler();
 			serverThread.sessionEnded(this);
 			Thread.currentThread().setName(originalName);
+			MDC.clear();
 		}
 	}
 
