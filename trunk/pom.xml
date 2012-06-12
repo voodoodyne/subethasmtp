@@ -3,7 +3,7 @@
   <modelVersion>4.0.0</modelVersion>
   <groupId>org.subethamail</groupId>
   <artifactId>subethasmtp</artifactId>
-  <version>3.1.7-SNAPSHOT</version>
+  <version>3.1.7</version>
   <name>SubEtha SMTP</name>
   <description>
     SubEtha SMTP is an easy-to-use server-side SMTP library for Java.
@@ -61,6 +61,14 @@
       <id>jeffjjensen</id>
       <name>Jeff Jensen</name>
       <timezone>-6</timezone>
+      <roles>
+        <role>Committer</role>
+      </roles>
+    </developer>
+    <developer>
+      <id>hontvari.jozsef.levente</id>
+      <name>Hontvári József Levente</name>
+      <timezone>+1</timezone>
       <roles>
         <role>Committer</role>
       </roles>
@@ -124,7 +132,7 @@
   </build>
   <dependencies>
     <dependency>
-      <groupId>mockit</groupId>
+      <groupId>com.googlecode.jmockit</groupId>
       <artifactId>jmockit</artifactId>
       <version>0.999.11</version>
       <scope>test</scope>
