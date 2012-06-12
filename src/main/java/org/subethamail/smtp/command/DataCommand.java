@@ -53,8 +53,10 @@ public class DataCommand extends BaseCommand
 		stream = new DotUnstuffingInputStream(stream);
 		if (!sess.getServer().getDisableReceivedHeaders())
 		{
-			stream = new ReceivedHeaderStream(stream, sess.getHelo(), sess.getRemoteAddress().getAddress(), sess
-					.getServer().getHostName(), sess.getServer().getSoftwareName(), sess.getSingleRecipient());
+			stream = new ReceivedHeaderStream(stream, sess.getHelo(), sess
+					.getRemoteAddress().getAddress(), sess.getServer()
+					.getHostName(), sess.getServer().getSoftwareName(),
+					sess.getSessionId(), sess.getSingleRecipient());
 		}
 
 		try

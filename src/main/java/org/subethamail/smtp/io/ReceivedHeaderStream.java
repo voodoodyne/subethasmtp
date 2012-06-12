@@ -31,7 +31,7 @@ public class ReceivedHeaderStream extends FilterInputStream
 	 *            one recipients then this must be null.
 	 */
 	public ReceivedHeaderStream(InputStream in, String heloHost, InetAddress host, String whoami, String softwareName,
-			String singleRecipient)
+			String id, String singleRecipient)
 	{
 		super(in);
 
@@ -45,9 +45,11 @@ Received: from iamhelo (wasabi.infohazard.org [209.237.247.14])
 
 		StringBuilder header = new StringBuilder();
 		header.append("Received: from " + heloHost + " (" + constructTcpInfo(host) + ")\r\n");
-		header.append("        by " + whoami + " with SMTP");
+		header.append("        by " + whoami + "\r\n");
+		header.append("        with SMTP");
 		if (softwareName != null)
 			header.append(" (" + softwareName + ")");
+		header.append(" id ").append(id);
 		if (singleRecipient != null)
 			header.append("\r\n        for " + singleRecipient);
 		header.append(";\r\n");
