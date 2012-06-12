@@ -112,6 +112,8 @@ public class SMTPServer
 	 */
 	private int maxMessageSize = 0;
 
+	private SessionIdFactory sessionIdFactory = new TimeBasedSessionIdFactory();
+
 	/**
 	 * Simple constructor.
 	 */
@@ -568,4 +570,16 @@ public class SMTPServer
 		this.disableReceivedHeaders = disableReceivedHeaders;
 	}
 
+	/** */
+	public SessionIdFactory getSessionIdFactory() {
+		return sessionIdFactory;
+	}
+	
+	/**
+	 * Sets the {@link SessionIdFactory} which will allocate a unique identifier
+	 * for each mail sessions. If not set, a reasonable default will be used.
+	 */
+	public void setSessionIdFactory(SessionIdFactory sessionIdFactory) {
+		this.sessionIdFactory = sessionIdFactory;
+	}
 }

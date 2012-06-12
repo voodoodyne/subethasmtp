@@ -47,6 +47,12 @@ public class Session implements Runnable, MessageContext
 	 * by new threads, but this mechanism does not work with executors.
 	 */
 	private final Map<?, ?> parentLoggingMdcContext = MDC.getCopyOfContextMap();
+	
+	/**
+	 * Uniquely identifies this session within an extended time period, useful
+	 * for logging.
+	 */
+	private String sessionId;
 
 	/** Set this true when doing an ordered shutdown */
 	private volatile boolean quitting = false;
@@ -118,6 +124,8 @@ public class Session implements Runnable, MessageContext
 	public void run()
 	{
 		MDC.setContextMap(parentLoggingMdcContext);
+		sessionId = server.getSessionIdFactory().create();
+		MDC.put("SessionId", sessionId);
 		final String originalName = Thread.currentThread().getName();
 		Thread.currentThread().setName(
 				Session.class.getName() + "-" + socket.getInetAddress() + ":"
@@ -349,6 +357,14 @@ public class Session implements Runnable, MessageContext
 		this.writer.flush();
 	}
 
+	/**
+	 * Returns an identifier of the session which is reasonably unique within
+	 * an extended time period.
+	 */
+	public String getSessionId() {
+		return sessionId;
+	}
+	
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.MessageContext#getRemoteAddress()
 	 */
