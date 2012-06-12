@@ -3,6 +3,22 @@
 		
 == Changes ==
 
+=== 3.1.7 - June 12, 2012 ===
+ * Complete Maven build (in addition to the original Ant based build)
+ * SLF4J upgraded from the 1.5 series to 1.6
+ * More graceful shutdown: SMTPServer.stop waits until all connections finish their work.
+ * Issue 45: AUTH LOGIN authentication is compatible with the .NET SMTP library. Patch by Reid Nimz.
+ * AUTH command replies with specific error messages if something goes wrong.
+ * Issue 46: Suebetha loses session.helo after first email.
+ * Case-sensitivity issue with the AUTH command
+ * Build-time libraries are placed into a separate directory.
+ * Issue 47: MessageHandler lifecycle better matches its purpose: following a single mail transaction within a full session. HELO and EHLO resets the mail transaction in progress.
+ * Issue 48: Use ExecutorService instead of new Thread. Patch from Eric Parusel.
+ * Possible concurrency issue on connection shutdown.
+ * Issue 49: No error if server is running already 
+ * Improved Javadoc about authentication
+ * SMTP session identifier is generated and included in the Received header and in the logging context.
+
 === 3.1.6 - June 23, 2011 ===
 
  * Issue 39
