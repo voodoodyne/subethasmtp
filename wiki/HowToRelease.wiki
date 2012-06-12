@@ -1,0 +1,14 @@
+#summary How to release a new version
+
+= How to Release =
+
+ * update the `version` element in pom.xml
+ * check with `ant junit`
+ * check with `mvn package`
+ * `ant dist`
+ * tag version in subversion
+ * upload zip file to downloads, label it with OpSys-All, Type-Archive, Featured
+ * remove Featured label from the download of the previous version
+ * update ChangeLog
+ * upload to Maven repository
+ * announce the new version on the mail list
