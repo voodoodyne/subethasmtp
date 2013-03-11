@@ -60,7 +60,7 @@ public class DotTerminatedOutputStream extends OutputStream
 			lastBytes[0] = b[off + len - 2];
 			lastBytes[1] = b[off + len - 1];
 		}
-		super.write(b, off, len);
+		out.write(b, off, len);
 	}
 
 	/**
