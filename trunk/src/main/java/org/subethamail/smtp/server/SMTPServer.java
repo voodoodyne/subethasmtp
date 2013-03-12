@@ -82,6 +82,9 @@ public class SMTPServer
 	private boolean hideTLS = false;
 	/** If true, a TLS handshake is required; ignored if enableTLS=false */
 	private boolean requireTLS = false;
+    /** If true, this server will accept no mail until auth succeeded;
+     * ignored if no AuthenticationHandlerFactory has been set*/
+    private boolean requireAuth = false;
 
 	/** If true, no Received headers will be inserted */
 	private boolean disableReceivedHeaders = false;
@@ -538,7 +541,22 @@ public class SMTPServer
 		this.requireTLS = requireTLS;
 	}
 
-	/**
+    /** */
+    public boolean getRequireAuth() {
+        return requireAuth;
+    }
+
+    /**
+     * @param requireAuth true for mandatory smtp authentication, i.e. no mail
+     *                    mail be accepted until authentication succeeds.
+     *                    Don't forget to set AuthenticationHandlerFactory to allow
+     *                    client authentication. Defaults to false.
+     */
+    public void setRequireAuth(boolean requireAuth) {
+        this.requireAuth = requireAuth;
+    }
+
+    /**
 	 * @return the maxMessageSize
 	 */
 	public int getMaxMessageSize()
