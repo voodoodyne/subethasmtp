@@ -25,34 +25,30 @@ import org.subethamail.smtp.command.VerifyCommand;
  */
 public enum CommandRegistry
 {
-	AUTH(new AuthCommand()),
-	DATA(new DataCommand()),
-	EHLO(new EhloCommand(), false),
-	HELO(new HelloCommand()),
-	HELP(new HelpCommand()),
-	MAIL(new MailCommand()),
-	NOOP(new NoopCommand(), false),
-	QUIT(new QuitCommand(), false),
-	RCPT(new ReceiptCommand()),
-	RSET(new ResetCommand()),
-	STARTTLS(new StartTLSCommand(), false),
-	VRFY(new VerifyCommand());
+	AUTH(new AuthCommand(), true, false),
+	DATA(new DataCommand(), true, true),
+	EHLO(new EhloCommand(), false, false),
+	HELO(new HelloCommand(), true, false),
+	HELP(new HelpCommand(), true, true),
+	MAIL(new MailCommand(), true, true),
+	NOOP(new NoopCommand(), false, false),
+	QUIT(new QuitCommand(), false, false),
+	RCPT(new ReceiptCommand(), true, true),
+	RSET(new ResetCommand(), true, false),
+	STARTTLS(new StartTLSCommand(), false, false),
+	VRFY(new VerifyCommand(), true, true);
 
 	private Command command;
 
 	/** */
-	private CommandRegistry(Command cmd)
-	{
-		this(cmd, true);
-	}
-
-	/** */
-	private CommandRegistry(Command cmd, boolean checkForStartedTLSWhenRequired)
+	private CommandRegistry(Command cmd, boolean checkForStartedTLSWhenRequired, boolean checkForAuthIfRequired)
 	{
 		if (checkForStartedTLSWhenRequired)
 			this.command = new RequireTLSCommandWrapper(cmd);
 		else
 			this.command = cmd;
+        if (checkForAuthIfRequired)
+            this.command = new RequireAuthCommandWrapper(this.command);
 	}
 
 	/** */
