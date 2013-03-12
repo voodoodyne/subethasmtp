@@ -34,8 +34,10 @@ public interface MessageHandler
 	 * function is always called, even if the mail transaction is aborted later.
 	 *
 	 * @param from is the sender as specified by the client.  It will
-	 *  be a rfc822-compliant email address, already validated by
-	 *  the server.
+	 *  be a mostly rfc822-compliant email address, already validated by
+	 *  the server. The validation is performed by the 
+	 *  JavaMail InternetAddress.parse function, according to the strict rules,
+	 *  which means that "many (but not all) of the RFC822 syntax rules are enforced".
 	 * @throws RejectException if the sender should be denied.
 	 * @throws DropConnectionException if the connection should be dropped
 	 */
