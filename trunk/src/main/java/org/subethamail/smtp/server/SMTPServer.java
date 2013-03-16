@@ -63,7 +63,7 @@ public class SMTPServer
 	private AuthenticationHandlerFactory authenticationHandlerFactory;
 	private ExecutorService executorService;
 
-	private CommandHandler commandHandler;
+	private final CommandHandler commandHandler;
 
 	/** The thread listening on the server socket. */
 	@GuardedBy("this")
@@ -305,13 +305,14 @@ public class SMTPServer
 	 */
 	public synchronized void stop()
 	{
-		if (log.isInfoEnabled())
-			log.info("SMTP server {} stopping", getDisplayableLocalSocketAddress());
+		log.info("SMTP server {} stopping...", getDisplayableLocalSocketAddress());
 		if (this.serverThread == null)
 			return;
 
 		this.serverThread.shutdown();
 		this.serverThread = null;
+
+		log.info("SMTP server {} stopped", getDisplayableLocalSocketAddress());
 	}
 
 	/**
