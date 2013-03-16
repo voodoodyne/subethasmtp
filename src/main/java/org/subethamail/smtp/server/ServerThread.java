@@ -69,7 +69,8 @@ class ServerThread extends Thread
 		try
 		{
 			runAcceptLoop();
-			log.info("SMTP server {} stopped", server.getDisplayableLocalSocketAddress());
+			log.info("SMTP server {} stopped accepting connections",
+					server.getDisplayableLocalSocketAddress());
 		}
 		catch (RuntimeException e)
 		{
