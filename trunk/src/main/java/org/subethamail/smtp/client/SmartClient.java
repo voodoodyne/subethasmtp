@@ -1,8 +1,13 @@
 package org.subethamail.smtp.client;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.net.SocketAddress;
 import java.net.UnknownHostException;
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,6 +35,21 @@ public class SmartClient extends SMTPClient
 	 * case the QUIT command should not be sent.
 	 */
 	private boolean serverClosingTransmissionChannel = false;
+	
+	/**
+	 * SMTP extensions supported by the server, and their parameters as the 
+	 * server specified it in response to the EHLO command. Key is the extension 
+	 * keyword in upper case, like "AUTH", value is the extension parameters
+	 * string in unparsed form. If the server does not support EHLO, then this 
+	 * map is empty.  
+	 */
+	private final Map<String, String> extensions = new HashMap<String, String>();
+	
+	/**
+	 * If supplied (not null), then it will be called after EHLO, to 
+	 * authenticate this client to the server.
+	 */
+	private Authenticator authenticator = null;
 
 	/**
 	 * Creates an unconnected client.
@@ -72,7 +92,8 @@ public class SmartClient extends SMTPClient
 	 * subsequently it fails or if the server does not accept messages.
 	 */
 	@Override
-	public void connect(String host, int port) throws IOException, SMTPException
+	public void connect(String host, int port) 
+			throws SMTPException, AuthenticationNotSupportedException, IOException
 	{
 		if (heloHost == null)
 			throw new IllegalStateException("Helo host must be specified before connecting");
@@ -81,9 +102,16 @@ public class SmartClient extends SMTPClient
 		try
 		{
 			this.receiveAndCheck(); // The server announces itself first
-			this.sendAndCheck("HELO " + heloHost);
+			this.sendHeloOrEhlo();
+			if (this.authenticator != null)
+				this.authenticator.authenticate();
 		}
 		catch (SMTPException e)
+		{
+			this.quit();
+			throw e;
+		}
+		catch (AuthenticationNotSupportedException e)
 		{
 			this.quit();
 			throw e;
@@ -94,7 +122,48 @@ public class SmartClient extends SMTPClient
 			throw e;
 		}
 	}
+	
+	/**
+	 * Sends the EHLO command, or HELO if EHLO is not supported, and saves the
+	 * list of SMTP extensions which are supported by the server.
+	 */
+	protected void sendHeloOrEhlo() throws IOException, SMTPException
+	{
+		extensions.clear();
+		Response resp = this.sendReceive("EHLO " + heloHost);
+		if (resp.isSuccess())
+		{
+			parseEhloResponse(resp);
+		}
+		else if (resp.getCode() == 500 || resp.getCode() == 502)
+		{
+			// server does not support EHLO, try HELO
+			this.sendAndCheck("HELO " + heloHost);
+		}
+		else {
+			// some serious error
+			throw new SMTPException(resp); 
+		}
+	}
 
+	/**
+	 * Extracts the list of SMTP extensions from the server's response to EHLO, 
+	 * and stores them in {@link #extensions}.
+	 */
+	private void parseEhloResponse(Response resp) throws IOException {
+		BufferedReader reader = new BufferedReader(new StringReader(resp.getMessage()));
+		// first line contains server name and welcome message, skip it
+		reader.readLine();
+		String line;
+		while (null != (line = reader.readLine()))
+		{
+			int iFirstSpace = line.indexOf(' ');
+			String keyword = iFirstSpace == -1 ? line : line.substring(0, iFirstSpace);
+			String parameters = iFirstSpace == -1 ? "" : line.substring(iFirstSpace + 1);
+			extensions.put(keyword.toUpperCase(Locale.ENGLISH), parameters);
+		}
+	}
+	
 	/**
 	 * Returns the server response. It takes note of a 421 response code, so
 	 * QUIT will not be issued unnecessarily.
@@ -198,6 +267,17 @@ public class SmartClient extends SMTPClient
 	{
 		return this.recipientCount;
 	}
+	
+	/**
+	 * Returns the SMTP extensions supported by the server.
+	 * 
+	 * @return the extension map. Key is the extension keyword in upper
+	 *         case, value is the unparsed string of extension parameters.
+	 */
+	public Map<String, String> getExtensions() 
+	{
+		return extensions;
+	}
 
 	/**
 	 * Sets the domain name or address literal of this system, which name will
@@ -215,5 +295,24 @@ public class SmartClient extends SMTPClient
 	public String getHeloHost()
 	{
 		return heloHost;
+	}
+
+	/**
+	 * Returns the Authenticator object, which is used to authenticate this
+	 * client to the server, or null, if no authentication is required.
+	 */
+	public Authenticator getAuthenticator()
+	{
+		return authenticator;
+	}
+
+	/**
+	 * Sets the Authenticator object which will be called after the EHLO command
+	 * to authenticate this client to the server. The default is that no 
+	 * authentication will happen.
+	 */
+	public void setAuthenticator(Authenticator authenticator)
+	{
+		this.authenticator = authenticator;
 	}
 }
