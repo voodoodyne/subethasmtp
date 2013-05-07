@@ -266,18 +266,19 @@ public class SMTPClient
 	}
 
 	/** If response is not success, throw an exception */
-	public void receiveAndCheck() throws IOException, SMTPException
+	public Response receiveAndCheck() throws IOException, SMTPException
 	{
 		Response resp = this.receive();
 		if (!resp.isSuccess())
 			throw new SMTPException(resp);
+		return resp;
 	}
 
 	/** If response is not success, throw an exception */
-	public void sendAndCheck(String msg) throws IOException, SMTPException
+	public Response sendAndCheck(String msg) throws IOException, SMTPException
 	{
 		this.send(msg);
-		this.receiveAndCheck();
+		return this.receiveAndCheck();
 	}
 
 	/** Logs but otherwise ignores errors */
