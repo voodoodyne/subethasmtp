@@ -139,7 +139,8 @@ public class SMTPClient
 		if (socket != null)
 			throw new IllegalStateException("Already connected");
 
-		this.hostPort = host + ":" + port;
+		if (this.hostPort == null)
+			this.hostPort = host + ":" + port;
 
 		if (log.isDebugEnabled())
 			log.debug("Connecting to " + this.hostPort);
@@ -178,14 +179,6 @@ public class SMTPClient
 	protected Socket createSocket()
 	{
 		return new Socket();
-	}
-
-	/**
-	 * @return a nice pretty description of who we are connected to
-	 */
-	public String getHostPort()
-	{
-		return this.hostPort;
 	}
 
 	/**
@@ -323,4 +316,23 @@ public class SMTPClient
 	{
 		return bindpoint;
 	}
+
+	/**
+	 * Sets the name of the remote MTA for informative purposes. Default is
+	 * host:port, where host and port are the values which were used to open the
+	 * TCP connection to the server, as they were passed to the connect method.
+	 */
+	public void setHostPort(String hostPort)
+	{
+		this.hostPort = hostPort;
+	}
+    /**
+     * @return a nice pretty description of who we are connected to
+     */
+    public String getHostPort()
+    {
+            return this.hostPort;
+    }
+
+	
 }
