@@ -34,7 +34,7 @@ public class MailTest extends ServerTestCase
 		this.expect("250 Ok");
 
 		this.send("MAIL FROM: another@example.com");
-		this.expect("503 Sender already specified.");
+		this.expect("503 5.5.1 Sender already specified.");
 	}
 
 	/** */

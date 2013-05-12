@@ -33,7 +33,7 @@ public class EhloCommand extends BaseCommand
 			return;
 		}
 
-		sess.resetMessageState();
+		sess.resetMailTransaction();
 		sess.setHelo(args[1]);
 
 //		postfix returns...

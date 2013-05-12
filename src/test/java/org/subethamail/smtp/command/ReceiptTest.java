@@ -22,7 +22,7 @@ public class ReceiptTest extends ServerTestCase
 		this.expect("250");
 
 		this.send("RCPT TO: bar@foo.com");
-		this.expect("503 Error: need MAIL command");
+		this.expect("503 5.5.1 Error: need MAIL command");
 	}
 
 	/** */

@@ -22,7 +22,7 @@ public class DataTest extends ServerTestCase
 		this.expect("250");
 
 		this.send("DATA");
-		this.expect("503 Error: need MAIL command");
+		this.expect("503 5.5.1 Error: need MAIL command");
 	}
 
 	/** */

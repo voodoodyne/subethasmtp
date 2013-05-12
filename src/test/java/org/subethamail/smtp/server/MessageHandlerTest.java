@@ -1,16 +1,28 @@
-package org.subethamail.smtp;
+package org.subethamail.smtp.server;
 
+import java.io.IOException;
 import java.io.InputStream;
+
+import javax.mail.MessagingException;
 
 import mockit.Expectations;
 import mockit.Mocked;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
+import org.subethamail.smtp.MessageContext;
+import org.subethamail.smtp.MessageHandler;
+import org.subethamail.smtp.MessageHandlerFactory;
+import org.subethamail.smtp.RejectException;
+import org.subethamail.smtp.client.SMTPException;
 import org.subethamail.smtp.client.SmartClient;
-import org.subethamail.smtp.server.SMTPServer;
 import org.subethamail.smtp.util.TextUtils;
 
+/**
+ * This class tests whether the event handler methods defined in MessageHandler 
+ * are called at the appropriate times and in good order.  
+ */
 public class MessageHandlerTest {
 	@Mocked
 	private MessageHandlerFactory messageHandlerFactory;
@@ -134,4 +146,48 @@ public class MessageHandlerTest {
 
 		smtpServer.stop(); // wait for the server to catch up
 	}
+	
+	/**
+	 * Test for issue 56: rejecting a Mail From causes IllegalStateException in
+	 * the next Mail From attempt.
+	 * @see <a href=http://code.google.com/p/subethasmtp/issues/detail?id=56>Issue 56</a>
+	 */
+	@Test
+	public void testMailFromRejectedFirst() throws IOException, MessagingException
+	{
+		new Expectations() {
+			{
+				messageHandlerFactory.create((MessageContext) any);
+				result = messageHandler;
+
+				onInstance(messageHandler).from(anyString);
+				result = new RejectException("Test MAIL FROM rejection");
+				onInstance(messageHandler).done();
+
+				messageHandlerFactory.create((MessageContext) any);
+				result = messageHandler2;
+
+				onInstance(messageHandler2).from(anyString);
+				onInstance(messageHandler2).done();
+			}
+		};
+
+		SmartClient client = new SmartClient("localhost", smtpServer.getPort(),
+				"localhost");
+
+		boolean expectedRejectReceived = false;
+		try {
+			client.from("john1@example.com");
+		} catch (SMTPException e) {
+			expectedRejectReceived = true;
+		}
+		Assert.assertTrue(expectedRejectReceived);
+		
+		client.from("john2@example.com");
+		client.quit();
+
+		smtpServer.stop(); // wait for the server to catch up
+		
+	}
+	
 }

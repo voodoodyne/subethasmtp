@@ -33,13 +33,13 @@ public class Session implements Runnable, MessageContext
 	private final static Logger log = LoggerFactory.getLogger(Session.class);
 
 	/** A link to our parent server */
-	private SMTPServer server;
+	private final SMTPServer server;
 
 	/**
 	 * A link to our parent server thread, which must be notified when this
 	 * connection is finished.
 	 */
-	private ServerThread serverThread;
+	private final ServerThread serverThread;
 	
 	/**
 	 * Saved SLF4J mapped diagnostic context of the parent thread. The parent
@@ -66,12 +66,14 @@ public class Session implements Runnable, MessageContext
 	/** Might exist if the client has successfully authenticated */
 	private AuthenticationHandler authenticationHandler;
 
-	/** Might exist if the client is giving us a message */
+	/**
+	 * It exists if a mail transaction is in progress (from the MAIL command
+	 * up to the end of the DATA command).
+	 */
 	private MessageHandler messageHandler;
 
 	/** Some state information */
 	private String helo;
-	private boolean hasMailFrom;
 	private int recipientCount;
 	/**
 	 * The recipient address in the first accepted RCPT command, but only if
@@ -208,9 +210,6 @@ public class Session implements Runnable, MessageContext
 		}
 
 		this.sendResponse("220 " + this.server.getHostName() + " ESMTP " + this.server.getSoftwareName());
-
-		// Start with fresh message state
-		this.resetMessageState();
 
 		while (!this.quitting)
 		{
@@ -368,6 +367,7 @@ public class Session implements Runnable, MessageContext
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.MessageContext#getRemoteAddress()
 	 */
+	@Override
 	public InetSocketAddress getRemoteAddress()
 	{
 		return (InetSocketAddress)this.socket.getRemoteSocketAddress();
@@ -376,6 +376,7 @@ public class Session implements Runnable, MessageContext
 	/* (non-Javadoc)
 	 * @see org.subethamail.smtp.MessageContext#getSMTPServer()
 	 */
+	@Override
 	public SMTPServer getSMTPServer()
 	{
 		return this.server;
@@ -390,6 +391,7 @@ public class Session implements Runnable, MessageContext
 	}
 
 	/** Simple state */
+	@Override
 	public String getHelo()
 	{
 		return this.helo;
@@ -401,16 +403,11 @@ public class Session implements Runnable, MessageContext
 		this.helo = value;
 	}
 
-	/** */
+	/** @deprecated use {@link #isMailTransactionInProgress()} */
+	@Deprecated
 	public boolean getHasMailFrom()
 	{
-		return this.hasMailFrom;
-	}
-
-	/** */
-	public void setHasMailFrom(boolean value)
-	{
-		this.hasMailFrom = value;
+		return isMailTransactionInProgress();
 	}
 
 	/** */
@@ -442,6 +439,7 @@ public class Session implements Runnable, MessageContext
 	}
 
 	/** */
+	@Override
 	public AuthenticationHandler getAuthenticationHandler()
 	{
 		return this.authenticationHandler;
@@ -473,29 +471,12 @@ public class Session implements Runnable, MessageContext
 	}
 
 	/**
-	 * Reset the SMTP protocol to the initial state, which is the state after 
-	 * a server issues a 220 service ready greeting. 
+	 * Starts a mail transaction by creating a new message handler.
+	 * 
+	 * @throws IllegalStateException
+	 *             if a mail transaction is already in progress
 	 */
-	public void resetSmtpProtocol() {
-		resetMessageState();
-		this.helo = null;
-	}
-	
-	/**
-	 * Some state is associated with each particular message (senders, recipients, the message handler).
-	 * Some state is not; seeing hello, TLS, authentication.
-	 */
-	public void resetMessageState()
-	{
-		this.endMessageHandler();
-		this.messageHandler = null;
-		this.hasMailFrom = false;
-		this.recipientCount = 0;
-		this.singleRecipient = null;
-		this.declaredMessageSize = 0;
-	}
-	
-	public void startMailTransaction() {
+	public void startMailTransaction() throws IllegalStateException {
 		if (this.messageHandler != null) 
 			throw new IllegalStateException(
 					"Mail transaction is already in progress");
@@ -503,8 +484,42 @@ public class Session implements Runnable, MessageContext
 				this);
 	}
 
+	/**
+	 * Returns true if a mail transaction is started, i.e. a MAIL command is
+	 * received, and the transaction is not yet completed or aborted. A
+	 * transaction is successfully completed after the message content is
+	 * received and accepted at the end of the DATA command.
+	 */
+	public boolean isMailTransactionInProgress() {
+		return this.messageHandler != null;
+	}
+	
+	/**
+	 * Stops the mail transaction if it in progress and resets all state related
+	 * to mail transactions.
+	 * <p>
+	 * Note: Some state is associated with each particular message (senders,
+	 * recipients, the message handler).<br>
+	 * Some state is not; seeing hello, TLS, authentication.
+	 */
+	public void resetMailTransaction()
+	{
+		this.endMessageHandler();
+		this.messageHandler = null;
+		this.recipientCount = 0;
+		this.singleRecipient = null;
+		this.declaredMessageSize = 0;
+	}
+	
+	/** @deprecated use {@link #resetMailTransaction()} */
+	@Deprecated
+	public void resetMessageState()
+	{
+		resetMailTransaction();
+	}
+	
 	/** Safely calls done() on a message hander, if one exists */
-	protected void endMessageHandler()
+	private void endMessageHandler()
 	{
 		if (this.messageHandler != null)
 		{
@@ -518,7 +533,16 @@ public class Session implements Runnable, MessageContext
 			}
 		}
 	}
-
+	
+	/**
+	 * Reset the SMTP protocol to the initial state, which is the state after 
+	 * a server issues a 220 service ready greeting. 
+	 */
+	public void resetSmtpProtocol() {
+		resetMailTransaction();
+		this.helo = null;
+	}
+	
 	/**
 	 * Triggers the shutdown of the thread and the closing of the connection.
 	 */
@@ -552,6 +576,7 @@ public class Session implements Runnable, MessageContext
 	/**
 	 * {@inheritDoc}
 	 */
+	@Override
 	public Certificate[] getTlsPeerCertificates()
 	{
 		return tlsPeerCertificates;
