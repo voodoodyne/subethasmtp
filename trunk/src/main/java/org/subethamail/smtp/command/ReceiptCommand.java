@@ -29,9 +29,9 @@ public class ReceiptCommand extends BaseCommand
 	public void execute(String commandString, Session sess) 
 			throws IOException, DropConnectionException
 	{
-		if (!sess.getHasMailFrom())
+		if (!sess.isMailTransactionInProgress())
 		{
-			sess.sendResponse("503 Error: need MAIL command");
+			sess.sendResponse("503 5.5.1 Error: need MAIL command");
 			return;
 		}
 		else if (sess.getServer().getMaxRecipients() >= 0 &&

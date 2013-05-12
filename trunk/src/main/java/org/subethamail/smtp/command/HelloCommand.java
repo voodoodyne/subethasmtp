@@ -30,7 +30,7 @@ public class HelloCommand extends BaseCommand
 			return;
 		}
 
-		sess.resetMessageState();
+		sess.resetMailTransaction();
 		sess.setHelo(args[1]);
 
 		sess.sendResponse("250 " + sess.getServer().getHostName());

@@ -34,9 +34,9 @@ public class DataCommand extends BaseCommand
 	public void execute(String commandString, Session sess) 
 			throws IOException, DropConnectionException
 	{
-		if (!sess.getHasMailFrom())
+		if (!sess.isMailTransactionInProgress())
 		{
-			sess.sendResponse("503 Error: need MAIL command");
+			sess.sendResponse("503 5.5.1 Error: need MAIL command");
 			return;
 		}
 		else if (sess.getRecipientCount() == 0)
@@ -69,8 +69,6 @@ public class DataCommand extends BaseCommand
 			// we might as well relax.
 			while (stream.read() != -1)
 				;
-
-			sess.sendResponse("250 Ok");
 		}
 		catch (DropConnectionException ex)
 		{
@@ -79,8 +77,10 @@ public class DataCommand extends BaseCommand
 		catch (RejectException ex)
 		{
 			sess.sendResponse(ex.getErrorResponse());
+			return;
 		}
 
-		sess.resetMessageState(); // reset session, but don't require new HELO/EHLO
+		sess.sendResponse("250 Ok");
+		sess.resetMailTransaction();
 	}
 }
