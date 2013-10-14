@@ -36,6 +36,12 @@ public class SMTPClient
 
 	/** the local socket address */
 	private SocketAddress bindpoint;
+	
+	/**
+	 * True if the client has been successfully connected to the server and not
+	 * it has not been closed yet.
+	 **/
+	private boolean connected;
 
 	/** Just for display purposes */
 	String hostPort;
@@ -136,7 +142,7 @@ public class SMTPClient
 	 */
 	public void connect(String host, int port) throws IOException
 	{
-		if (socket != null)
+		if (connected)
 			throw new IllegalStateException("Already connected");
 
 		if (this.hostPort == null)
@@ -166,6 +172,8 @@ public class SMTPClient
 			close();
 			throw e;
 		}
+
+		connected = true;
 	}
 
 	/**
@@ -182,6 +190,12 @@ public class SMTPClient
 	}
 
 	/**
+	 * Returns true if the client is connected to the server.
+	 */
+	public boolean isConnected() {
+		return connected;
+	}
+	/**
 	 * Sends a message to the server, ie "HELO foo.example.com". A newline will
 	 * be appended to the message.
 	 *
@@ -191,6 +205,8 @@ public class SMTPClient
 	{
 		if (log.isDebugEnabled())
 			log.debug("Client: " + msg);
+		if (!connected)
+			throw new IllegalStateException("Not connected");
 
 		// Force \r\n since println() behaves differently on different platforms
 		this.writer.print(msg + "\r\n");
@@ -202,6 +218,9 @@ public class SMTPClient
 	 */
 	protected Response receive() throws IOException
 	{
+		if (!connected)
+			throw new IllegalStateException("Not connected");
+
 		StringBuilder builder = new StringBuilder();
 		String line = null;
 
@@ -277,6 +296,8 @@ public class SMTPClient
 	/** Logs but otherwise ignores errors */
 	public void close()
 	{
+		connected = false;
+
 		if (this.socket != null && !this.socket.isClosed())
 		{
 			try

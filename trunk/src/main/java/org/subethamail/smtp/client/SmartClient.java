@@ -233,7 +233,7 @@ public class SmartClient extends SMTPClient
 	{
 		try
 		{
-			if (!this.serverClosingTransmissionChannel)
+			if (this.isConnected() && !this.serverClosingTransmissionChannel)
 				this.sendAndCheck("QUIT");
 		}
 		catch (IOException ex)

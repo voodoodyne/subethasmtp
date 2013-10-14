@@ -4,6 +4,10 @@ import java.io.IOException;
 
 import org.subethamail.smtp.client.SMTPClient.Response;
 
+/**
+ * Thrown if a syntactically valid reply was received from the server, which
+ * indicates an error via the status code.
+ */
 @SuppressWarnings("serial")
 public class SMTPException extends IOException
 {
