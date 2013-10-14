@@ -150,8 +150,8 @@ public class SMTPServer
 	 *            the ExecutorService which will handle client connections, one
 	 *            task per connection. The SMTPServer will shut down this
 	 *            ExecutorService when the SMTPServer itself stops. If null, a
-	 *            default one is created by {@link
-	 *            Executors.newCachedThreadPool()}.
+	 *            default one is created by
+	 *            {@link Executors#newCachedThreadPool()}.
 	 */
 	public SMTPServer(MessageHandlerFactory msgHandlerFact, AuthenticationHandlerFactory authHandlerFact, ExecutorService executorService)
 	{

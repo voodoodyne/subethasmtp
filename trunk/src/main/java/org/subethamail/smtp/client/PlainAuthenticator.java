@@ -12,8 +12,8 @@ import org.subethamail.smtp.util.Base64;
  * PlainAuthenticator implements the SASL PLAIN mechanism which authenticates
  * the client using a name - password combination.
  * 
- * @see <a href="http://tools.ietf.org/html/rfc4616">RFC 4616</a>: The PLAIN
- *      Simple Authentication and Security Layer (SASL) Mechanism
+ * @see <a href="http://tools.ietf.org/html/rfc4616">RFC 4616: The PLAIN Simple
+ *      Authentication and Security Layer (SASL) Mechanism</a>
  */
 public class PlainAuthenticator implements Authenticator {
 	private final String user;
