@@ -30,9 +30,6 @@ import org.subethamail.smtp.Version;
  * stream and hands off the processing to the CommandHandler which
  * will execute the appropriate SMTP command class.
  *
- * This class also manages a watchdog thread which will timeout
- * stale connections.
- *
  * To use this class, construct a server with your implementation
  * of the MessageHandlerFactory.  This provides low-level callbacks
  * at various phases of the SMTP exchange.  For a higher-level
@@ -71,7 +68,9 @@ public class SMTPServer
 
 	/**
 	 * True if this SMTPServer was started. It remains true even if the
-	 * SMTPServer has been stopped since.
+	 * SMTPServer has been stopped since. It is used to prevent restarting this
+	 * object. Even if it was shutdown properly, it cannot be restarted, because
+	 * the contained thread pool object itself cannot be restarted.
 	 **/
 	@GuardedBy("this")
 	private boolean started = false;
@@ -274,6 +273,8 @@ public class SMTPServer
 	/**
 	 * Call this method to get things rolling after instantiating the
 	 * SMTPServer.
+	 * <p>
+	 * An SMTPServer which has been shut down, must not be reused.
 	 */
 	public synchronized void start()
 	{
@@ -282,7 +283,8 @@ public class SMTPServer
 
 		if (this.started)
 			throw new IllegalStateException(
-					"SMTPServer can only be started once");
+					"SMTPServer can only be started once. "
+							+ "Restarting is not allowed even after a proper shutdown.");
 
 		// Create our server socket here.
 		ServerSocket serverSocket;
