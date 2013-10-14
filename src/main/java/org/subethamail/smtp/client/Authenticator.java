@@ -7,8 +7,8 @@ import java.io.IOException;
  * negotiates the authentication of the user for example by issuing the SMTP
  * AUTH command to the server.
  * 
- * @see <a href="http://tools.ietf.org/html/rfc4954">RFC 4954</a>: SMTP Service
- *      Extension for Authentication
+ * @see <a href="http://tools.ietf.org/html/rfc4954">RFC 4954: SMTP Service
+ *      Extension for Authentication</a>
  */
 public interface Authenticator {
 	void authenticate() throws SMTPException,
