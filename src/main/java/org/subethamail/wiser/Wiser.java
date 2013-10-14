@@ -146,7 +146,12 @@ public class Wiser implements SimpleMessageListener
 	}
 
 	/**
-	 * @return the list of WiserMessages
+	 * Returns the list of WiserMessages.
+	 * <p>
+	 * The number of mail transactions and the number of mails may be different.
+	 * If a message is received with multiple recipients in a single mail
+	 * transaction, then the list will contain more WiserMessage instances, one
+	 * for each recipient.
 	 */
 	public List<WiserMessage> getMessages()
 	{
