@@ -1,0 +1,1 @@
+The [SubEtha Mailing List Server](http://code.google.com/p/subetha) is what inspired the creation of this library.
