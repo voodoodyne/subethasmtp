@@ -98,4 +98,4 @@ On unix, it is possible to run SubEthatSMTP on port 25 without running the JVM a
 
 ## SSL Configuration ##
 
-Erik van Oosten has written an excellent blog posting about [how to configure this](http://blog.jteam.nl/2009/11/10/securing-connections-with-tls/).
+Erik van Oosten has written an excellent blog posting about [how to configure this](http://blog.trifork.com/2009/11/10/securing-connections-with-tls/).
