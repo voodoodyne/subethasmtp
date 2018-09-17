@@ -6,6 +6,7 @@ import java.net.InetSocketAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.Map;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -163,14 +164,9 @@ public class SMTPServer
 			this.executorService = Executors.newCachedThreadPool();
 		}
 
-		try
-		{
-			this.hostName = InetAddress.getLocalHost().getCanonicalHostName();
-		}
-		catch (UnknownHostException e)
-		{
-			this.hostName = UNKNOWN_HOSTNAME;
-		}
+		Map<String, String> map = System.getenv();
+
+		this.hostName = map.getOrDefault("COMPUTERNAME", map.getOrDefault("HOSTNAME", UNKNOWN_HOSTNAME));
 
 		this.commandHandler = new CommandHandler();
 	}
