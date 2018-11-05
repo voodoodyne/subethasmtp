@@ -66,6 +66,8 @@ public class SMTPServer
 	@GuardedBy("this")
 	private ServerThread serverThread;
 
+	private ServerThreadNameProvider serverThreadNameProvider = new DefaultServerThreadNameProvider();
+
 	/**
 	 * True if this SMTPServer was started. It remains true even if the
 	 * SMTPServer has been stopped since. It is used to prevent restarting this
@@ -602,5 +604,17 @@ public class SMTPServer
 	 */
 	public void setSessionIdFactory(SessionIdFactory sessionIdFactory) {
 		this.sessionIdFactory = sessionIdFactory;
+	}
+
+	/**
+	 * Sets a thread name provider
+	 * @param provider
+	 */
+	public void setServerThreadNameProvider(ServerThreadNameProvider provider){
+		this.serverThreadNameProvider = provider;
+	}
+
+	String getServerThreadName() {
+		return this.serverThreadNameProvider.getName(this);
 	}
 }

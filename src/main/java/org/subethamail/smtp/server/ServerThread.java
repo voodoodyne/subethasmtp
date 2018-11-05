@@ -46,7 +46,7 @@ class ServerThread extends Thread
 
 	public ServerThread(SMTPServer server, ServerSocket serverSocket)
 	{
-		super(ServerThread.class.getName() + " " + server.getDisplayableLocalSocketAddress());
+		super(server.getServerThreadName());
 		this.server = server;
 		this.serverSocket = serverSocket;
 		// reserve a few places for graceful disconnects with informative
