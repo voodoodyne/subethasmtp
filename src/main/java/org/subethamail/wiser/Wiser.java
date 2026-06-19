@@ -134,7 +134,13 @@ public class Wiser implements SimpleMessageListener
 			log.debug("Creating message from data with " + bytes.length + " bytes");
 
 		// create a new WiserMessage.
-		this.messages.add(new WiserMessage(this, from, recipient, bytes));
+		WiserMessage mess = new WiserMessage(this, from, recipient, bytes);
+		if (this.messages.add(mess)) {
+			mess.setId( this.messages.size());
+		}
+		else {
+			log.error( "Failed to add new message from "+from+" to list");
+		}
 	}
 
 	/**
@@ -156,6 +162,21 @@ public class Wiser implements SimpleMessageListener
 	public List<WiserMessage> getMessages()
 	{
 		return this.messages;
+	}
+	
+	/**
+	 * Returns WiserMessage identified with ID.
+	 * <p>
+	 * Message is currently identified by position in messages array.
+	 * Because arrays are 0 based, we need to subtract 1 to get the proper index
+	 */
+	public WiserMessage getMessage( long id )
+	{
+		if (id > 0 && id <= this.messages.size()) {
+			int index = (int) id-1;
+			return this.messages.get(index);
+		}
+		return null;
 	}
 
 	/**
